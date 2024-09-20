@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">project-timely</string>
+    <string name="menu_desc">Menu</string>
 </resources>

@@ -1,0 +1,20 @@
+<resources>
+
+    <!-- Базовый стиль для ячеек календаря -->
+    <style name="CalendarCell">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="android:layout_columnWeight">1</item>
+        <item name="android:layout_rowWeight">1</item>
+    </style>
+
+    <!-- Стиль для активного дня -->
+    <style name="CalendarCell.Active">
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+    <!-- Стиль для неактивного дня -->
+    <style name="CalendarCell.Inactive">
+        <item name="android:textColor">@color/gray</item>
+    </style>
+</resources>
