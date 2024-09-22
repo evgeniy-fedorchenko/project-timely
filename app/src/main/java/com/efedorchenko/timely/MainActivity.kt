@@ -5,15 +5,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
-import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.jakewharton.threetenabp.AndroidThreeTen
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var viewPager2: ViewPager2
+    private lateinit var viewPager: ViewPager2
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,11 +18,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         setupInsets()
-        AndroidThreeTen.init(this)
-
-        viewPager2 = findViewById(R.id.view_pager)
-        viewPager2.adapter = CalendarPageAdapter(this)
-        viewPager2.setCurrentItem(CalendarPageAdapter.CALENDAR_SCROLL_BORDERS / 2, false)
+        setupViewPager()
     }
 
     private fun setupInsets() {
@@ -34,5 +27,14 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+    }
+
+    private fun setupViewPager() {
+        AndroidThreeTen.init(this)
+
+        viewPager = findViewById(R.id.view_pager)
+        viewPager.adapter = CalendarPageAdapter(this)
+        viewPager.setCurrentItem(CalendarPageAdapter.CALENDAR_SCROLL_BORDERS / 2, false)
+        viewPager.offscreenPageLimit = 3
     }
 }
