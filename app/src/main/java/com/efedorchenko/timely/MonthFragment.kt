@@ -1,5 +1,6 @@
 package com.efedorchenko.timely
 
+import android.content.Context
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -79,46 +80,51 @@ class MonthFragment : Fragment() {
     private fun updateCalendar(context: Context) {
         calendarGrid.removeAllViews()
 
-        val currentDate = LocalDate.now().plusMonths(monthOffset.toLong())
-        val firstDayOfMonth = currentDate.withDayOfMonth(1)
-        val daysInMonth = currentDate.lengthOfMonth()
-        val dayOfWeekOfFirstDay = (firstDayOfMonth.dayOfWeek.value + 6) % 7
+        val dateNow = LocalDate.now().plusMonths(monthOffset.toLong())
+        val currentDayOfMonth = dateNow.dayOfMonth.toString()
+        val monthLength = dateNow.lengthOfMonth()
+        val dayOfWeekOfFirstDay = (dateNow.withDayOfMonth(1).dayOfWeek.value + 6) % 7
 
         for (i in 0 until 6 * 7) {
-            val context = requireContext()
-            val frameLayout = FrameLayout(context)
-            val params = GridLayout.LayoutParams()
-
-            params.width = 0
-            params.height = 0
-            params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-            params.rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-            frameLayout.layoutParams = params
-
+            val frameLayout = createFrameLayout(context)
             val textView = TextView(context)
-            TextViewCompat.setTextAppearance(textView, R.style.CalendarCell)
-
             val dayOfMonth = i - dayOfWeekOfFirstDay + 1
-            if (dayOfMonth in 1..daysInMonth) {
-                val drawable = ContextCompat.getDrawable(context, R.drawable.active_day_background)
-                val paddingEnd = resources.getDimensionPixelSize(R.dimen.calendar_cell_padding_end)
-                val paddingTop = resources.getDimensionPixelSize(R.dimen.calendar_cell_padding_top)
 
-                frameLayout.background = drawable
+            if (dayOfMonth in 1..monthLength) {
+
                 textView.text = dayOfMonth.toString()
                 textView.gravity = Gravity.TOP or Gravity.END
-                textView.setPadding(0, paddingTop, paddingEnd, 0)
-                TextViewCompat.setTextAppearance(textView, R.style.CalendarCell_Active)
+                textView.setPadding(
+                    0, resources.getDimensionPixelSize(R.dimen.calendar_cell_padding_top),
+                    resources.getDimensionPixelSize(R.dimen.calendar_cell_padding_end), 0
+                )
+                TextViewCompat.setTextAppearance(textView, R.style.active_calendar_cell)
+
+                if (((i + 2) % 7 == 0) or ((i + 1) % 7 == 0)) {   // Если выходной
+                    frameLayout.background = drawable(
+                        context,
+                        if (currentDayOfMonth == dayOfMonth.toString() && monthOffset == 0)
+                            R.drawable.weekend_current_day
+                        else R.drawable.weekend_ordinary_day
+                    )
+                } else {
+                    frameLayout.background = drawable(
+                        context,
+                        if (currentDayOfMonth == dayOfMonth.toString() && monthOffset == 0)
+                            R.drawable.weekday_current
+                        else R.drawable.weekday_ordinary
+                    )
+                }
 
             } else {
-                val drawable = ContextCompat.getDrawable(context, R.drawable.inactive_day_background)
-                frameLayout.background = drawable
-                TextViewCompat.setTextAppearance(textView, R.style.CalendarCell_Inactive)
+                frameLayout.background = drawable(context, R.drawable.inactive_day)
+                TextViewCompat.setTextAppearance(textView, R.style.inactive_calendar_cell)
             }
             frameLayout.addView(textView)
             calendarGrid.addView(frameLayout)
         }
     }
+
 
     private fun updateMonthTextView() {
         val activity = activity ?: return
@@ -135,5 +141,20 @@ class MonthFragment : Fragment() {
             }
             it.text = monthName
         }
+    }
+
+    private fun drawable(context: Context, drawableResource: Int) =
+        ContextCompat.getDrawable(context, drawableResource)
+
+    private fun createFrameLayout(context: Context): FrameLayout {
+        val frameLayout = FrameLayout(context)
+        val params = GridLayout.LayoutParams()
+
+        params.width = 0
+        params.height = 0
+        params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+        params.rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+        frameLayout.layoutParams = params
+        return frameLayout
     }
 }

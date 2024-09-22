@@ -4,7 +4,8 @@
     <color name="white">#FFFFFFFF</color>
 
     <color name="light_gray">#cdcdcd</color>
-    <color name="gray">#b5b5b5</color>
+    <color name="weekday_gray">#b5b5b5</color>
+    <color name="weekend_gray">#9c9c9c</color>
     <color name="dark_gray">#383838</color>
     <color name="orange">#ea7f13</color>
 

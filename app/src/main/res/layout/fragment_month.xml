@@ -1,6 +1,26 @@
-<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/calendar_grid"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:columnCount="7"
-    android:rowCount="6" />
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        tools:context=".MainActivity">
+
+    <GridLayout
+            android:id="@+id/days_of_week_grid"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:columnCount="7"
+            android:rowCount="1" />
+
+    <GridLayout
+            android:id="@+id/calendar_grid"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="16"
+            android:columnCount="7"
+            android:rowCount="6" />
+
+</LinearLayout>
