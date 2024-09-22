@@ -30,6 +30,7 @@ class MonthFragment : Fragment() {
 
     private var monthOffset: Int = 0
     private lateinit var calendarGrid: GridLayout
+    private lateinit var weekDays: GridLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,7 +45,11 @@ class MonthFragment : Fragment() {
 
         val view = inflater.inflate(R.layout.fragment_month, container, false)
         calendarGrid = view.findViewById(R.id.calendar_grid)
-        updateCalendar()
+        weekDays = view.findViewById(R.id.days_of_week_grid)
+
+        val context = requireContext()
+        setupWeekDays(context)
+        updateCalendar(context)
         return view
     }
 
@@ -53,7 +58,25 @@ class MonthFragment : Fragment() {
         updateMonthTextView()
     }
 
-    private fun updateCalendar() {
+    private fun setupWeekDays(context: Context) {
+        weekDays.removeAllViews()
+        val daysOfWeek = arrayOf("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
+
+        for (i in daysOfWeek.indices) {
+            val frameLayout = createFrameLayout(context)
+            val textView = TextView(context)
+
+            textView.text = daysOfWeek[i]
+            textView.gravity = Gravity.CENTER
+            TextViewCompat.setTextAppearance(textView, R.style.weekday_cell)
+            frameLayout.background = drawable(context, R.drawable.weekday_ordinary)
+
+            frameLayout.addView(textView)
+            weekDays.addView(frameLayout)
+        }
+    }
+
+    private fun updateCalendar(context: Context) {
         calendarGrid.removeAllViews()
 
         val currentDate = LocalDate.now().plusMonths(monthOffset.toLong())

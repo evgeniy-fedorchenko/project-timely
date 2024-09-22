@@ -1,20 +1,30 @@
 <resources>
 
-    <!-- Базовый стиль для ячеек календаря -->
-    <style name="CalendarCell">
+    <!-- Стиль для активного дня -->
+    <style name="active_calendar_cell">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">0dp</item>
         <item name="android:layout_columnWeight">1</item>
         <item name="android:layout_rowWeight">1</item>
-    </style>
-
-    <!-- Стиль для активного дня -->
-    <style name="CalendarCell.Active">
         <item name="android:textColor">@color/black</item>
     </style>
 
     <!-- Стиль для неактивного дня -->
-    <style name="CalendarCell.Inactive">
-        <item name="android:textColor">@color/gray</item>
+    <style name="inactive_calendar_cell">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="android:layout_columnWeight">1</item>
+        <item name="android:layout_rowWeight">1</item>
+        <item name="android:textColor">@color/weekday_gray</item>
+    </style>
+
+    <!-- Стиль для дня недели -->
+    <style name="weekday_cell">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="android:layout_columnWeight">1</item>
+        <item name="android:layout_rowWeight">1</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textStyle">bold</item>
     </style>
 </resources>
