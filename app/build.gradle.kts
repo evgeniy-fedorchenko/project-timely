@@ -44,6 +44,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     runtimeOnly(libs.androidx.viewpager2)
     implementation(libs.threetenabp)
+    implementation (libs.material)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
