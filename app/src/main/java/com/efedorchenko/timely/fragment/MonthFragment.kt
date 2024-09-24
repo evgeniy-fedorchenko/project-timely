@@ -1,4 +1,4 @@
-package com.efedorchenko.timely
+package com.efedorchenko.timely.fragment
 
 import android.content.Context
 import android.os.Bundle
@@ -12,30 +12,36 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
+import com.efedorchenko.timely.R
+import com.efedorchenko.timely.event.Event
+import com.efedorchenko.timely.event.OnSaveEventListener
 import org.threeten.bp.LocalDate
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-class MonthFragment : Fragment() {
+class MonthFragment : Fragment(), OnSaveEventListener {
 
     companion object {
-        private const val ARG_MONTH_OFFSET = "month_offset"
+        private const val MONTH_OFFSET_ARG = "month_offset"
+        const val SELECTED_DATE_KEY = "selected_date"
+        private const val ADD_EVENT_DIALOG_TAG = "add_event_dialog"
 
         fun newInstance(monthOffset: Int): MonthFragment {
             return MonthFragment().apply {
-                arguments = Bundle().apply { putInt(ARG_MONTH_OFFSET, monthOffset) }
+                arguments = Bundle().apply { putInt(MONTH_OFFSET_ARG, monthOffset) }
             }
         }
     }
 
+    private val events: List<Event> = ArrayList()
     private var monthOffset: Int = 0
     private lateinit var calendarGrid: GridLayout
     private lateinit var weekDays: GridLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        monthOffset = arguments?.getInt(ARG_MONTH_OFFSET) ?: 0
+        monthOffset = arguments?.getInt(MONTH_OFFSET_ARG) ?: 0
     }
 
     override fun onCreateView(
@@ -83,12 +89,12 @@ class MonthFragment : Fragment() {
         val dateNow = LocalDate.now().plusMonths(monthOffset.toLong())
         val currentDayOfMonth = dateNow.dayOfMonth.toString()
         val monthLength = dateNow.lengthOfMonth()
-        val dayOfWeekOfFirstDay = (dateNow.withDayOfMonth(1).dayOfWeek.value + 6) % 7 + 1
+        val dayOfWeekOfFirstDay = (dateNow.withDayOfMonth(1).dayOfWeek.value + 6) % 7
 
         for (i in 0 until 6 * 7) {
             val frameLayout = createFrameLayout(context)
             val textView = TextView(context)
-            val dayOfMonth = i - dayOfWeekOfFirstDay
+            val dayOfMonth = i - dayOfWeekOfFirstDay + 1
 
             when {
                 dayOfMonth < 1 -> {
@@ -112,6 +118,15 @@ class MonthFragment : Fragment() {
                         else -> R.drawable.weekday_ordinary
                     }
                     frameLayout.background = drawable(context, drawableResource)
+                    frameLayout.setOnClickListener {
+                        val bundle = Bundle()
+                        val selectedDateStr = dateNow.withDayOfMonth(dayOfMonth).toString()
+                        bundle.putString(SELECTED_DATE_KEY, selectedDateStr)
+
+                        val addEventDialog = AddEventDialog.newInstance(this)
+                        addEventDialog.arguments = bundle
+                        addEventDialog.show(parentFragmentManager, ADD_EVENT_DIALOG_TAG)
+                    }
                 }
 
                 else -> {
@@ -161,5 +176,12 @@ class MonthFragment : Fragment() {
         params.rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
         frameLayout.layoutParams = params
         return frameLayout
+    }
+
+    override fun onSaveEvent(event: Event) {
+        /*
+        * Отобразить на календаре
+        * Отправить на бек
+        */
     }
 }
