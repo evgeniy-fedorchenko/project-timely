@@ -5,60 +5,48 @@
         android:id="@+id/drawer_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/base_background"
         tools:context=".MainActivity">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/main"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="match_parent"  >
 
-        <!-- Текст с названием месяца и года -->
-        <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-            <ImageButton
-                    android:id="@+id/menu_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingTop="8dp"
-                    android:paddingBottom="8dp"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="8dp"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="@string/menu_desc"
-                    app:srcCompat="@drawable/ic_menu"
-                    app:tint="@color/orange" />
-
-            <TextView
-                    android:id="@+id/month_year_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:gravity="center"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
-
-        </RelativeLayout>
+        <!-- Меню кнопка и текст -->
+        <include
+                android:id="@+id/headerLayout"
+                layout="@layout/header_layout"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
         <!-- ViewPager2 для календаря -->
         <androidx.viewpager2.widget.ViewPager2
                 android:id="@+id/view_pager"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="0dp"
-                android:layout_weight="1">
+                android:background="@color/black"
+                app:layout_constraintDimensionRatio="H,1:1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/headerLayout" />
 
-        </androidx.viewpager2.widget.ViewPager2>
+        <!-- Вставка CardView -->
+        <include
+                android:id="@+id/statsCard"
+                layout="@layout/stats_card"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
+                android:layout_marginBottom="32dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
 
-        <!-- Заполнитель пространства под календарем -->
-        <View
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:background="@color/light_gray" />
 
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- NavigationView для бокового меню -->
     <com.google.android.material.navigation.NavigationView
@@ -66,7 +54,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="start"
-            app:headerLayout="@layout/nav_header"
-            app:menu="@menu/drawer_menu" />
+            app:headerLayout="@layout/side_menu_header"
+            app:menu="@menu/side_menu" />
 
 </androidx.drawerlayout.widget.DrawerLayout>
