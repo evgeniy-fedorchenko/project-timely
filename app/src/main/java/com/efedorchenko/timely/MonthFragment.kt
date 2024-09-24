@@ -44,7 +44,7 @@ class MonthFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
-        val view = inflater.inflate(R.layout.fragment_month, container, false)
+        val view = inflater.inflate(R.layout.calendar_grid_layout, container, false)
         calendarGrid = view.findViewById(R.id.calendar_grid)
         weekDays = view.findViewById(R.id.days_of_week_grid)
 
@@ -83,43 +83,48 @@ class MonthFragment : Fragment() {
         val dateNow = LocalDate.now().plusMonths(monthOffset.toLong())
         val currentDayOfMonth = dateNow.dayOfMonth.toString()
         val monthLength = dateNow.lengthOfMonth()
-        val dayOfWeekOfFirstDay = (dateNow.withDayOfMonth(1).dayOfWeek.value + 6) % 7
+        val dayOfWeekOfFirstDay = (dateNow.withDayOfMonth(1).dayOfWeek.value + 6) % 7 + 1
 
         for (i in 0 until 6 * 7) {
             val frameLayout = createFrameLayout(context)
             val textView = TextView(context)
-            val dayOfMonth = i - dayOfWeekOfFirstDay + 1
+            val dayOfMonth = i - dayOfWeekOfFirstDay
 
-            if (dayOfMonth in 1..monthLength) {
-
-                textView.text = dayOfMonth.toString()
-                textView.gravity = Gravity.TOP or Gravity.END
-                textView.setPadding(
-                    0, resources.getDimensionPixelSize(R.dimen.calendar_cell_padding_top),
-                    resources.getDimensionPixelSize(R.dimen.calendar_cell_padding_end), 0
-                )
-                TextViewCompat.setTextAppearance(textView, R.style.active_calendar_cell)
-
-                if (((i + 2) % 7 == 0) or ((i + 1) % 7 == 0)) {   // Если выходной
-                    frameLayout.background = drawable(
-                        context,
-                        if (currentDayOfMonth == dayOfMonth.toString() && monthOffset == 0)
-                            R.drawable.weekend_current_day
-                        else R.drawable.weekend_ordinary_day
-                    )
-                } else {
-                    frameLayout.background = drawable(
-                        context,
-                        if (currentDayOfMonth == dayOfMonth.toString() && monthOffset == 0)
-                            R.drawable.weekday_current
-                        else R.drawable.weekday_ordinary
-                    )
+            when {
+                dayOfMonth < 1 -> {
+                    val processingDate = dateNow.minusMonths(1).lengthOfMonth() + dayOfMonth
+                    textView.text = processingDate.toString()
+                    TextViewCompat.setTextAppearance(textView, R.style.inactive_calendar_cell)
+                    frameLayout.background = drawable(context, R.drawable.inactive_day)
                 }
 
-            } else {
-                frameLayout.background = drawable(context, R.drawable.inactive_day)
-                TextViewCompat.setTextAppearance(textView, R.style.inactive_calendar_cell)
+                dayOfMonth in 1..monthLength -> {
+                    textView.text = dayOfMonth.toString()
+                    TextViewCompat.setTextAppearance(textView, R.style.active_calendar_cell)
+
+                    val isWeekendDay = ((i + 2) % 7 == 0) or ((i + 1) % 7 == 0)
+                    val isToday = currentDayOfMonth == dayOfMonth.toString() && monthOffset == 0
+
+                    val drawableResource = when {
+                        isWeekendDay && isToday -> R.drawable.weekend_current
+                        isWeekendDay && !isToday -> R.drawable.weekend_ordinary
+                        !isWeekendDay && isToday -> R.drawable.weekday_current
+                        else -> R.drawable.weekday_ordinary
+                    }
+                    frameLayout.background = drawable(context, drawableResource)
+                }
+
+                else -> {
+                    textView.text = (dayOfMonth - monthLength).toString()
+                    TextViewCompat.setTextAppearance(textView, R.style.inactive_calendar_cell)
+                    frameLayout.background = drawable(context, R.drawable.inactive_day)
+                }
             }
+            val topPadding = resources.getDimensionPixelSize(R.dimen.calendar_cell_padding_top)
+            val rightPadding = resources.getDimensionPixelSize(R.dimen.calendar_cell_padding_end)
+            textView.setPadding(0, topPadding, rightPadding, 0)
+
+            textView.gravity = Gravity.TOP or Gravity.END
             frameLayout.addView(textView)
             calendarGrid.addView(frameLayout)
         }

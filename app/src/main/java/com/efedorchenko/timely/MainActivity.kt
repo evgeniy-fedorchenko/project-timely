@@ -9,6 +9,8 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -21,6 +23,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var viewPager: ViewPager2
     private lateinit var drawerLayout: DrawerLayout
+    private lateinit var cardView: CardView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,6 +33,9 @@ class MainActivity : AppCompatActivity() {
         setupInsets()
         setupViewPager()
         setupSideMenu()
+
+        cardView = findViewById(R.id.statsCard)
+        cardView.background = ContextCompat.getDrawable(this, R.drawable.stats_card_background)
     }
 
     private fun setupInsets() {
