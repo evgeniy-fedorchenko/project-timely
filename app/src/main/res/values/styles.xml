@@ -1,7 +1,7 @@
 <resources>
 
     <!-- Стиль для активного дня -->
-    <style name="active_calendar_cell">
+    <style name="active_date">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">0dp</item>
         <item name="android:layout_columnWeight">1</item>
@@ -11,7 +11,7 @@
     </style>
 
     <!-- Стиль для неактивного дня -->
-    <style name="inactive_calendar_cell">
+    <style name="inactive_date">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">0dp</item>
         <item name="android:layout_columnWeight">1</item>
@@ -21,12 +21,23 @@
     </style>
 
     <!-- Стиль для дня недели -->
-    <style name="weekday_cell">
+    <style name="day_of_week">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">0dp</item>
         <item name="android:layout_columnWeight">1</item>
         <item name="android:layout_rowWeight">1</item>
         <item name="android:textColor">@color/black</item>
         <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- Стиль для неактивного дня -->
+    <style name="work_duration">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="android:layout_columnWeight">1</item>
+        <item name="android:layout_rowWeight">1</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textStyle">bold</item>
+
     </style>
 </resources>

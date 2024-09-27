@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="calendar_cell_padding_top">1dp</dimen>
-    <dimen name="calendar_cell_padding_end">4dp</dimen>
+    <dimen name="calendar_date_padding_top">1dp</dimen>
+    <dimen name="calendar_date_padding_end">4dp</dimen>
+    <dimen name="half_px">0.5px</dimen>
+    <dimen name="work_duration_bottom">6dp</dimen>
 </resources>

@@ -9,5 +9,7 @@
     <color name="dark_gray">#383838</color>
     <color name="orange">#ea7f13</color>
     <color name="base_background">#202020</color>
+    <color name="red">#b20000</color>
+    <color name="green">#009100</color>
 
 </resources>
