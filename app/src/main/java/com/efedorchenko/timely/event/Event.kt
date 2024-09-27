@@ -1,27 +1,73 @@
 package com.efedorchenko.timely.event
 
+import android.content.res.Resources
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.WRAP_CONTENT
+import androidx.core.widget.TextViewCompat
+import com.efedorchenko.timely.R
 import org.threeten.bp.Duration
 import org.threeten.bp.LocalDate
+import java.util.Locale
 
 data class Event(
-    var eventDate: LocalDate?,
-    var workDuration: Duration?,
+    var eventDate: LocalDate,
+    var workMinutes: Duration,
     var comment: String?,
-    var color: Color?
-)
+) {
 
-class EventBuilder {
-    private var eventDate: LocalDate? = null
-    private var workDuration: Duration? = null
-    private var comment: String? = null
-    private var color: Color? = null
+    fun applyTo(parentLayout: ConstraintLayout) {
+        val context = parentLayout.context
+        val resources = parentLayout.resources
 
-    fun setEventDate(date: LocalDate) = apply { this.eventDate = date }
-    fun setWorkDuration(duration: Duration) = apply { this.workDuration = duration }
-    fun setComment(comment: String) = apply { this.comment = comment }
-    fun setColor(color: Color) = apply { this.color = color }
+        val squareView = View(context)
 
-    fun build(): Event {
-        return Event(eventDate, workDuration, comment, color)
+        squareView.layoutParams = cellColorMarkParams(resources)
+        val color = when {
+            eventDate.isBefore(LocalDate.now()) -> Color.GREEN.getColorValue(context)
+            else -> Color.ORANGE.getColorValue(context)
+        }
+        squareView.setBackgroundColor(color)
+        squareView.alpha = 0.5f
+
+        val minutesCount = workMinutes.toMinutes()
+        val textView = TextView(context)
+        val minutes = minutesCount / 60
+        val hours = minutesCount % 60
+
+        textView.text = String.format(Locale("ru"), "%02d:%02d", minutes, hours)
+        textView.textSize = 18F
+        textView.layoutParams = cellHoursTextParams(resources)
+        TextViewCompat.setTextAppearance(textView, R.style.work_duration)
+
+        parentLayout.addView(textView)
+        parentLayout.addView(squareView)
     }
+
+    private fun cellColorMarkParams(resources: Resources): ViewGroup.LayoutParams {
+        val margin = resources.getDimensionPixelSize(R.dimen.half_px)
+        val squareLayoutParams = ConstraintLayout.LayoutParams(
+            ConstraintLayout.LayoutParams.MATCH_CONSTRAINT, 0
+        )
+        squareLayoutParams.dimensionRatio = "W,3:10"
+        squareLayoutParams.topToTop = ConstraintLayout.LayoutParams.PARENT_ID
+        squareLayoutParams.startToStart = ConstraintLayout.LayoutParams.PARENT_ID
+        squareLayoutParams.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+        squareLayoutParams.setMargins(margin, margin, margin, margin)
+
+        return squareLayoutParams
+    }
+
+    private fun cellHoursTextParams(resources: Resources): ViewGroup.LayoutParams {
+        val layoutParams = ConstraintLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+        layoutParams.startToStart = ConstraintLayout.LayoutParams.PARENT_ID
+        layoutParams.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+        layoutParams.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
+        layoutParams.bottomMargin = resources.getDimensionPixelSize(R.dimen.work_duration_bottom)
+
+        return layoutParams
+    }
+
 }
