@@ -10,9 +10,11 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import com.efedorchenko.timely.R
-import com.efedorchenko.timely.event.Color
 import com.efedorchenko.timely.event.Event
 import com.efedorchenko.timely.event.OnSaveEventListener
+import com.efedorchenko.timely.filter.CommentInputFilter
+import com.efedorchenko.timely.filter.HoursInputFilter
+import com.efedorchenko.timely.filter.MinutesInputFilter
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.threeten.bp.Duration
 import org.threeten.bp.LocalDate
@@ -55,9 +57,9 @@ class AddEventDialog : BottomSheetDialogFragment() {
         hoursEditText.addTextChangedListener(AddEventDialogFieldsWatcher(2, minutesEditText))
         minutesEditText.addTextChangedListener(AddEventDialogFieldsWatcher(2, commentEditText))
 
-//        hoursEditText.filters = arrayOf(HoursInputFilter())
-//        minutesEditText.filters = arrayOf(MinutesInputFilter())
-//        commentEditText.filters = arrayOf(CommentInputFilter())
+        hoursEditText.filters = arrayOf(HoursInputFilter())
+        minutesEditText.filters = arrayOf(MinutesInputFilter())
+        commentEditText.filters = arrayOf(CommentInputFilter())
 
         saveButton.setOnClickListener {
             val hours = hoursEditText.text.toString().toLongOrNull() ?: 0
@@ -65,7 +67,7 @@ class AddEventDialog : BottomSheetDialogFragment() {
             val comment = commentEditText.text.toString()
             val workDuration = Duration.of(hours * 60 + minutes, ChronoUnit.MINUTES)
 
-            val event = Event(targetDate, workDuration, comment, Color.ORANGE)
+            val event = Event(targetDate, workDuration, comment)
             onSaveEventListener?.onSaveEvent(event)
             dismiss()
         }

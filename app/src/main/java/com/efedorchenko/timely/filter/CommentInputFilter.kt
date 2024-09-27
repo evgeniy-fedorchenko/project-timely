@@ -6,10 +6,9 @@ import android.text.Spanned
 class CommentInputFilter : InputFilter {
 
     override fun filter(
-        source: CharSequence?, start: Int, end: Int, dest: Spanned?, dstart: Int, dend: Int
-    ): CharSequence {
+        source: CharSequence, start: Int, end: Int, dest: Spanned, dstart: Int, dend: Int
+    ): CharSequence? {
 
-        TODO("Not yet implemented")
+        return if (dest.length > 500) "" else null
     }
-
 }
