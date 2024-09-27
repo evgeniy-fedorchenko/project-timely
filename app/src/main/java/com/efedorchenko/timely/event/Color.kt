@@ -1,9 +1,13 @@
 package com.efedorchenko.timely.event
 
-enum class Color(val colorValue: Int) {
+import android.content.Context
+import androidx.core.content.ContextCompat
+import com.efedorchenko.timely.R
 
-    RED(0xFFFF0000.toInt()),
-    GREEN(0xFF00FF00.toInt()),
-    ORANGE(0xEA7F13);
+enum class Color(private val colorResId: Int) {
+    RED(R.color.red),
+    GREEN(R.color.green),
+    ORANGE(R.color.orange);
 
+    fun getColorValue(context: Context): Int = ContextCompat.getColor(context, colorResId)
 }

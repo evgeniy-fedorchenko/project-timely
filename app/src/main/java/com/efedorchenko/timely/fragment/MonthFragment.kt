@@ -1,20 +1,21 @@
 package com.efedorchenko.timely.fragment
 
-import android.content.Context
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import android.widget.GridLayout
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.WRAP_CONTENT
 import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.event.Event
 import com.efedorchenko.timely.event.OnSaveEventListener
+import com.efedorchenko.timely.fragment.CalendarCell.CellType
 import org.threeten.bp.LocalDate
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -34,8 +35,9 @@ class MonthFragment : Fragment(), OnSaveEventListener {
         }
     }
 
-    private val events: List<Event> = ArrayList()
+    private val events: MutableMap<LocalDate, Event> = HashMap()
     private var monthOffset: Int = 0
+    private lateinit var helper: CalendarHelper
     private lateinit var calendarGrid: GridLayout
     private lateinit var weekDays: GridLayout
 
@@ -54,9 +56,10 @@ class MonthFragment : Fragment(), OnSaveEventListener {
         calendarGrid = view.findViewById(R.id.calendar_grid)
         weekDays = view.findViewById(R.id.days_of_week_grid)
 
-        val context = requireContext()
-        setupWeekDays(context)
-        updateCalendar(context)
+        helper = CalendarHelper(requireContext())
+
+        setupWeekDays()
+        updateCalendar()
         return view
     }
 
@@ -65,86 +68,91 @@ class MonthFragment : Fragment(), OnSaveEventListener {
         updateMonthTextView()
     }
 
-    private fun setupWeekDays(context: Context) {
+    override fun onSaveEvent(event: Event) {
+        events[event.eventDate] = event
+        updateCalendar()
+        /*
+        * Отобразить на календаре
+        * Сохранить в кеш
+        * Отправить на бек
+        */
+    }
+
+    private fun setupWeekDays() {
         weekDays.removeAllViews()
+        val context = requireContext()
         val daysOfWeek = arrayOf("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
 
         for (i in daysOfWeek.indices) {
-            val frameLayout = createFrameLayout(context)
+            val parentLayout = createConstraintLayout()
             val textView = TextView(context)
 
             textView.text = daysOfWeek[i]
             textView.gravity = Gravity.CENTER
-            TextViewCompat.setTextAppearance(textView, R.style.weekday_cell)
-            frameLayout.background = drawable(context, R.drawable.weekday_ordinary)
+            TextViewCompat.setTextAppearance(textView, R.style.day_of_week)
+            parentLayout.background =
+                ContextCompat.getDrawable(context, R.drawable.weekday_ordinary)
 
-            frameLayout.addView(textView)
-            weekDays.addView(frameLayout)
+            parentLayout.addView(textView)
+            weekDays.addView(parentLayout)
         }
     }
 
-    private fun updateCalendar(context: Context) {
+    private fun updateCalendar() {
         calendarGrid.removeAllViews()
+        val context = requireContext()
 
-        val dateNow = LocalDate.now().plusMonths(monthOffset.toLong())
-        val currentDayOfMonth = dateNow.dayOfMonth.toString()
-        val monthLength = dateNow.lengthOfMonth()
-        val dayOfWeekOfFirstDay = (dateNow.withDayOfMonth(1).dayOfWeek.value + 6) % 7
+        val currentMonth = LocalDate.now().plusMonths(monthOffset.toLong())
+        val dayOfWeekOfFirstDay = (currentMonth.withDayOfMonth(1).dayOfWeek.value + 6) % 7
+        val pastMonth = currentMonth.minusMonths(1)
+        val nextMonth = currentMonth.plusMonths(1)
 
         for (i in 0 until 6 * 7) {
-            val frameLayout = createFrameLayout(context)
-            val textView = TextView(context)
+
             val dayOfMonth = i - dayOfWeekOfFirstDay + 1
-
+            val cellBuilder = CalendarCell.Builder()
             when {
-                dayOfMonth < 1 -> {
-                    val processingDate = dateNow.minusMonths(1).lengthOfMonth() + dayOfMonth
-                    textView.text = processingDate.toString()
-                    TextViewCompat.setTextAppearance(textView, R.style.inactive_calendar_cell)
-                    frameLayout.background = drawable(context, R.drawable.inactive_day)
-                }
+                dayOfMonth < 1 -> cellBuilder
+                    .setType(CellType.PAST_MONTH)
+                    .setDate(pastMonth.withDayOfMonth(dayOfMonth + pastMonth.lengthOfMonth()))
 
-                dayOfMonth in 1..monthLength -> {
-                    textView.text = dayOfMonth.toString()
-                    TextViewCompat.setTextAppearance(textView, R.style.active_calendar_cell)
-
-                    val isWeekendDay = ((i + 2) % 7 == 0) or ((i + 1) % 7 == 0)
-                    val isToday = currentDayOfMonth == dayOfMonth.toString() && monthOffset == 0
-
-                    val drawableResource = when {
-                        isWeekendDay && isToday -> R.drawable.weekend_current
-                        isWeekendDay && !isToday -> R.drawable.weekend_ordinary
-                        !isWeekendDay && isToday -> R.drawable.weekday_current
-                        else -> R.drawable.weekday_ordinary
+                dayOfMonth in 1..currentMonth.lengthOfMonth() -> {
+                    val processDate = currentMonth.withDayOfMonth(dayOfMonth)
+                    val processEvent = events[processDate]
+                    val onClickListener = View.OnClickListener {
+                        when {
+                            LocalDate.now().isAfter(processDate) -> helper.oldDateSelected().show()
+                            processEvent != null -> helper.rejectRewriteEvent().show()
+                            else -> helper.eventDialog(processDate, this)
+                                .show(parentFragmentManager, ADD_EVENT_DIALOG_TAG)
+                        }
                     }
-                    frameLayout.background = drawable(context, drawableResource)
-                    frameLayout.setOnClickListener {
-                        val bundle = Bundle()
-                        val selectedDateStr = dateNow.withDayOfMonth(dayOfMonth).toString()
-                        bundle.putString(SELECTED_DATE_KEY, selectedDateStr)
-
-                        val addEventDialog = AddEventDialog.newInstance(this)
-                        addEventDialog.arguments = bundle
-                        addEventDialog.show(parentFragmentManager, ADD_EVENT_DIALOG_TAG)
-                    }
+                    cellBuilder
+                        .setDate(processDate)
+                        .setType(CellType.CURRENT_MONTH)
+                        .setOnClickListener(onClickListener)
+                        .setEvent(processEvent)
                 }
 
-                else -> {
-                    textView.text = (dayOfMonth - monthLength).toString()
-                    TextViewCompat.setTextAppearance(textView, R.style.inactive_calendar_cell)
-                    frameLayout.background = drawable(context, R.drawable.inactive_day)
-                }
+                else -> cellBuilder
+                    .setType(CellType.NEXT_MONTH)
+                    .setDate(nextMonth.withDayOfMonth(dayOfMonth - currentMonth.lengthOfMonth()))
             }
-            val topPadding = resources.getDimensionPixelSize(R.dimen.calendar_cell_padding_top)
-            val rightPadding = resources.getDimensionPixelSize(R.dimen.calendar_cell_padding_end)
-            textView.setPadding(0, topPadding, rightPadding, 0)
+            val cell = cellBuilder.build()
 
-            textView.gravity = Gravity.TOP or Gravity.END
-            frameLayout.addView(textView)
-            calendarGrid.addView(frameLayout)
+            val textView = createTextView()
+            textView.text = cell.text
+            TextViewCompat.setTextAppearance(textView, cell.textStyle)
+
+            val parentLayout = createConstraintLayout()
+            parentLayout.background = ContextCompat.getDrawable(context, cell.parentBackground)
+            parentLayout.setOnClickListener(cell.onClickListener)
+
+            cell.event?.applyTo(parentLayout)
+            parentLayout.addView(textView)
+            calendarGrid.addView(parentLayout)
         }
     }
-
 
     private fun updateMonthTextView() {
         val activity = activity ?: return
@@ -163,25 +171,30 @@ class MonthFragment : Fragment(), OnSaveEventListener {
         }
     }
 
-    private fun drawable(context: Context, drawableResource: Int) =
-        ContextCompat.getDrawable(context, drawableResource)
+    private fun createTextView(): TextView {
+        val textView = TextView(context)
+        val topPadding = resources.getDimensionPixelSize(R.dimen.calendar_date_padding_top)
+        val rightPadding = resources.getDimensionPixelSize(R.dimen.calendar_date_padding_end)
+        textView.setPadding(0, topPadding, rightPadding, 0)
 
-    private fun createFrameLayout(context: Context): FrameLayout {
-        val frameLayout = FrameLayout(context)
+        val layoutParams = ConstraintLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+        layoutParams.topToTop = ConstraintLayout.LayoutParams.PARENT_ID
+        layoutParams.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+        textView.layoutParams = layoutParams
+
+        return textView
+    }
+
+    private fun createConstraintLayout(): ConstraintLayout {
+        val constraintLayout = ConstraintLayout(requireContext())
         val params = GridLayout.LayoutParams()
 
         params.width = 0
         params.height = 0
         params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
         params.rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-        frameLayout.layoutParams = params
-        return frameLayout
+        constraintLayout.layoutParams = params
+        return constraintLayout
     }
 
-    override fun onSaveEvent(event: Event) {
-        /*
-        * Отобразить на календаре
-        * Отправить на бек
-        */
-    }
 }
