@@ -13,7 +13,7 @@ class CalendarHelper(private val context: Context) {
         val toast = Toast.makeText(
             context,
             "Эта дата уже прошла",
-            Toast.LENGTH_LONG
+            Toast.LENGTH_SHORT
         )
         toast.setGravity(Gravity.CENTER, 0, 0)
         return toast
@@ -23,7 +23,7 @@ class CalendarHelper(private val context: Context) {
         val toast = Toast.makeText(
             context,
             "Запланированную смену нельзя редактировать!",
-            Toast.LENGTH_LONG
+            Toast.LENGTH_SHORT
         )
         toast.setGravity(Gravity.CENTER, 0, 0)
         return toast

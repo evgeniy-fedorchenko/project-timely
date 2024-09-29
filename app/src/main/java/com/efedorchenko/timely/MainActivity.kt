@@ -53,7 +53,6 @@ class MainActivity : AppCompatActivity() {
         viewPager = findViewById(R.id.view_pager)
         viewPager.adapter = CalendarPageAdapter(this)
         viewPager.setCurrentItem(CalendarPageAdapter.CALENDAR_SCROLL_BORDERS / 2, false)
-        viewPager.offscreenPageLimit = 3
     }
 
 
