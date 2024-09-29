@@ -27,6 +27,7 @@ class MonthFragment : Fragment(), OnSaveEventListener {
         private const val MONTH_OFFSET_ARG = "month_offset"
         const val SELECTED_DATE_KEY = "selected_date"
         private const val ADD_EVENT_DIALOG_TAG = "add_event_dialog"
+        private val events: MutableMap<LocalDate, Event> = HashMap()
 
         fun newInstance(monthOffset: Int): MonthFragment {
             return MonthFragment().apply {
@@ -35,7 +36,6 @@ class MonthFragment : Fragment(), OnSaveEventListener {
         }
     }
 
-    private val events: MutableMap<LocalDate, Event> = HashMap()
     private var monthOffset: Int = 0
     private lateinit var helper: CalendarHelper
     private lateinit var calendarGrid: GridLayout
