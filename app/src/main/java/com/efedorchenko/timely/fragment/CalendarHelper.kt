@@ -37,7 +37,12 @@ class CalendarHelper(private val context: Context) {
         val addEventDialog = AddEventDialog.newInstance(fragment)
         addEventDialog.arguments = bundle
         return addEventDialog
+    }
 
+    fun showToast(toastText: String) {
+        val toast = Toast.makeText(context, toastText, Toast.LENGTH_SHORT)
+        toast.setGravity(Gravity.CENTER, 0, 0)
+        toast.show()
     }
 
 }
