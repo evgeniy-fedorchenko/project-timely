@@ -43,9 +43,9 @@ class MainFragment : Fragment() {
     }
 
     private fun setupSummaryCard(view: View) {
-        cardView = view.findViewById(R.id.statsCard)
+        cardView = view.findViewById(R.id.summaryCard)
         cardView.background =
-            ContextCompat.getDrawable(requireContext(), R.drawable.stats_card_background)
+            ContextCompat.getDrawable(requireContext(), R.drawable.summary_card_background)
     }
 
     private fun setupSideMenu(view: View) {

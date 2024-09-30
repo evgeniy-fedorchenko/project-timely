@@ -34,8 +34,8 @@
 
         <!-- Вставка CardView -->
         <include
-                android:id="@+id/statsCard"
-                layout="@layout/stats_card"
+                android:id="@+id/summaryCard"
+                layout="@layout/summary_card"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="32dp"
