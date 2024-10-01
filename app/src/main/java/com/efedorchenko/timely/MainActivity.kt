@@ -7,10 +7,13 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import com.efedorchenko.timely.security.SecurityService
+import com.efedorchenko.timely.security.UserRole
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var navController: NavController
+    private lateinit var securityService: SecurityService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -18,18 +21,27 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setupInsets()
 
+        securityService = SecurityService(this)
         val navHost = supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment
         navController = navHost.navController
 
-        if (isUserAuthenticated()) {
-            navController.navigate(R.id.mainFragment)
+        navController.navigate(R.id.mainFragment)
+//        if (isUserAuthenticated()) {
+//            navigateToMain()
+//        }
+    }
+
+    private fun navigateToMain() {
+        val userRole = securityService.authorize()
+        when (userRole) {
+            UserRole.WORKER -> navController.navigate(R.id.mainFragment)
+            UserRole.BOSS -> navController.navigate(R.id.mainFragment)
+            null -> TODO()
         }
     }
 
     private fun isUserAuthenticated(): Boolean {
-//        val sharedPref = getSharedPreferences("auth", Context.MODE_PRIVATE)
-//        return sharedPref.getBoolean("isAuthenticated", false)
-        return true
+        return securityService.isUserAuthenticated()
     }
 
     private fun setupInsets() {

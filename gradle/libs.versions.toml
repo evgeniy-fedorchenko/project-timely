@@ -11,6 +11,7 @@ lifecycleViewmodelKtx = "2.8.6"
 material = "1.12.0"
 activity = "1.9.2"
 constraintlayout = "2.1.4"
+securityCrypto = "1.0.0"
 threetenabp = "1.4.7"
 viewpager2 = "1.1.0"
 navigationFragmentKtx = "2.8.1"
@@ -19,6 +20,7 @@ navigationUiKtx = "2.8.1"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
+androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "securityCrypto" }
 androidx-viewpager2 = { module = "androidx.viewpager2:viewpager2", version.ref = "viewpager2" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

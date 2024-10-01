@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.efedorchenko.timely"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -44,11 +44,13 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
-    runtimeOnly(libs.androidx.viewpager2)
     implementation(libs.threetenabp)
     implementation(libs.material)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.kotlinx.coroutines.android)
+    runtimeOnly(libs.androidx.viewpager2)
+    implementation(libs.androidx.security.crypto)
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
