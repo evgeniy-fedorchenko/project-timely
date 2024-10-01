@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.event
+package com.efedorchenko.timely.data
 
 import android.content.res.Resources
 import android.view.View

@@ -10,8 +10,8 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import com.efedorchenko.timely.R
-import com.efedorchenko.timely.event.Event
-import com.efedorchenko.timely.event.OnSaveEventListener
+import com.efedorchenko.timely.data.Event
+import com.efedorchenko.timely.data.OnSaveEventListener
 import com.efedorchenko.timely.filter.CommentInputFilter
 import com.efedorchenko.timely.filter.HoursInputFilter
 import com.efedorchenko.timely.filter.MinutesInputFilter

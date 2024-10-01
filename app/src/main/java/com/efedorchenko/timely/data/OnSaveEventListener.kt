@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.event
+package com.efedorchenko.timely.data
 
 interface OnSaveEventListener {
 

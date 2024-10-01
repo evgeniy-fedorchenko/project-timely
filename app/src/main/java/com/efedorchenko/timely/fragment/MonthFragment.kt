@@ -13,9 +13,13 @@ import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
 import com.efedorchenko.timely.R
-import com.efedorchenko.timely.event.Event
-import com.efedorchenko.timely.event.OnSaveEventListener
+import com.efedorchenko.timely.data.DatabaseHelper
+import com.efedorchenko.timely.data.Event
+import com.efedorchenko.timely.data.OnSaveEventListener
 import com.efedorchenko.timely.fragment.CalendarCell.CellType
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDate
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -71,11 +75,10 @@ class MonthFragment : Fragment(), OnSaveEventListener {
     override fun onSaveEvent(event: Event) {
         events[event.eventDate] = event
         updateCalendar()
-        /*
-        * Отобразить на календаре
-        * Сохранить в кеш
-        * Отправить на бек
-        */
+        CoroutineScope(Dispatchers.IO).launch {
+            databaseHelper.save(event)
+            // Отправить данные на бек
+        }
     }
 
     private fun setupWeekDays() {

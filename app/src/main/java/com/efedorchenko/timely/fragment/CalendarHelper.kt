@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.view.Gravity
 import android.widget.Toast
+import com.efedorchenko.timely.data.Event
 import com.efedorchenko.timely.fragment.MonthFragment.Companion.SELECTED_DATE_KEY
 import org.threeten.bp.LocalDate
 
