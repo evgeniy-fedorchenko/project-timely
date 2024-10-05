@@ -52,7 +52,7 @@ class DatabaseHelper(context: Context) :
     fun save(event: Event) {
         val db = this.writableDatabase
         val values = ContentValues().apply {
-            put(COLUMN_MONTH_UID, genMonthUID(event.eventDate))
+            put(COLUMN_MONTH_UID, MonthUID.create(event.eventDate).hashCode())
             put(COLUMN_EVENT_DATE, event.eventDate.toString())
             put(COLUMN_WORK_MINUTES, event.workMinutes.toMinutes().toInt())
             put(COLUMN_COMMENT, event.comment)
@@ -60,7 +60,7 @@ class DatabaseHelper(context: Context) :
         db.insert(TABLE_NAME, null, values)
     }
 
-    fun findByMonth(monthUID: Int, withComment: Boolean): MutableList<Event> {
+    fun findByMonth(monthUID: MonthUID, withComment: Boolean): MutableList<Event> {
         val events = mutableListOf<Event>()
         val db = this.readableDatabase
         var cursor: Cursor? = null
@@ -71,7 +71,7 @@ class DatabaseHelper(context: Context) :
                 TABLE_NAME,
                 null,
                 "$COLUMN_MONTH_UID = ?",
-                arrayOf(monthUID.toString()),
+                arrayOf(monthUID.hashCode().toString()),
                 null,
                 null,
                 null
@@ -109,7 +109,4 @@ class DatabaseHelper(context: Context) :
 
         return events
     }
-
-    private fun genMonthUID(date: LocalDate): Int = date.year * 100 + date.monthValue
-
 }

@@ -12,11 +12,12 @@ import androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.WRAP_CONTE
 import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
-import com.efedorchenko.timely.Helper
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DatabaseHelper
 import com.efedorchenko.timely.data.Event
+import com.efedorchenko.timely.data.MonthUID
 import com.efedorchenko.timely.data.OnSaveEventListener
+import com.efedorchenko.timely.data.toEventMap
 import com.efedorchenko.timely.fragment.CalendarCell.CellType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,7 +33,7 @@ class MonthFragment : Fragment(), OnSaveEventListener {
         private const val MONTH_OFFSET_ARG = "month_offset"
         private const val ADD_EVENT_DIALOG_TAG = "add_event_dialog"
         const val SELECTED_DATE_KEY = "selected_date"
-        private val eventsCache: MutableMap<Int, MutableMap<LocalDate, Event>> = HashMap()
+        private val eventsCache: MutableMap<MonthUID, MutableMap<LocalDate, Event>> = HashMap()
 
         fun newInstance(monthOffset: Int): MonthFragment {
             return MonthFragment().apply {
@@ -67,11 +68,11 @@ class MonthFragment : Fragment(), OnSaveEventListener {
         databaseHelper = DatabaseHelper(context)
         calendarHelper = CalendarHelper(context)
 
-//        Когда юзер логинится - просить все ивенты с бека и обновлять бд
-        val monthUID = Helper.getMonthUID(LocalDate.now().plusMonths(monthOffset.toLong()))
+        // TODO: Когда юзер логинится - просить все ивенты с бека и обновлять бд
+        val monthUID = MonthUID.create(LocalDate.now().plusMonths(monthOffset.toLong()))
         val monthEvents = eventsCache[monthUID]
         if (monthEvents == null) {
-            eventsCache[monthUID] = Helper.toMap(databaseHelper.findByMonth(monthUID, false))
+            eventsCache[monthUID] = databaseHelper.findByMonth(monthUID, false).toEventMap()
         }
 
         setupWeekDays()
@@ -85,7 +86,7 @@ class MonthFragment : Fragment(), OnSaveEventListener {
     }
 
     override fun onSaveEvent(event: Event) {
-        var monthEvents = eventsCache[Helper.getMonthUID(event.eventDate)]
+        var monthEvents = eventsCache[MonthUID.create(event.eventDate)]
         monthEvents?.let { monthEvents[event.eventDate] = event }
 
         updateCalendar()
@@ -124,7 +125,7 @@ class MonthFragment : Fragment(), OnSaveEventListener {
         val pastMonth = currentMonth.minusMonths(1)
         val nextMonth = currentMonth.plusMonths(1)
 
-        val monthUID = Helper.getMonthUID(currentMonth)
+        val monthUID = MonthUID.create(currentMonth)
         val monthEvents = eventsCache[monthUID]
         val currentEvents: Map<LocalDate, Event>
 

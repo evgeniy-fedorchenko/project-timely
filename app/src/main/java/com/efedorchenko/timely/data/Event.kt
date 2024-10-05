@@ -71,3 +71,11 @@ data class Event(
     }
 
 }
+
+fun MutableList<Event>.toEventMap(): MutableMap<LocalDate, Event> {
+    val map = HashMap<LocalDate, Event>()
+    for (event in this) {
+        map[event.eventDate] = event
+    }
+    return map
+}
