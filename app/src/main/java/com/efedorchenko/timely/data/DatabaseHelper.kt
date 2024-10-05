@@ -40,7 +40,6 @@ class DatabaseHelper(context: Context) :
                 Log.e("DatabaseError", "Error when creating a table or index. Cause: ${ex.message}")
             } finally {
                 it.endTransaction()
-                db.close()
             }
         }
     }
@@ -59,7 +58,6 @@ class DatabaseHelper(context: Context) :
             put(COLUMN_COMMENT, event.comment)
         }
         db.insert(TABLE_NAME, null, values)
-        db.close()
     }
 
     fun findByMonth(date: LocalDate, withComment: Boolean): MutableList<Event> {
@@ -108,7 +106,6 @@ class DatabaseHelper(context: Context) :
         } finally {
             cursor?.close()
             db.endTransaction()
-            db.close()
         }
 
         return events
