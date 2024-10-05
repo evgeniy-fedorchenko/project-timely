@@ -60,8 +60,7 @@ class DatabaseHelper(context: Context) :
         db.insert(TABLE_NAME, null, values)
     }
 
-    fun findByMonth(date: LocalDate, withComment: Boolean): MutableList<Event> {
-        val monthUID = genMonthUID(date)
+    fun findByMonth(monthUID: Int, withComment: Boolean): MutableList<Event> {
         val events = mutableListOf<Event>()
         val db = this.readableDatabase
         var cursor: Cursor? = null

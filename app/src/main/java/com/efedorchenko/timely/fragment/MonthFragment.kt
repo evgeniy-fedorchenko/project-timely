@@ -12,6 +12,7 @@ import androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.WRAP_CONTE
 import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
+import com.efedorchenko.timely.Helper
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DatabaseHelper
 import com.efedorchenko.timely.data.Event
@@ -29,9 +30,9 @@ class MonthFragment : Fragment(), OnSaveEventListener {
 
     companion object {
         private const val MONTH_OFFSET_ARG = "month_offset"
-        const val SELECTED_DATE_KEY = "selected_date"
         private const val ADD_EVENT_DIALOG_TAG = "add_event_dialog"
-        private val events: MutableMap<LocalDate, Event> = HashMap()
+        const val SELECTED_DATE_KEY = "selected_date"
+        private val eventsCache: MutableMap<Int, MutableMap<LocalDate, Event>> = HashMap()
 
         fun newInstance(monthOffset: Int): MonthFragment {
             return MonthFragment().apply {
@@ -41,13 +42,15 @@ class MonthFragment : Fragment(), OnSaveEventListener {
     }
 
     private var monthOffset: Int = 0
-    private lateinit var helper: CalendarHelper
+    private lateinit var databaseHelper: DatabaseHelper
+    private lateinit var calendarHelper: CalendarHelper
     private lateinit var calendarGrid: GridLayout
     private lateinit var weekDays: GridLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         monthOffset = arguments?.getInt(MONTH_OFFSET_ARG) ?: 0
+
     }
 
     override fun onCreateView(
@@ -60,7 +63,16 @@ class MonthFragment : Fragment(), OnSaveEventListener {
         calendarGrid = view.findViewById(R.id.calendar_grid)
         weekDays = view.findViewById(R.id.days_of_week_grid)
 
-        helper = CalendarHelper(requireContext())
+        val context = requireContext()
+        databaseHelper = DatabaseHelper(context)
+        calendarHelper = CalendarHelper(context)
+
+//        Когда юзер логинится - просить все ивенты с бека и обновлять бд
+        val monthUID = Helper.getMonthUID(LocalDate.now().plusMonths(monthOffset.toLong()))
+        val monthEvents = eventsCache[monthUID]
+        if (monthEvents == null) {
+            eventsCache[monthUID] = Helper.toMap(databaseHelper.findByMonth(monthUID, false))
+        }
 
         setupWeekDays()
         updateCalendar()
@@ -73,7 +85,9 @@ class MonthFragment : Fragment(), OnSaveEventListener {
     }
 
     override fun onSaveEvent(event: Event) {
-        events[event.eventDate] = event
+        var monthEvents = eventsCache[Helper.getMonthUID(event.eventDate)]
+        monthEvents?.let { monthEvents[event.eventDate] = event }
+
         updateCalendar()
         CoroutineScope(Dispatchers.IO).launch {
             databaseHelper.save(event)
@@ -110,6 +124,13 @@ class MonthFragment : Fragment(), OnSaveEventListener {
         val pastMonth = currentMonth.minusMonths(1)
         val nextMonth = currentMonth.plusMonths(1)
 
+        val monthUID = Helper.getMonthUID(currentMonth)
+        val monthEvents = eventsCache[monthUID]
+        val currentEvents: Map<LocalDate, Event>
+
+        currentEvents = if (monthEvents == null) HashMap() else monthEvents
+        monthEvents?.let { eventsCache[monthUID] = monthEvents }
+
         for (i in 0 until 6 * 7) {
 
             val dayOfMonth = i - dayOfWeekOfFirstDay + 1
@@ -121,12 +142,15 @@ class MonthFragment : Fragment(), OnSaveEventListener {
 
                 dayOfMonth in 1..currentMonth.lengthOfMonth() -> {
                     val processDate = currentMonth.withDayOfMonth(dayOfMonth)
-                    val processEvent = events[processDate]
+                    val processEvent = currentEvents[processDate]
+
                     val onClickListener = View.OnClickListener {
                         when {
-                            LocalDate.now().isAfter(processDate) -> helper.oldDateSelected().show()
-                            processEvent != null -> helper.rejectRewriteEvent().show()
-                            else -> helper.eventDialog(processDate, this)
+                            LocalDate.now().isAfter(processDate) -> calendarHelper.oldDateSelected()
+                                .show()
+
+                            processEvent != null -> calendarHelper.rejectRewriteEvent().show()
+                            else -> calendarHelper.eventDialog(processDate, this)
                                 .show(parentFragmentManager, ADD_EVENT_DIALOG_TAG)
                         }
                     }
