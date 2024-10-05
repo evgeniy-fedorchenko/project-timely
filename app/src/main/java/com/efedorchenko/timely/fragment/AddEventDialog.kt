@@ -25,6 +25,8 @@ import java.util.Locale
 class AddEventDialog : BottomSheetDialogFragment() {
 
     companion object {
+        private val MIN_WORK_DURATION = Duration.ofHours(8)
+
         fun newInstance(listener: OnSaveEventListener): AddEventDialog {
             return AddEventDialog().apply { setOnSaveEventListener(listener) }
         }
@@ -67,9 +69,14 @@ class AddEventDialog : BottomSheetDialogFragment() {
             val comment = commentEditText.text.toString()
             val workDuration = Duration.of(hours * 60 + minutes, ChronoUnit.MINUTES)
 
-            val event = Event(targetDate, workDuration, comment)
-            onSaveEventListener?.onSaveEvent(event)
-            dismiss()
+            if (workDuration.compareTo(MIN_WORK_DURATION) < 0) {
+                // TODO: разобраться с тостами
+                CalendarHelper.showToast("Минимальная длина: 8 часов", requireContext())
+            } else {
+                val event = Event(targetDate, workDuration, comment)
+                onSaveEventListener?.onSaveEvent(event)
+                dismiss()
+            }
         }
 
         return view

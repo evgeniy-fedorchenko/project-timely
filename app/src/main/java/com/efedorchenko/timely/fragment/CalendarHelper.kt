@@ -4,11 +4,18 @@ import android.content.Context
 import android.os.Bundle
 import android.view.Gravity
 import android.widget.Toast
-import com.efedorchenko.timely.data.Event
 import com.efedorchenko.timely.fragment.MonthFragment.Companion.SELECTED_DATE_KEY
 import org.threeten.bp.LocalDate
 
 class CalendarHelper(private val context: Context) {
+
+    companion object {
+        fun showToast(toastText: String, context: Context) {
+            val toast = Toast.makeText(context, toastText, Toast.LENGTH_SHORT)
+            toast.setGravity(Gravity.CENTER, 0, 0)
+            toast.show()
+        }
+    }
 
     fun oldDateSelected(): Toast {
         val toast = Toast.makeText(
