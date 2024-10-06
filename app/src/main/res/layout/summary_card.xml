@@ -1,76 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="64dp"
-        app:cardElevation="12dp"
-        app:cardCornerRadius="16dp">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="64dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="12dp">
 
     <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
 
         <!-- Блок "Время на работе" -->
         <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Время на работе"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:paddingBottom="8dp" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingBottom="8dp"
+            android:text="Время на работе"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
         <TextView
-                android:id="@+id/days_worked"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Отработано дней: 0"
-                android:textSize="16sp" />
+            android:id="@+id/days_worked"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Отработано дней: %s"
+            android:textSize="16sp" />
 
         <TextView
-                android:id="@+id/hours_worked"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Отработано часов: 0"
-                android:textSize="16sp" />
+            android:id="@+id/hours_worked"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Отработано часов: %s"
+            android:textSize="16sp" />
 
         <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@android:color/darker_gray"
-                android:layout_marginVertical="8dp" />
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginVertical="8dp"
+            android:background="@android:color/darker_gray" />
 
         <!-- Блок "Штрафы" -->
         <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Штрафы"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:paddingBottom="8dp" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingBottom="8dp"
+            android:text="Штрафы"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
         <TextView
-                android:id="@+id/fines_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Всего: 0"
-                android:textSize="16sp" />
+            android:id="@+id/fines_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Всего: %s"
+            android:textSize="16sp" />
 
         <TextView
-                android:id="@+id/fines_amount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Сумма: 0 руб."
-                android:textSize="16sp" />
+            android:id="@+id/fines_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Сумма: %s руб."
+            android:textSize="16sp" />
 
         <Button
-                android:id="@+id/show_fines_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Показать штрафы"
-                android:layout_marginTop="8dp"
-                android:backgroundTint="@color/orange" />
+            android:id="@+id/show_fines_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="@color/orange"
+            android:text="Показать штрафы" />
     </LinearLayout>
 </androidx.cardview.widget.CardView>
