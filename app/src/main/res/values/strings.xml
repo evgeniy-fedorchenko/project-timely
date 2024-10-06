@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">project-timely</string>
     <string name="menu_desc">Menu</string>
+    <string name="days_worked_text">Отработано дней: %s</string>
+    <string name="hours_worked_text">Отработано часов: %s</string>
+    <string name="fines_count_text">Всего: %s</string>
+    <string name="fines_amount_text">Сумма: %s руб.</string>
 </resources>

@@ -33,20 +33,19 @@
                 app:layout_constraintTop_toBottomOf="@id/headerLayout" />
 
         <!-- Вставка CardView -->
-        <include
-                android:id="@+id/summaryCard"
-                layout="@layout/summary_card"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                android:layout_marginEnd="32dp"
-                android:layout_marginBottom="32dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
-
+        <FrameLayout
+            android:id="@+id/summaryCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:layout_marginBottom="32dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 
     <!-- NavigationView для бокового меню -->
     <com.google.android.material.navigation.NavigationView
