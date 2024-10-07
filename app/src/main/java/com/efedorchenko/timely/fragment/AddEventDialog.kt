@@ -11,10 +11,11 @@ import android.widget.EditText
 import android.widget.TextView
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.Event
-import com.efedorchenko.timely.data.OnSaveEventListener
 import com.efedorchenko.timely.filter.CommentInputFilter
 import com.efedorchenko.timely.filter.HoursInputFilter
 import com.efedorchenko.timely.filter.MinutesInputFilter
+import com.efedorchenko.timely.service.CalendarHelper
+import com.efedorchenko.timely.service.OnSaveEventListener
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.threeten.bp.Duration
 import org.threeten.bp.LocalDate
@@ -45,7 +46,7 @@ class AddEventDialog : BottomSheetDialogFragment() {
         val view = inflater.inflate(R.layout.fill_day, container, false)
         val selectedDateView = view.findViewById<TextView>(R.id.text_view_selected_date)
 
-        val targetDate = LocalDate.parse(arguments?.getString(MonthFragment.SELECTED_DATE_KEY))
+        val targetDate = LocalDate.parse(arguments?.getString(CalendarFragment.SELECTED_DATE_KEY))
         val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale("ru"))
         selectedDateView.text = targetDate.format(formatter)
 
@@ -78,7 +79,6 @@ class AddEventDialog : BottomSheetDialogFragment() {
                 dismiss()
             }
         }
-
         return view
     }
 

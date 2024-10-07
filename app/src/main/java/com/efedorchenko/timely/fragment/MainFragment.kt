@@ -14,8 +14,11 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
+import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.widget.ViewPager2
 import com.efedorchenko.timely.R
+import com.efedorchenko.timely.service.CalendarPageAdapter
+import com.efedorchenko.timely.service.MainViewModel
 import com.google.android.material.navigation.NavigationView
 import com.jakewharton.threetenabp.AndroidThreeTen
 

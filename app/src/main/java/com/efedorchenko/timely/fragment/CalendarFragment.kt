@@ -27,7 +27,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-class MonthFragment : Fragment(), OnSaveEventListener {
+class CalendarFragment() : Fragment(), OnSaveEventListener {
 
     companion object {
         private const val MONTH_OFFSET_ARG = "month_offset"
@@ -35,8 +35,8 @@ class MonthFragment : Fragment(), OnSaveEventListener {
         const val SELECTED_DATE_KEY = "selected_date"
         private val eventsCache: MutableMap<MonthUID, MutableMap<LocalDate, Event>> = HashMap()
 
-        fun newInstance(monthOffset: Int): MonthFragment {
-            return MonthFragment().apply {
+        fun newInstance(monthOffset: Int): CalendarFragment {
+            return CalendarFragment().apply {
                 arguments = Bundle().apply { putInt(MONTH_OFFSET_ARG, monthOffset) }
             }
         }

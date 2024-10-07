@@ -1,10 +1,12 @@
-package com.efedorchenko.timely.fragment
+package com.efedorchenko.timely.service
 
 import android.content.Context
 import android.os.Bundle
 import android.view.Gravity
 import android.widget.Toast
-import com.efedorchenko.timely.fragment.MonthFragment.Companion.SELECTED_DATE_KEY
+import com.efedorchenko.timely.fragment.AddEventDialog
+import com.efedorchenko.timely.fragment.CalendarFragment
+import com.efedorchenko.timely.fragment.CalendarFragment.Companion.SELECTED_DATE_KEY
 import org.threeten.bp.LocalDate
 
 class CalendarHelper(private val context: Context) {
@@ -37,7 +39,7 @@ class CalendarHelper(private val context: Context) {
         return toast
     }
 
-    fun eventDialog(date: LocalDate, fragment: MonthFragment): AddEventDialog {
+    fun eventDialog(date: LocalDate, fragment: CalendarFragment): AddEventDialog {
         val bundle = Bundle()
         val selectedDateStr = date.toString()
         bundle.putString(SELECTED_DATE_KEY, selectedDateStr)

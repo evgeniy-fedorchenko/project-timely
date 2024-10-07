@@ -1,8 +1,7 @@
-package com.efedorchenko.timely.fragment
+package com.efedorchenko.timely.data
 
 import android.view.View.OnClickListener
 import com.efedorchenko.timely.R
-import com.efedorchenko.timely.data.Event
 import org.threeten.bp.DayOfWeek.SATURDAY
 import org.threeten.bp.DayOfWeek.SUNDAY
 import org.threeten.bp.LocalDate
