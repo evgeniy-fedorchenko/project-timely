@@ -14,7 +14,7 @@ import java.util.Locale
 
 data class Event(
     var eventDate: LocalDate,
-    var workMinutes: Duration,
+    var workDuration: Duration,
     var comment: String?,
 ) {
 
@@ -32,7 +32,7 @@ data class Event(
         squareView.setBackgroundColor(color)
         squareView.alpha = 0.5f
 
-        val minutesCount = workMinutes.toMinutes()
+        val minutesCount = workDuration.toMinutes()
         val textView = TextView(context)
         val minutes = minutesCount / 60
         val hours = minutesCount % 60
