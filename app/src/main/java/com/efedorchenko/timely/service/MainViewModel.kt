@@ -31,9 +31,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun addEvent(event: Event) {
-        eventRepository.save(event)
-        val eventsList = eventRepository.findByMonth(MonthUID.create(event.eventDate), false)
-        _events.value = eventsList
+        viewModelScope.launch {
+            eventRepository.save(event)
+        }
     }
 
     fun updateSummaryData(monthOffset: Int) {

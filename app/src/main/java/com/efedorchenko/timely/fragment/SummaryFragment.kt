@@ -31,13 +31,8 @@ class SummaryFragment() : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
-
-        viewModel.events.observe(viewLifecycleOwner) { events ->
-            updateEvents(events)
-        }
-        viewModel.fines.observe(viewLifecycleOwner) { fines ->
-            updateFines(fines)
-        }
+        viewModel.events.observe(viewLifecycleOwner) { updateEvents(it) }
+        viewModel.fines.observe(viewLifecycleOwner) { updateFines(it) }
     }
 
     private fun updateEvents(events: List<Event>?) {

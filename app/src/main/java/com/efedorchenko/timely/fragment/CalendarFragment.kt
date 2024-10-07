@@ -88,7 +88,7 @@ class CalendarFragment() : Fragment(), OnSaveEventListener {
 
         if (event != null && processedCellIdx != null) {
             val targetCell = calendarGrid.getChildAt(processedCellIdx) as? ConstraintLayout
-            targetCell?.let { event.applyTo(targetCell) }    
+            targetCell?.let { event.applyTo(targetCell) }
         }
     }
 
@@ -137,9 +137,9 @@ class CalendarFragment() : Fragment(), OnSaveEventListener {
 
         val monthUID = MonthUID.create(currentMonth)
         val monthEvents = eventsCache[monthUID]
-        val currentEvents: Map<LocalDate, Event>
+        val currentEvents: Map<LocalDate, Event> =
+            if (monthEvents == null) HashMap() else monthEvents
 
-        currentEvents = if (monthEvents == null) HashMap() else monthEvents
         monthEvents?.let { eventsCache[monthUID] = monthEvents }
 
         for (i in 0 until 6 * 7) {
