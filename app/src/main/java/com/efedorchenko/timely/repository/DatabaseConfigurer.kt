@@ -1,21 +1,21 @@
 package com.efedorchenko.timely.repository
 
-import android.content.Context
+import android.app.Application
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
 
-class DatabaseConfigurer private constructor(private val context: Context) :
-    SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+class DatabaseConfigurer private constructor(private val application: Application) :
+    SQLiteOpenHelper(application, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
 
         @Volatile
-        private var instance: DatabaseConfigurer? = null
+        private var _instance: DatabaseConfigurer? = null
 
-        fun getInstance(context: Context): DatabaseConfigurer {
-            return instance ?: synchronized(this) {
-                instance ?: DatabaseConfigurer(context.applicationContext).also { instance = it }
+        fun getInstance(application: Application): DatabaseConfigurer {
+            return _instance ?: synchronized(this) {
+                _instance ?: DatabaseConfigurer(application).also { _instance = it }
             }
         }
 

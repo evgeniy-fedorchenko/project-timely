@@ -1,5 +1,6 @@
 package com.efedorchenko.timely.fragment
 
+import android.app.Application
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -66,10 +67,9 @@ class CalendarFragment() : Fragment(), OnSaveEventListener {
         calendarGrid = view.findViewById(R.id.calendar_grid)
         weekDays = view.findViewById(R.id.days_of_week_grid)
 
-        val context = requireContext()
-        eventRepository = EventRepository(context)
-        calendarHelper = CalendarHelper(context)
-
+        val application = requireActivity().applicationContext as Application
+        eventRepository = EventRepository(application)
+        calendarHelper = CalendarHelper(application)
         viewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
 
         // TODO: Когда юзер логинится - просить все ивенты с бека и обновлять бд

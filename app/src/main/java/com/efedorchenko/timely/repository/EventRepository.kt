@@ -1,7 +1,7 @@
 package com.efedorchenko.timely.repository
 
+import android.app.Application
 import android.content.ContentValues
-import android.content.Context
 import android.database.Cursor
 import android.util.Log
 import com.efedorchenko.timely.data.Event
@@ -11,13 +11,12 @@ import com.efedorchenko.timely.repository.DatabaseConfigurer.Companion.EVENTS_TA
 import com.efedorchenko.timely.repository.DatabaseConfigurer.Companion.EVENT_DATE_COLUMN_NAME
 import com.efedorchenko.timely.repository.DatabaseConfigurer.Companion.MONTH_UID_COLUMN_NAME
 import com.efedorchenko.timely.repository.DatabaseConfigurer.Companion.WORK_MINUTES_COLUMN_NAME
-
 import org.threeten.bp.Duration
 import org.threeten.bp.LocalDate
 
-class EventRepository(private val context: Context) {
+class EventRepository(private val application: Application) {
 
-    private val dbHelper = DatabaseConfigurer.getInstance(context)
+    private val dbHelper = DatabaseConfigurer.getInstance(application)
 
     fun save(event: Event) {
         val db = dbHelper.writableDatabase

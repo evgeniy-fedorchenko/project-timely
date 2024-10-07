@@ -13,9 +13,9 @@ import com.efedorchenko.timely.repository.DatabaseConfigurer.Companion.MONTH_UID
 import com.efedorchenko.timely.repository.DatabaseConfigurer.Companion.RECEIPT_DATE_COLUMN_NAME
 import org.threeten.bp.LocalDate
 
-class FineRepository(private val context: Context) {
+class FineRepository(private val application: Application) {
 
-    private val dbHelper = DatabaseConfigurer.getInstance(context)
+    private val dbHelper = DatabaseConfigurer.getInstance(application)
 
     fun save(vararg fines: Fine) {
         fines.forEach { save(it) }
