@@ -24,7 +24,7 @@ import com.jakewharton.threetenabp.AndroidThreeTen
 
 class MainFragment : Fragment() {
 
-
+    private lateinit var viewModel: MainViewModel
     private lateinit var summaryFragment: SummaryFragment
     private lateinit var viewPager: ViewPager2
     private lateinit var drawerLayout: DrawerLayout
@@ -40,23 +40,26 @@ class MainFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewPager = view.findViewById(R.id.view_pager)
+        viewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
+        summaryFragment = SummaryFragment()
 
-        setupViewPager()
+        setupViewPager(view)
         setupSummaryCard()
         setupSideMenu(view)
     }
 
-    private fun setupViewPager() {
+    private fun setupViewPager(view: View) {
         AndroidThreeTen.init(requireContext())
 
+        viewPager = view.findViewById(R.id.view_pager)
         viewPager.adapter = this.activity?.let { CalendarPageAdapter(it) }
         viewPager.setCurrentItem(CalendarPageAdapter.CALENDAR_SCROLL_BORDERS / 2, false)
 
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
-                summaryFragment.updateSummaryData()
+                val monthOffset = CalendarPageAdapter.calculateMonthOffset(position)
+                summaryFragment.updateSummaryData(monthOffset)
             }
         })
     }
@@ -64,7 +67,6 @@ class MainFragment : Fragment() {
     private fun setupSummaryCard() {
         childFragmentManager.commit {
             setReorderingAllowed(true)
-            summaryFragment = SummaryFragment()
             replace(R.id.summaryCard, summaryFragment)
         }
     }

@@ -12,16 +12,17 @@ import androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.WRAP_CONTE
 import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import com.efedorchenko.timely.R
-import com.efedorchenko.timely.data.DatabaseHelper
+import com.efedorchenko.timely.data.CalendarCell
+import com.efedorchenko.timely.data.CalendarCell.CellType
 import com.efedorchenko.timely.data.Event
 import com.efedorchenko.timely.data.MonthUID
-import com.efedorchenko.timely.data.OnSaveEventListener
 import com.efedorchenko.timely.data.toEventMap
-import com.efedorchenko.timely.fragment.CalendarCell.CellType
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.efedorchenko.timely.repository.EventRepository
+import com.efedorchenko.timely.service.CalendarHelper
+import com.efedorchenko.timely.service.MainViewModel
+import com.efedorchenko.timely.service.OnSaveEventListener
 import org.threeten.bp.LocalDate
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -43,7 +44,9 @@ class CalendarFragment() : Fragment(), OnSaveEventListener {
     }
 
     private var monthOffset: Int = 0
-    private lateinit var databaseHelper: DatabaseHelper
+
+    private lateinit var viewModel: MainViewModel
+    private lateinit var eventRepository: EventRepository
     private lateinit var calendarHelper: CalendarHelper
     private lateinit var calendarGrid: GridLayout
     private lateinit var weekDays: GridLayout
@@ -51,7 +54,6 @@ class CalendarFragment() : Fragment(), OnSaveEventListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         monthOffset = arguments?.getInt(MONTH_OFFSET_ARG) ?: 0
-
     }
 
     override fun onCreateView(
@@ -65,14 +67,16 @@ class CalendarFragment() : Fragment(), OnSaveEventListener {
         weekDays = view.findViewById(R.id.days_of_week_grid)
 
         val context = requireContext()
-        databaseHelper = DatabaseHelper(context)
+        eventRepository = EventRepository(context)
         calendarHelper = CalendarHelper(context)
+
+        viewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
 
         // TODO: Когда юзер логинится - просить все ивенты с бека и обновлять бд
         val monthUID = MonthUID.create(LocalDate.now().plusMonths(monthOffset.toLong()))
         val monthEvents = eventsCache[monthUID]
         if (monthEvents == null) {
-            eventsCache[monthUID] = databaseHelper.findByMonth(monthUID, false).toEventMap()
+            eventsCache[monthUID] = eventRepository.findByMonth(monthUID, false).toEventMap()
         }
 
         setupWeekDays()
@@ -90,10 +94,8 @@ class CalendarFragment() : Fragment(), OnSaveEventListener {
         monthEvents?.let { monthEvents[event.eventDate] = event }
 
         updateCalendar()
-        CoroutineScope(Dispatchers.IO).launch {
-            databaseHelper.save(event)
-            // Отправить данные на бек
-        }
+        viewModel.addEvent(event)
+        // Отправить данные на бек
     }
 
     private fun setupWeekDays() {

@@ -1,12 +1,20 @@
 package com.efedorchenko.timely.data
 
 import org.threeten.bp.LocalDate
+import org.threeten.bp.YearMonth
 
 class MonthUID private constructor(private val value: Int) {
 
     companion object {
+
         fun create(date: LocalDate): MonthUID {
             val uid = date.year * 100 + date.monthValue
+            return MonthUID(uid)
+        }
+
+        fun create(): MonthUID {
+            val now = YearMonth.now()
+            val uid = now.year * 100 + now.monthValue
             return MonthUID(uid)
         }
     }

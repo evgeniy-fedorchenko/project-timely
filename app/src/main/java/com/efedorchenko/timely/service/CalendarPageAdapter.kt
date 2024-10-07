@@ -9,6 +9,11 @@ class CalendarPageAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
 
     companion object {
         const val CALENDAR_SCROLL_BORDERS = 1000
+        const val INITIAL_MONTH_OFFSET = 0
+
+        fun calculateMonthOffset(rawPosition: Int): Int {
+            return rawPosition - CALENDAR_SCROLL_BORDERS / 2
+        }
     }
 
     override fun getItemCount(): Int = CALENDAR_SCROLL_BORDERS

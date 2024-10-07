@@ -5,12 +5,16 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.efedorchenko.timely.security.SecurityService
 import com.efedorchenko.timely.security.UserRole
+import com.efedorchenko.timely.service.MainViewModel
 
 class MainActivity : AppCompatActivity() {
+
+    lateinit var viewModel: MainViewModel
 
     private lateinit var navController: NavController
     private lateinit var securityService: SecurityService
@@ -22,6 +26,8 @@ class MainActivity : AppCompatActivity() {
         setupInsets()
 
         securityService = SecurityService(this)
+        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+
         val navHost = supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment
         navController = navHost.navController
 
