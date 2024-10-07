@@ -39,12 +39,12 @@ class CalendarHelper(private val context: Context) {
         return toast
     }
 
-    fun eventDialog(date: LocalDate, fragment: CalendarFragment): AddEventDialog {
+    fun eventDialog(date: LocalDate, fragment: CalendarFragment, processedCellIdx: Int): AddEventDialog {
         val bundle = Bundle()
         val selectedDateStr = date.toString()
         bundle.putString(SELECTED_DATE_KEY, selectedDateStr)
 
-        val addEventDialog = AddEventDialog.newInstance(fragment)
+        val addEventDialog = AddEventDialog.newInstance(fragment, processedCellIdx)
         addEventDialog.arguments = bundle
         return addEventDialog
     }

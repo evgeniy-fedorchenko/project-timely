@@ -84,17 +84,25 @@ class CalendarFragment() : Fragment(), OnSaveEventListener {
         return view
     }
 
+    private fun updateCell(event: Event?, processedCellIdx: Int?) {
+
+        if (event != null && processedCellIdx != null) {
+            val targetCell = calendarGrid.getChildAt(processedCellIdx) as? ConstraintLayout
+            targetCell?.let { event.applyTo(targetCell) }    
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         updateMonthTextView()
     }
 
-    override fun onSaveEvent(event: Event) {
+    override fun onSaveEvent(event: Event, processedCellIdx: Int?) {
         var monthEvents = eventsCache[MonthUID.create(event.eventDate)]
         monthEvents?.let { monthEvents[event.eventDate] = event }
 
-        updateCalendar()
-        viewModel.addEvent(event)
+        updateCell(event, processedCellIdx)
+        viewModel.addEvent(event) // TODO: перенести работу с кешем во viewModel
         // Отправить данные на бек
     }
 
@@ -118,7 +126,7 @@ class CalendarFragment() : Fragment(), OnSaveEventListener {
         }
     }
 
-    private fun updateCalendar() {
+    fun updateCalendar() {
         calendarGrid.removeAllViews()
         val context = requireContext()
 
@@ -153,7 +161,7 @@ class CalendarFragment() : Fragment(), OnSaveEventListener {
                                 .show()
 
                             processEvent != null -> calendarHelper.rejectRewriteEvent().show()
-                            else -> calendarHelper.eventDialog(processDate, this)
+                            else -> calendarHelper.eventDialog(processDate, this, i)
                                 .show(parentFragmentManager, ADD_EVENT_DIALOG_TAG)
                         }
                     }

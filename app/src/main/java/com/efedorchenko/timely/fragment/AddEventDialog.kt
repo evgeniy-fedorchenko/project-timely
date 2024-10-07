@@ -28,15 +28,18 @@ class AddEventDialog : BottomSheetDialogFragment() {
     companion object {
         private val MIN_WORK_DURATION = Duration.ofHours(8)
 
-        fun newInstance(listener: OnSaveEventListener): AddEventDialog {
-            return AddEventDialog().apply { setOnSaveEventListener(listener) }
+        fun newInstance(listener: OnSaveEventListener, processedCellIdx: Int): AddEventDialog {
+            return AddEventDialog().apply { setValues(listener, processedCellIdx) }
         }
     }
 
+    private var processedCellIdx: Int? = null
     private var onSaveEventListener: OnSaveEventListener? = null
 
-    private fun setOnSaveEventListener(listener: OnSaveEventListener) {
+    private fun setValues(listener: OnSaveEventListener, processedCellIdx: Int) {
         this.onSaveEventListener = listener
+        this.processedCellIdx = processedCellIdx
+
     }
 
     override fun onCreateView(
@@ -75,7 +78,7 @@ class AddEventDialog : BottomSheetDialogFragment() {
                 CalendarHelper.showToast("Минимальная длина: 8 часов", requireContext())
             } else {
                 val event = Event(targetDate, workDuration, comment)
-                onSaveEventListener?.onSaveEvent(event)
+                onSaveEventListener?.onSaveEvent(event, processedCellIdx)
                 dismiss()
             }
         }
