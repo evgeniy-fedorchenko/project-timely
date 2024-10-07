@@ -31,10 +31,9 @@ class MainActivity : AppCompatActivity() {
         val navHost = supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment
         navController = navHost.navController
 
-        navController.navigate(R.id.mainFragment)
-//        if (isUserAuthenticated()) {
-//            navigateToMain()
-//        }
+        if (isUserAuthenticated()) {
+            navigateToMain()
+        }
     }
 
     private fun navigateToMain() {
