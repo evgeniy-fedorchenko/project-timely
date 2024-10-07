@@ -58,8 +58,7 @@ class MainFragment : Fragment() {
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
-                val monthOffset = CalendarPageAdapter.calculateMonthOffset(position)
-                summaryFragment.updateSummaryData(monthOffset)
+                viewModel.updateSummaryData(CalendarPageAdapter.calculateMonthOffset(position))
             }
         })
     }

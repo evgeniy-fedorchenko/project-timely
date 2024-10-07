@@ -1,7 +1,7 @@
 package com.efedorchenko.timely.repository
 
+import android.app.Application
 import android.content.ContentValues
-import android.content.Context
 import android.database.Cursor
 import android.util.Log
 import com.efedorchenko.timely.data.Fine
@@ -33,7 +33,7 @@ class FineRepository(private val application: Application) {
         db.insert(FINES_TABLE_NAME, null, values)
     }
 
-    fun findByMonth(monthUID: MonthUID): MutableList<Fine> {
+    fun findByMonth(monthUID: MonthUID): List<Fine> {
         val fines = mutableListOf<Fine>()
         val db = dbHelper.readableDatabase
         var cursor: Cursor? = null

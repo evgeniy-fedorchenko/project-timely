@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
         when (userRole) {
             UserRole.WORKER -> navController.navigate(R.id.mainFragment)
             UserRole.BOSS -> navController.navigate(R.id.mainFragment)
-            null -> TODO()
+            null -> navController.navigate(R.id.mainFragment)
         }
     }
 
