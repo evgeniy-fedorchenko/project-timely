@@ -11,6 +11,7 @@ import androidx.navigation.fragment.NavHostFragment
 import com.efedorchenko.timely.security.SecurityService
 import com.efedorchenko.timely.security.UserRole
 import com.efedorchenko.timely.service.MainViewModel
+import com.jakewharton.threetenabp.AndroidThreeTen
 
 class MainActivity : AppCompatActivity() {
 
@@ -24,6 +25,7 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
         setupInsets()
+        AndroidThreeTen.init(this)
 
         securityService = SecurityService(this)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
