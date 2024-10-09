@@ -18,7 +18,7 @@ import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.widget.ViewPager2
 import com.efedorchenko.timely.R
-import com.efedorchenko.timely.data.Fine
+import com.efedorchenko.timely.model.Fine
 import com.efedorchenko.timely.repository.FineRepository
 import com.efedorchenko.timely.service.CalendarPageAdapter
 import com.efedorchenko.timely.service.MainViewModel
@@ -28,6 +28,7 @@ import org.threeten.bp.LocalDate
 class MainFragment : Fragment() {
 
     private lateinit var viewModel: MainViewModel
+    private lateinit var calendarFragment: CalendarFragment
     private lateinit var summaryFragment: SummaryFragment
     private lateinit var viewPager: ViewPager2
     private lateinit var drawerLayout: DrawerLayout
@@ -45,6 +46,7 @@ class MainFragment : Fragment() {
 
         viewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
         summaryFragment = SummaryFragment()
+        calendarFragment = CalendarFragment()
 
         setupViewPager(view)
         setupSummaryCard()
@@ -97,7 +99,8 @@ class MainFragment : Fragment() {
 
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
-                viewModel.updateSummaryData(CalendarPageAdapter.calculateMonthOffset(position))
+                viewModel.updateSummaryData(position)
+                viewModel.updateMonthOffset(position)
             }
         })
     }

@@ -24,12 +24,12 @@ class LoginFragment: Fragment() {
         calendarHelper = CalendarHelper(requireContext())
         val button = view.findViewById<Button>(R.id.loginButton)
         button.setOnClickListener {
-            calendarHelper.oldDateSelected().show()
+            CalendarHelper.showToast("Я в тебя щас войду бля", requireContext())
         }
 
         val noAccountLink = view.findViewById<TextView>(R.id.noAccountTextView)
         noAccountLink.setOnClickListener {
-            calendarHelper.showToast("Ну и пошел нахуй тогда")
+            CalendarHelper.showToast("Ну и пошел нахуй тогда", requireContext())
         }
 
         return view

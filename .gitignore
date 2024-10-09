@@ -19,10 +19,4 @@ local.properties
 /gradle/wrapper/gradle-wrapper.jar
 /gradlew.bat
 /gradlew
-/.idea/compiler.xml
-/.idea/deploymentTargetSelector.xml
-/.idea/gradle.xml
-/.idea/kotlinc.xml
-/.idea/migrations.xml
-/.idea/misc.xml
-/.idea/vcs.xml
+/.idea/*

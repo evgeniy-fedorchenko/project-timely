@@ -7,9 +7,9 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.efedorchenko.timely.R
-import com.efedorchenko.timely.data.Event
-import com.efedorchenko.timely.data.Fine
 import com.efedorchenko.timely.databinding.SummaryCardBinding
+import com.efedorchenko.timely.model.Event
+import com.efedorchenko.timely.model.Fine
 import com.efedorchenko.timely.service.MainViewModel
 
 class SummaryFragment() : Fragment() {
