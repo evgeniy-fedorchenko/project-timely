@@ -4,8 +4,8 @@ import android.app.Application
 import android.content.ContentValues
 import android.database.Cursor
 import android.util.Log
-import com.efedorchenko.timely.data.Fine
-import com.efedorchenko.timely.data.MonthUID
+import com.efedorchenko.timely.model.Fine
+import com.efedorchenko.timely.model.MonthUID
 import com.efedorchenko.timely.repository.DatabaseConfigurer.Companion.AMOUNT_COLUMN_NAME
 import com.efedorchenko.timely.repository.DatabaseConfigurer.Companion.DESCRIPTION_COLUMN_NAME
 import com.efedorchenko.timely.repository.DatabaseConfigurer.Companion.FINES_TABLE_NAME

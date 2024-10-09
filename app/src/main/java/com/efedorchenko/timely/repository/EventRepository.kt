@@ -4,8 +4,8 @@ import android.app.Application
 import android.content.ContentValues
 import android.database.Cursor
 import android.util.Log
-import com.efedorchenko.timely.data.Event
-import com.efedorchenko.timely.data.MonthUID
+import com.efedorchenko.timely.model.Event
+import com.efedorchenko.timely.model.MonthUID
 import com.efedorchenko.timely.repository.DatabaseConfigurer.Companion.COMMENT_COLUMN_NAME
 import com.efedorchenko.timely.repository.DatabaseConfigurer.Companion.EVENTS_TABLE_NAME
 import com.efedorchenko.timely.repository.DatabaseConfigurer.Companion.EVENT_DATE_COLUMN_NAME
