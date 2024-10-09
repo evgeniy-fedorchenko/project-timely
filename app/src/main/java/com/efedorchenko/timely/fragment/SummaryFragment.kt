@@ -25,7 +25,13 @@ class SummaryFragment() : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         _binding = SummaryCardBinding.inflate(inflater, container, false)
-        return binding.root
+        val view = binding.root
+
+        val showFinesButton = binding.showFinesButton
+        showFinesButton.setOnClickListener {
+            FinesDialogFragment().show(childFragmentManager, "FinesDialog")
+        }
+        return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

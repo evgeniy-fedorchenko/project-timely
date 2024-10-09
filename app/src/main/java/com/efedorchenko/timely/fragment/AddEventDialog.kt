@@ -74,7 +74,6 @@ class AddEventDialog : BottomSheetDialogFragment() {
             val workDuration = Duration.of(hours * 60 + minutes, ChronoUnit.MINUTES)
 
             if (workDuration.compareTo(MIN_WORK_DURATION) < 0) {
-                // TODO: разобраться с тостами
                 CalendarHelper.showToast("Минимальная длина: 8 часов", requireContext())
             } else {
                 val event = Event(targetDate, workDuration, comment)
