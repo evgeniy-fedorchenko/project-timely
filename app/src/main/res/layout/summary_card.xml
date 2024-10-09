@@ -3,15 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:id="@+id/summary_layout"
     app:cardCornerRadius="16dp"
     app:cardElevation="12dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/summary_card_background"
         android:orientation="vertical"
-        android:padding="16dp"
-        android:background="@drawable/summary_card_background">
+        android:padding="16dp">
 
         <!-- Блок "Время на работе" -->
         <TextView
