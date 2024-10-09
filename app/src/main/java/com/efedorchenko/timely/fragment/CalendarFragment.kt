@@ -1,6 +1,5 @@
 package com.efedorchenko.timely.fragment
 
-import android.app.Application
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -12,30 +11,26 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.WRAP_CONTENT
 import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.efedorchenko.timely.R
-import com.efedorchenko.timely.data.CalendarCell
-import com.efedorchenko.timely.data.CalendarCell.CellType
-import com.efedorchenko.timely.data.Event
-import com.efedorchenko.timely.data.MonthUID
-import com.efedorchenko.timely.data.toEventMap
-import com.efedorchenko.timely.repository.EventRepository
-import com.efedorchenko.timely.service.CalendarHelper
+import com.efedorchenko.timely.model.CalendarCellBuilder
+import com.efedorchenko.timely.model.CalendarCellBuilder.CellType
+import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.service.MainViewModel
 import com.efedorchenko.timely.service.OnSaveEventListener
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 import org.threeten.bp.LocalDate
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-class CalendarFragment() : Fragment(), OnSaveEventListener {
+class CalendarFragment() : OnSaveEventListener() {
 
     companion object {
         private const val MONTH_OFFSET_ARG = "month_offset"
-        private const val ADD_EVENT_DIALOG_TAG = "add_event_dialog"
-        const val SELECTED_DATE_KEY = "selected_date"
-        private val eventsCache: MutableMap<MonthUID, MutableMap<LocalDate, Event>> = HashMap()
+        val DATE_FORMATTER = SimpleDateFormat("LLLL yyyy", Locale("ru"))
 
         fun newInstance(monthOffset: Int): CalendarFragment {
             return CalendarFragment().apply {
@@ -45,16 +40,19 @@ class CalendarFragment() : Fragment(), OnSaveEventListener {
     }
 
     private var monthOffset: Int = 0
-
+    private lateinit var monthEventsDef: Deferred<Map<LocalDate, Event>>
+    private lateinit var monthEvents: Map<LocalDate, Event>
     private lateinit var viewModel: MainViewModel
-    private lateinit var eventRepository: EventRepository
-    private lateinit var calendarHelper: CalendarHelper
+
     private lateinit var calendarGrid: GridLayout
     private lateinit var weekDays: GridLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        viewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
         monthOffset = arguments?.getInt(MONTH_OFFSET_ARG) ?: 0
+        monthEventsDef = viewModel.getEventsAsync(monthOffset)
+
+        super.onCreate(savedInstanceState)
     }
 
     override fun onCreateView(
@@ -66,18 +64,7 @@ class CalendarFragment() : Fragment(), OnSaveEventListener {
         val view = inflater.inflate(R.layout.calendar_grid_layout, container, false)
         calendarGrid = view.findViewById(R.id.calendar_grid)
         weekDays = view.findViewById(R.id.days_of_week_grid)
-
-        val application = requireActivity().applicationContext as Application
-        eventRepository = EventRepository(application)
-        calendarHelper = CalendarHelper(application)
-        viewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
-
-        // TODO: Когда юзер логинится - просить все ивенты с бека и обновлять бд
-        val monthUID = MonthUID.create(LocalDate.now().plusMonths(monthOffset.toLong()))
-        val monthEvents = eventsCache[monthUID]
-        if (monthEvents == null) {
-            eventsCache[monthUID] = eventRepository.findByMonth(monthUID, false).toEventMap()
-        }
+        viewModel.monthOffset.observe(viewLifecycleOwner) { updateMonthTextView(it) }
 
         setupWeekDays()
         updateCalendar()
@@ -92,17 +79,9 @@ class CalendarFragment() : Fragment(), OnSaveEventListener {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        updateMonthTextView()
-    }
-
     override fun onSaveEvent(event: Event, processedCellIdx: Int?) {
-        var monthEvents = eventsCache[MonthUID.create(event.eventDate)]
-        monthEvents?.let { monthEvents[event.eventDate] = event }
-
         updateCell(event, processedCellIdx)
-        viewModel.addEvent(event) // TODO: перенести работу с кешем во viewModel
+        viewModel.addEvent(event)
         // Отправить данные на бек
     }
 
@@ -127,54 +106,38 @@ class CalendarFragment() : Fragment(), OnSaveEventListener {
     }
 
     fun updateCalendar() {
+        runBlocking {
+            monthEvents = withTimeoutOrNull(1000) { monthEventsDef.await() } ?: emptyMap()
+        }
         calendarGrid.removeAllViews()
-        val context = requireContext()
-
         val currentMonth = LocalDate.now().plusMonths(monthOffset.toLong())
         val dayOfWeekOfFirstDay = (currentMonth.withDayOfMonth(1).dayOfWeek.value + 6) % 7
         val pastMonth = currentMonth.minusMonths(1)
         val nextMonth = currentMonth.plusMonths(1)
 
-        val monthUID = MonthUID.create(currentMonth)
-        val monthEvents = eventsCache[monthUID]
-        val currentEvents: Map<LocalDate, Event> =
-            if (monthEvents == null) HashMap() else monthEvents
-
-        monthEvents?.let { eventsCache[monthUID] = monthEvents }
-
         for (i in 0 until 6 * 7) {
 
             val dayOfMonth = i - dayOfWeekOfFirstDay + 1
-            val cellBuilder = CalendarCell.Builder()
+            val cellBuilder = CalendarCellBuilder()
             when {
-                dayOfMonth < 1 -> cellBuilder
-                    .setType(CellType.PAST_MONTH)
-                    .setDate(pastMonth.withDayOfMonth(dayOfMonth + pastMonth.lengthOfMonth()))
+                dayOfMonth < 1 -> {
+                    cellBuilder.setDate(
+                        pastMonth.withDayOfMonth(dayOfMonth + pastMonth.lengthOfMonth())
+                    )
+                }
 
                 dayOfMonth in 1..currentMonth.lengthOfMonth() -> {
                     val processDate = currentMonth.withDayOfMonth(dayOfMonth)
-                    val processEvent = currentEvents[processDate]
-
-                    val onClickListener = View.OnClickListener {
-                        when {
-                            LocalDate.now().isAfter(processDate) -> calendarHelper.oldDateSelected()
-                                .show()
-
-                            processEvent != null -> calendarHelper.rejectRewriteEvent().show()
-                            else -> calendarHelper.eventDialog(processDate, this, i)
-                                .show(parentFragmentManager, ADD_EVENT_DIALOG_TAG)
-                        }
-                    }
                     cellBuilder
                         .setDate(processDate)
                         .setType(CellType.CURRENT_MONTH)
-                        .setOnClickListener(onClickListener)
-                        .setEvent(processEvent)
+                        .setOnClickListenerFor(this)
+                        .setEvent(monthEvents[processDate])
                 }
 
-                else -> cellBuilder
-                    .setType(CellType.NEXT_MONTH)
-                    .setDate(nextMonth.withDayOfMonth(dayOfMonth - currentMonth.lengthOfMonth()))
+                else -> cellBuilder.setDate(
+                    nextMonth.withDayOfMonth(dayOfMonth - currentMonth.lengthOfMonth())
+                )
             }
             val cell = cellBuilder.build()
 
@@ -183,8 +146,9 @@ class CalendarFragment() : Fragment(), OnSaveEventListener {
             TextViewCompat.setTextAppearance(textView, cell.textStyle)
 
             val parentLayout = createConstraintLayout()
-            parentLayout.background = ContextCompat.getDrawable(context, cell.parentBackground)
             parentLayout.setOnClickListener(cell.onClickListener)
+            parentLayout.background =
+                ContextCompat.getDrawable(requireContext(), cell.parentBackground)
 
             cell.event?.applyTo(parentLayout)
             parentLayout.addView(textView)
@@ -192,19 +156,15 @@ class CalendarFragment() : Fragment(), OnSaveEventListener {
         }
     }
 
-    private fun updateMonthTextView() {
-        val activity = activity ?: return
-        val monthTextView: TextView? = activity.findViewById(R.id.month_year_text)
-        monthTextView?.let {
+    private fun updateMonthTextView(monthOffset: Int) {
+        activity?.findViewById<TextView>(R.id.month_year_text)?.let {
             val calendar = Calendar.getInstance(Locale("ru"))
             calendar.add(Calendar.MONTH, monthOffset)
 
-            val formatter = SimpleDateFormat("LLLL yyyy", Locale("ru"))
-            var monthName = formatter.format(calendar.time)
-            if (monthName.isNotEmpty()) {
+            var monthName = DATE_FORMATTER.format(calendar.time)
                 monthName = monthName.substring(0, 1)
                     .uppercase(Locale.getDefault()) + monthName.substring(1)
-            }
+
             it.text = monthName
         }
     }
