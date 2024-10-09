@@ -35,6 +35,8 @@ class MainActivity : AppCompatActivity() {
 
         if (isUserAuthenticated()) {
             navigateToMain()
+        } else {
+            navController.navigate(R.id.authFragment)
         }
     }
 

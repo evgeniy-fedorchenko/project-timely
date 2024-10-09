@@ -5,14 +5,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.navigation.NavController
+import androidx.navigation.fragment.findNavController
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.service.CalendarHelper
+import com.efedorchenko.timely.service.OnTryLoginListener
 
-class LoginFragment: Fragment() {
+class LoginFragment: Fragment(), OnTryLoginListener {
 
-    private lateinit var calendarHelper: CalendarHelper
+    private lateinit var navController: NavController
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -21,10 +25,14 @@ class LoginFragment: Fragment() {
     ): View? {
 
         val view = inflater.inflate(R.layout.auth, container, false)
-        calendarHelper = CalendarHelper(requireContext())
+        val loginField = view.findViewById<EditText>(R.id.loginEditText)
+        val passwordField = view.findViewById<EditText>(R.id.passwordEditText)
         val button = view.findViewById<Button>(R.id.loginButton)
+
         button.setOnClickListener {
-            CalendarHelper.showToast("Я в тебя щас войду бля", requireContext())
+            val login = loginField.text.toString()
+            val password = passwordField.text.toString()
+            this.tryLogin(Pair(login, password))
         }
 
         val noAccountLink = view.findViewById<TextView>(R.id.noAccountTextView)
@@ -35,4 +43,11 @@ class LoginFragment: Fragment() {
         return view
     }
 
+    override fun tryLogin(loginData: Pair<String, String>) {
+        if (loginData.first.equals("user") && loginData.second.equals("12345")) {
+            findNavController().navigate(R.id.mainFragment)
+        } else {
+            CalendarHelper.showToast("#37 filed load SecurtyContext. AuthException: <Unuthorized>", requireContext())
+        }
+    }
 }

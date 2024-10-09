@@ -23,7 +23,7 @@ class SecurityService(private val baseContext: Context) {
     }
 
     fun isUserAuthenticated(): Boolean {
-        return true
+        return false
 //        return encSharedPref.contains(USER_ROLE_KEY)
     }
 
