@@ -8,8 +8,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import com.efedorchenko.timely.model.UserRole
 import com.efedorchenko.timely.security.SecurityService
-import com.efedorchenko.timely.security.UserRole
 import com.efedorchenko.timely.service.MainViewModel
 import com.jakewharton.threetenabp.AndroidThreeTen
 
@@ -33,6 +33,7 @@ class MainActivity : AppCompatActivity() {
         val navHost = supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment
         navController = navHost.navController
 
+
         if (isUserAuthenticated()) {
             navigateToMain()
         } else {
@@ -45,7 +46,8 @@ class MainActivity : AppCompatActivity() {
         when (userRole) {
             UserRole.WORKER -> navController.navigate(R.id.mainFragment)
             UserRole.BOSS -> navController.navigate(R.id.mainFragment)
-            null -> navController.navigate(R.id.mainFragment)
+            UserRole.CREATOR -> navController.navigate(R.id.mainFragment)
+            null -> navController.navigate(R.id.authFragment)
         }
     }
 

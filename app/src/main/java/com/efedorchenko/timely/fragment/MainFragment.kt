@@ -15,8 +15,10 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.viewpager2.widget.ViewPager2
 import com.efedorchenko.timely.R
+import com.efedorchenko.timely.security.SecurityService
 import com.efedorchenko.timely.service.CalendarPageAdapter
 import com.efedorchenko.timely.service.MainViewModel
 import com.google.android.material.navigation.NavigationView
@@ -26,6 +28,7 @@ class MainFragment : Fragment() {
     private lateinit var viewModel: MainViewModel
     private lateinit var calendarFragment: CalendarFragment
     private lateinit var summaryFragment: SummaryFragment
+    private lateinit var securityService: SecurityService
     private lateinit var viewPager: ViewPager2
     private lateinit var drawerLayout: DrawerLayout
 
@@ -43,6 +46,7 @@ class MainFragment : Fragment() {
         viewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
         summaryFragment = SummaryFragment()
         calendarFragment = CalendarFragment()
+        securityService = SecurityService(requireContext())
 
         setupViewPager(view)
         setupSummaryCard(view)
@@ -109,6 +113,10 @@ class MainFragment : Fragment() {
                 }
 
                 R.id.my_team -> {
+                }
+                R.id.exit -> {
+                    securityService.removeToken()
+                    findNavController().navigate(R.id.authFragment)
                 }
             }
             drawerLayout.closeDrawer(GravityCompat.START)
