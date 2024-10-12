@@ -7,9 +7,16 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.model.Fine
+import org.threeten.bp.format.DateTimeFormatter
+import java.text.DecimalFormat
 
 class FinesAdapter(private val fines: List<Fine>?) :
     RecyclerView.Adapter<FinesAdapter.ViewHolder>() {
+
+    companion object {
+        private val DATE_FORMATTER = DateTimeFormatter.ofPattern("d.M")
+        private val DECIMAL_FORMATTER = DecimalFormat("#,###")
+    }
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val date: TextView = view.findViewById(R.id.date)
@@ -24,9 +31,11 @@ class FinesAdapter(private val fines: List<Fine>?) :
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val fine = fines?.get(position)
-        holder.date.text = fine?.receiptDate.toString()
+        holder.date.text = fine?.receiptDate?.format(DATE_FORMATTER)
         holder.description.text = fine?.description
-        holder.amount.text = fine?.amount.toString()
+        val formatted = DECIMAL_FORMATTER.format(fine?.amount)
+        val formattedFineAmount = "$formatted руб"
+        holder.amount.text = formattedFineAmount
     }
 
     override fun getItemCount(): Int {

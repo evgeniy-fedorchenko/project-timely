@@ -11,6 +11,7 @@ import com.efedorchenko.timely.R
 import com.efedorchenko.timely.databinding.FinesDialogBinding
 import com.efedorchenko.timely.service.FinesAdapter
 import com.efedorchenko.timely.service.MainViewModel
+import com.efedorchenko.timely.service.SpaceItemDecoration
 
 class FinesDialogFragment : DialogFragment() {
 
@@ -35,6 +36,10 @@ class FinesDialogFragment : DialogFragment() {
 
         binding.finesRecyclerView.layoutManager = LinearLayoutManager(context)
         binding.finesRecyclerView.adapter = FinesAdapter(viewModel.fines.value)
+
+        val spaceInPixels = resources.getDimensionPixelSize(R.dimen.item_spacing_horizontal)
+        binding.finesRecyclerView.addItemDecoration(SpaceItemDecoration(spaceInPixels))
+
         binding.closeButton.setOnClickListener { dismiss() }
     }
 

@@ -4,4 +4,5 @@
     <dimen name="calendar_date_padding_end">4dp</dimen>
     <dimen name="half_px">0.5px</dimen>
     <dimen name="work_duration_bottom">6dp</dimen>
+    <dimen name="item_spacing_horizontal">1dp</dimen>
 </resources>
