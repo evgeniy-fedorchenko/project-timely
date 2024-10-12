@@ -1,5 +1,6 @@
 package com.efedorchenko.timely.model
 
+import android.content.Context
 import android.view.View
 import android.view.View.OnClickListener
 import androidx.fragment.app.FragmentManager
@@ -11,7 +12,7 @@ import org.threeten.bp.DayOfWeek.SATURDAY
 import org.threeten.bp.DayOfWeek.SUNDAY
 import org.threeten.bp.LocalDate
 
-class CalendarCellBuilder {
+class CalendarCellBuilder(private val context: Context) {
 
     companion object {
         private const val ADD_EVENT_DIALOG_TAG = "add_event_dialog"
@@ -70,10 +71,10 @@ class CalendarCellBuilder {
             onClickListener = View.OnClickListener {
                 when {
                     LocalDate.now().isAfter(date) ->
-                        CalendarHelper.showToast(DATE_PASSSED, fragment!!.requireContext())
+                        CalendarHelper.showToast(DATE_PASSSED, context)
 
                     event != null ->
-                        CalendarHelper.showToast(CANNOT_EDIT, fragment!!.requireContext())
+                        CalendarHelper.showToast(CANNOT_EDIT, context)
 
                     else -> OnSaveEventListener.eventDialog(date, fragment!!, cellIdxOf(date))
                         .show(fragment!!.parentFragmentManager, ADD_EVENT_DIALOG_TAG)

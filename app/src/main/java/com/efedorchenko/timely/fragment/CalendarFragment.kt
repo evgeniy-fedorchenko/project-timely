@@ -1,5 +1,6 @@
 package com.efedorchenko.timely.fragment
 
+import android.content.Context
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -30,7 +31,7 @@ class CalendarFragment() : OnSaveEventListener() {
 
     companion object {
         private const val MONTH_OFFSET_ARG = "month_offset"
-        val DATE_FORMATTER = SimpleDateFormat("LLLL yyyy", Locale("ru"))
+        private val DATE_FORMATTER = SimpleDateFormat("LLLL yyyy", Locale("ru"))
 
         fun newInstance(monthOffset: Int): CalendarFragment {
             return CalendarFragment().apply {
@@ -91,7 +92,7 @@ class CalendarFragment() : OnSaveEventListener() {
         val daysOfWeek = arrayOf("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
 
         for (i in daysOfWeek.indices) {
-            val parentLayout = createConstraintLayout()
+            val parentLayout = createConstraintLayout(context)
             val textView = TextView(context)
 
             textView.text = daysOfWeek[i]
@@ -114,11 +115,12 @@ class CalendarFragment() : OnSaveEventListener() {
         val dayOfWeekOfFirstDay = (currentMonth.withDayOfMonth(1).dayOfWeek.value + 6) % 7
         val pastMonth = currentMonth.minusMonths(1)
         val nextMonth = currentMonth.plusMonths(1)
+        val context = requireContext()
 
         for (i in 0 until 6 * 7) {
 
             val dayOfMonth = i - dayOfWeekOfFirstDay + 1
-            val cellBuilder = CalendarCellBuilder()
+            val cellBuilder = CalendarCellBuilder(context)
             when {
                 dayOfMonth < 1 -> {
                     cellBuilder.setDate(
@@ -145,10 +147,10 @@ class CalendarFragment() : OnSaveEventListener() {
             textView.text = cell.text
             TextViewCompat.setTextAppearance(textView, cell.textStyle)
 
-            val parentLayout = createConstraintLayout()
+            val parentLayout = createConstraintLayout(context)
             parentLayout.setOnClickListener(cell.onClickListener)
             parentLayout.background =
-                ContextCompat.getDrawable(requireContext(), cell.parentBackground)
+                ContextCompat.getDrawable(context, cell.parentBackground)
 
             cell.event?.applyTo(parentLayout)
             parentLayout.addView(textView)
@@ -183,8 +185,8 @@ class CalendarFragment() : OnSaveEventListener() {
         return textView
     }
 
-    private fun createConstraintLayout(): ConstraintLayout {
-        val constraintLayout = ConstraintLayout(requireContext())
+    private fun createConstraintLayout(context: Context): ConstraintLayout {
+        val constraintLayout = ConstraintLayout(context)
         val params = GridLayout.LayoutParams()
 
         params.width = 0

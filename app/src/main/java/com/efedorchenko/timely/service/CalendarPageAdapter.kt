@@ -8,7 +8,7 @@ import com.efedorchenko.timely.fragment.CalendarFragment
 class CalendarPageAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
 
     companion object {
-        const val CALENDAR_SCROLL_BORDERS = 1000
+        const val CALENDAR_SCROLL_BORDERS = 100
         const val INITIAL_MONTH_OFFSET = 0
 
         fun calculateMonthOffset(rawPosition: Int): Int {
