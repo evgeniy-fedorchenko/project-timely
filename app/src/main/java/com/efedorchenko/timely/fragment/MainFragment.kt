@@ -62,7 +62,7 @@ class MainFragment : Fragment() {
     private fun setupViewPager() {
         viewPager = binding.viewPager
         viewPager.adapter = CalendarPageAdapter(requireActivity())
-        viewPager.setCurrentItem(CalendarPageAdapter.CALENDAR_SCROLL_BORDERS / 2, false)
+        viewPager.setCurrentItem(CalendarPageAdapter.CALENDAR_SCROLL_BORDERS / 2, true)
 
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {

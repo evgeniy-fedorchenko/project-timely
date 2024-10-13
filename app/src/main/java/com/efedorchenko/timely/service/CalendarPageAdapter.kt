@@ -3,7 +3,7 @@ package com.efedorchenko.timely.service
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.efedorchenko.timely.fragment.CalendarFragment
+import com.efedorchenko.timely.fragment.CalendarFragmentNew
 
 class CalendarPageAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
 
@@ -19,7 +19,7 @@ class CalendarPageAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
     override fun getItemCount(): Int = CALENDAR_SCROLL_BORDERS
 
     override fun createFragment(position: Int): Fragment {
-        return CalendarFragment.newInstance(calculateMonthOffset(position))
+        return CalendarFragmentNew.newInstance(calculateMonthOffset(position))
 
     }
 }

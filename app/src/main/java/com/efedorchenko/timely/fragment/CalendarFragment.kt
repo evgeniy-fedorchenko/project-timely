@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
 import androidx.lifecycle.ViewModelProvider
 import com.efedorchenko.timely.R
+import com.efedorchenko.timely.databinding.CalendarGridLayoutBinding
 import com.efedorchenko.timely.model.CalendarCellBuilder
 import com.efedorchenko.timely.model.CalendarCellBuilder.CellType
 import com.efedorchenko.timely.model.Event
@@ -40,6 +41,9 @@ class CalendarFragment() : OnSaveEventListener() {
         }
     }
 
+    private var _binding: CalendarGridLayoutBinding? = null
+    private val binding get() = _binding!!
+
     private var monthOffset: Int = 0
     private lateinit var monthEventsDef: Deferred<Map<LocalDate, Event>>
     private lateinit var monthEvents: Map<LocalDate, Event>
@@ -61,15 +65,19 @@ class CalendarFragment() : OnSaveEventListener() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        _binding = CalendarGridLayoutBinding.inflate(inflater, container, false)
+        val view = binding.root
 
-        val view = inflater.inflate(R.layout.calendar_grid_layout, container, false)
-        calendarGrid = view.findViewById(R.id.calendar_grid)
-        weekDays = view.findViewById(R.id.days_of_week_grid)
+        calendarGrid = binding.calendarGrid
+        weekDays = binding.daysOfWeekGrid
         viewModel.monthOffset.observe(viewLifecycleOwner) { updateMonthTextView(it) }
+        return view
+    }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         setupWeekDays()
         updateCalendar()
-        return view
     }
 
     private fun updateCell(event: Event?, processedCellIdx: Int?) {
