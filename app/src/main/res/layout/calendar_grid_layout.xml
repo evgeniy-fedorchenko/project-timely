@@ -7,13 +7,77 @@
         android:orientation="vertical"
         tools:context=".MainActivity">
 
-    <GridLayout
-            android:id="@+id/days_of_week_grid"
+    <!-- Полоска с днями недели -->
+    <LinearLayout
+        android:id="@+id/daysOfWeekHeader"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <TextView
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:columnCount="7"
-            android:rowCount="1" />
+            android:gravity="center"
+            android:background="@drawable/weekday_ordinary"
+            android:textColor="@color/black"
+            android:text="Пн" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:background="@drawable/weekday_ordinary"
+            android:textColor="@color/black"
+            android:text="Вт" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:background="@drawable/weekday_ordinary"
+            android:textColor="@color/black"
+            android:text="Ср" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:background="@drawable/weekday_ordinary"
+            android:textColor="@color/black"
+            android:text="Чт" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:background="@drawable/weekday_ordinary"
+            android:textColor="@color/black"
+            android:text="Пт" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:background="@drawable/weekday_ordinary"
+            android:textColor="@color/black"
+            android:text="Сб" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:background="@drawable/weekday_ordinary"
+            android:textColor="@color/black"
+            android:text="Вс" />
+    </LinearLayout>
 
     <GridLayout
             android:id="@+id/calendar_grid"

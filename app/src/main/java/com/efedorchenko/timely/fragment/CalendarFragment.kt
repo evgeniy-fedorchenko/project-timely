@@ -2,7 +2,6 @@ package com.efedorchenko.timely.fragment
 
 import android.content.Context
 import android.os.Bundle
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -46,7 +45,6 @@ class CalendarFragment() : OnSaveEventListener() {
     private lateinit var viewModel: MainViewModel
 
     private lateinit var calendarGrid: GridLayout
-    private lateinit var weekDays: GridLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         viewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
@@ -62,14 +60,11 @@ class CalendarFragment() : OnSaveEventListener() {
         savedInstanceState: Bundle?
     ): View {
 
-        val view = inflater.inflate(R.layout.calendar_grid_layout, container, false)
         calendarGrid = view.findViewById(R.id.calendar_grid)
-        weekDays = view.findViewById(R.id.days_of_week_grid)
         viewModel.monthOffset.observe(viewLifecycleOwner) { updateMonthTextView(it) }
 
         setupWeekDays()
         updateCalendar()
-        return view
     }
 
     private fun updateCell(event: Event?, processedCellIdx: Int?) {
@@ -84,26 +79,6 @@ class CalendarFragment() : OnSaveEventListener() {
         updateCell(event, processedCellIdx)
         viewModel.addEvent(event)
         // Отправить данные на бек
-    }
-
-    private fun setupWeekDays() {
-        weekDays.removeAllViews()
-        val context = requireContext()
-        val daysOfWeek = arrayOf("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
-
-        for (i in daysOfWeek.indices) {
-            val parentLayout = createConstraintLayout(context)
-            val textView = TextView(context)
-
-            textView.text = daysOfWeek[i]
-            textView.gravity = Gravity.CENTER
-            TextViewCompat.setTextAppearance(textView, R.style.day_of_week)
-            parentLayout.background =
-                ContextCompat.getDrawable(context, R.drawable.weekday_ordinary)
-
-            parentLayout.addView(textView)
-            weekDays.addView(parentLayout)
-        }
     }
 
     fun updateCalendar() {
