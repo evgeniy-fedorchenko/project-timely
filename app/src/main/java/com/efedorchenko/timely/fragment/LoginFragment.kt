@@ -76,7 +76,7 @@ class LoginFragment : Fragment(), OnTryLoginListener {
 
     override fun tryLogin(loginData: Pair<String, String>) {
         val context = requireContext()
-        securityService = SecurityService(context)
+            securityService = SecurityService.getInstance(context)
 
         lifecycleScope.launch {
             val loginResalt = apiService.login(AuthRequest(loginData))

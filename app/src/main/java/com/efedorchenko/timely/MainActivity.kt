@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         setupInsets()
         AndroidThreeTen.init(this)
 
-        securityService = SecurityService(this)
+        securityService = SecurityService.getInstance(this)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
 
         val navHost = supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment

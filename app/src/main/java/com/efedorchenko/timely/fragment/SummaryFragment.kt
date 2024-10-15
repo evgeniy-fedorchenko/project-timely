@@ -15,6 +15,7 @@ import com.efedorchenko.timely.service.MainViewModel
 class SummaryFragment() : Fragment() {
 
     private lateinit var viewModel: MainViewModel
+    private lateinit var securityService: SecurityService
 
     private var _binding: SummaryCardBinding? = null
     private val binding get() = _binding!!
@@ -29,6 +30,7 @@ class SummaryFragment() : Fragment() {
 
         val showFinesButton = binding.showFinesButton
         showFinesButton.setOnClickListener {
+        securityService = SecurityService.getInstance(requireContext())
             FinesDialogFragment().show(childFragmentManager, "FinesDialog")
         }
         return view

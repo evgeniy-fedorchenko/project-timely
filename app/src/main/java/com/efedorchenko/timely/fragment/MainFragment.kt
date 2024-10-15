@@ -46,7 +46,7 @@ class MainFragment : Fragment() {
         val baseContext = requireActivity()
 
         viewModel = ViewModelProvider(baseContext).get(MainViewModel::class.java)
-        securityService = SecurityService(baseContext)
+        securityService = SecurityService.getInstance(baseContext)
 
         setupViewPager()
         setupSummaryCard()

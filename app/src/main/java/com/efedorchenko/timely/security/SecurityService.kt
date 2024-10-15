@@ -6,15 +6,23 @@ import androidx.security.crypto.MasterKeys
 import com.efedorchenko.timely.model.UserRole
 
 
-class SecurityService(private val baseContext: Context) {
+class SecurityService private constructor(baseContext: Context) {
 
     companion object {
+
+        @Volatile
+        private var _instance: SecurityService? = null
+
+        fun getInstance(context: Context): SecurityService =
+            _instance ?: synchronized(this) {
+                _instance ?: SecurityService(context.applicationContext).also { _instance = it }
+            }
+
         private const val ESP_NAME: String = "auth_data"
         private const val USER_ROLE_KEY: String = "user_role"
         private const val API_CREDS: String = "server_api_credentials"
         private const val CREDS_DELIMETER = ":::"
         private const val TOKEN_KEY = "user_token"
-
     }
 
     private val encSharedPref by lazy {
@@ -66,5 +74,8 @@ class SecurityService(private val baseContext: Context) {
             remove(USER_ROLE_KEY)
             apply()
         }
+    }
+    fun isPrivileged(): Boolean {
+        return authorize()?.isPrivileged()?: false
     }
 }
