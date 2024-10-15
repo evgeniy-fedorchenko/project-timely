@@ -5,10 +5,20 @@ import android.text.Spanned
 
 class CommentInputFilter : InputFilter {
 
+    companion object {
+        private const val MAX_SYMBOLS = 70
+    }
+
     override fun filter(
-        source: CharSequence, start: Int, end: Int, dest: Spanned, dstart: Int, dend: Int
+        source: CharSequence,
+        start: Int,
+        end: Int,
+        dest: Spanned,
+        dstart: Int,
+        dend: Int
     ): CharSequence? {
 
-        return if (dest.length > 500) "" else null
+        val dLen = dest.length
+        return if (dLen >= MAX_SYMBOLS || dLen + source.length >= MAX_SYMBOLS) "" else null
     }
 }

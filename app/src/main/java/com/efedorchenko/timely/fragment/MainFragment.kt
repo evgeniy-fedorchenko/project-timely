@@ -50,7 +50,7 @@ class MainFragment : Fragment() {
 
         setupViewPager()
         setupSummaryCard()
-        setupSideMenu(view)
+        setupSideMenu()
     }
 
     override fun onDestroyView() {
@@ -79,7 +79,7 @@ class MainFragment : Fragment() {
         }
     }
 
-    private fun setupSideMenu(view: View) {
+    private fun setupSideMenu() {
         val drawerLayout = binding.mainContent
         val menuButton: ImageButton = binding.headerLayout.menuButton
         menuButton.setOnClickListener {

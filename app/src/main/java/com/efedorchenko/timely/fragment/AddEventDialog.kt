@@ -29,14 +29,14 @@ class AddEventDialog : BottomSheetDialogFragment() {
         private val MIN_WORK_DURATION = Duration.ofHours(8)
 
         fun newInstance(listener: OnSaveEventListener, processedCellIdx: Int): AddEventDialog {
-            return AddEventDialog().apply { setValues(listener, processedCellIdx) }
+            return AddEventDialog().apply { setContext(listener, processedCellIdx) }
         }
     }
 
     private var processedCellIdx: Int? = null
     private var onSaveEventListener: OnSaveEventListener? = null
 
-    private fun setValues(listener: OnSaveEventListener, processedCellIdx: Int) {
+    private fun setContext(listener: OnSaveEventListener, processedCellIdx: Int) {
         this.onSaveEventListener = listener
         this.processedCellIdx = processedCellIdx
 
