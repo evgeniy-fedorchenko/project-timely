@@ -38,6 +38,9 @@
         <item name="android:layout_rowWeight">1</item>
         <item name="android:textColor">@color/black</item>
         <item name="android:textStyle">bold</item>
+    </style>
 
+    <style name="DeleteFinePopup" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:popupBackground">@drawable/popup_background</item>
     </style>
 </resources>

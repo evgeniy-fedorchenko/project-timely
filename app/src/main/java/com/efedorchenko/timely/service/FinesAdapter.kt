@@ -1,17 +1,24 @@
 package com.efedorchenko.timely.service
 
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.model.Fine
+import com.efedorchenko.timely.security.SecurityService
 import org.threeten.bp.format.DateTimeFormatter
 import java.text.DecimalFormat
 
-class FinesAdapter(private val fines: List<Fine>?) :
-    RecyclerView.Adapter<FinesAdapter.ViewHolder>() {
+class FinesAdapter(
+    private val fines: List<Fine>?,
+    private val viewModel: MainViewModel
+) : RecyclerView.Adapter<FinesAdapter.ViewHolder>() {
+
+    private lateinit var securityService: SecurityService
 
     companion object {
         private val DATE_FORMATTER = DateTimeFormatter.ofPattern("d.M")
@@ -25,7 +32,9 @@ class FinesAdapter(private val fines: List<Fine>?) :
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.fine_item, parent, false)
+        val context = parent.context
+        val view = LayoutInflater.from(context).inflate(R.layout.fine_item, parent, false)
+        securityService = SecurityService.getInstance(context)
         return ViewHolder(view)
     }
 
@@ -36,9 +45,31 @@ class FinesAdapter(private val fines: List<Fine>?) :
         val formatted = DECIMAL_FORMATTER.format(fine?.amount)
         val formattedFineAmount = "$formatted руб"
         holder.amount.text = formattedFineAmount
+
+        if (securityService.isPrivileged()) {
+            holder.itemView.setOnLongClickListener { view ->
+                showDeletePopup(view, position)
+                true
+            }
+        }
     }
 
     override fun getItemCount(): Int {
         return fines?.size ?: 0
     }
+
+    private fun showDeletePopup(view: View, position: Int) {
+        PopupMenu(view.context, view, Gravity.CENTER, 0, R.style.DeleteFinePopup).apply {
+            menu.add("Удалить")
+            setOnMenuItemClickListener { item ->
+                if (item.title == "Удалить") {
+//                    viewModel.removeFineAt(position)
+                    notifyItemRemoved(position)
+                }
+                true
+            }
+            show()
+        }
+    }
+
 }

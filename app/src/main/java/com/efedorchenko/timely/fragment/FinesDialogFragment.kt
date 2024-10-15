@@ -35,7 +35,7 @@ class FinesDialogFragment : DialogFragment() {
         viewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
 
         binding.finesRecyclerView.layoutManager = LinearLayoutManager(context)
-        binding.finesRecyclerView.adapter = FinesAdapter(viewModel.fines.value)
+        binding.finesRecyclerView.adapter = FinesAdapter(viewModel.fines.value, viewModel)
 
         val spaceInPixels = resources.getDimensionPixelSize(R.dimen.item_spacing_horizontal)
         binding.finesRecyclerView.addItemDecoration(SpaceItemDecoration(spaceInPixels))
