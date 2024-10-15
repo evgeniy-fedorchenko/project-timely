@@ -12,6 +12,7 @@ lifecycleViewmodelKtx = "2.8.6"
 material = "1.12.0"
 activity = "1.9.2"
 constraintlayout = "2.1.4"
+numberPicker = "2.4.13"
 okhttp = "4.9.3"
 securityCrypto = "1.0.0"
 threetenabp = "1.4.7"
@@ -34,6 +35,7 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+number-picker = { module = "io.github.ShawnLin013:number-picker", version.ref = "numberPicker" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 threetenabp = { module = "com.jakewharton.threetenabp:threetenabp", version.ref = "threetenabp" }
 androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }

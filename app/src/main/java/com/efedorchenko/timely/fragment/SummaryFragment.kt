@@ -4,15 +4,15 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.databinding.SummaryCardBinding
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.Fine
 import com.efedorchenko.timely.service.MainViewModel
+import com.efedorchenko.timely.service.OnSaveFineListener
 
-class SummaryFragment() : Fragment() {
+class SummaryFragment() : OnSaveFineListener() {
 
     private lateinit var viewModel: MainViewModel
     private lateinit var securityService: SecurityService
@@ -36,12 +36,30 @@ class SummaryFragment() : Fragment() {
         return view
     }
 
+        val addFineButton = binding.addFineButton
+        addFineButton.visibility = View.VISIBLE
+        addFineButton.setOnClickListener {
+            val targetMonth =
+                LocalDate.now().plusMonths(viewModel.monthOffset.value?.toLong() ?: 0).month
+            OnSaveFineListener.fineDialog(targetMonth, this)
+                .show(parentFragmentManager, ADD_FINE_DIALOG_TAG)
+        }
+
+        return view
+    }
+
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
         viewModel.events.observe(viewLifecycleOwner) { updateEvents(it) }
         viewModel.fines.observe(viewLifecycleOwner) { updateFines(it) }
     }
+
+    override fun onSaveFine(newFine: Fine) {
+        viewModel.addFine(newFine)
+    }
+
 
     private fun updateEvents(events: List<Event>?) {
         val daysWorked = events?.count().toString()

@@ -51,6 +51,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun addFine(fine: Fine) {
+        _fines.value = (_fines.value ?: emptyList()) + fine
+        viewModelScope.launch {
+            fineRepository.save(fine)
+        }
+    }
+
     fun updateSummaryData(position: Int) {
         val monthOffset = CalendarPageAdapter.calculateMonthOffset(position)
         val monthUID = MonthUID.create(LocalDate.now().plusMonths(monthOffset.toLong()))
