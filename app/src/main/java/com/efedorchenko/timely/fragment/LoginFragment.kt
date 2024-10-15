@@ -19,7 +19,7 @@ import com.efedorchenko.timely.model.AuthRequest
 import com.efedorchenko.timely.model.AuthStatus
 import com.efedorchenko.timely.security.SecurityService
 import com.efedorchenko.timely.service.ApiService
-import com.efedorchenko.timely.service.CalendarHelper
+import com.efedorchenko.timely.service.ApiServiceImpl
 import com.efedorchenko.timely.service.OnTryLoginListener
 import com.efedorchenko.timely.service.ToastHelper
 import kotlinx.coroutines.launch
@@ -28,7 +28,7 @@ class LoginFragment : Fragment(), OnTryLoginListener {
 
     private lateinit var navController: NavController
     private lateinit var securityService: SecurityService
-    private val apiService: ApiService by lazy { ApiService() }
+    private val apiService: ApiService by lazy { ApiServiceImpl() }
 
     override fun onCreateView(
         inflater: LayoutInflater,
