@@ -10,6 +10,7 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.efedorchenko.timely.model.UserRole
 import com.efedorchenko.timely.security.SecurityService
+import com.efedorchenko.timely.security.SecurityServiceImpl
 import com.efedorchenko.timely.service.MainViewModel
 import com.jakewharton.threetenabp.AndroidThreeTen
 
@@ -27,7 +28,7 @@ class MainActivity : AppCompatActivity() {
         setupInsets()
         AndroidThreeTen.init(this)
 
-        securityService = SecurityService.getInstance(this)
+        securityService = SecurityServiceImpl.getInstance(this)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
 
         val navHost = supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment

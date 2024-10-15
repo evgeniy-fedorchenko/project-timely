@@ -10,6 +10,7 @@ import com.efedorchenko.timely.databinding.SummaryCardBinding
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.Fine
 import com.efedorchenko.timely.security.SecurityService
+import com.efedorchenko.timely.security.SecurityServiceImpl
 import com.efedorchenko.timely.service.MainViewModel
 import com.efedorchenko.timely.service.OnSaveFineListener
 import org.threeten.bp.LocalDate
@@ -30,7 +31,7 @@ class SummaryFragment() : OnSaveFineListener() {
         _binding = SummaryCardBinding.inflate(inflater, container, false)
         val view = binding.root
 
-        securityService = SecurityService.getInstance(requireContext())
+        securityService = SecurityServiceImpl.getInstance(requireContext())
         binding.showFinesButton.setOnClickListener {
             FinesDialogFragment().show(childFragmentManager, "FinesDialog")
         }

@@ -19,6 +19,7 @@ import androidx.viewpager2.widget.ViewPager2
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.databinding.FragmentMainBinding
 import com.efedorchenko.timely.security.SecurityService
+import com.efedorchenko.timely.security.SecurityServiceImpl
 import com.efedorchenko.timely.service.CalendarPageAdapter
 import com.efedorchenko.timely.service.MainViewModel
 import com.google.android.material.navigation.NavigationView
@@ -46,7 +47,7 @@ class MainFragment : Fragment() {
         val baseContext = requireActivity()
 
         viewModel = ViewModelProvider(baseContext).get(MainViewModel::class.java)
-        securityService = SecurityService.getInstance(baseContext)
+        securityService = SecurityServiceImpl.getInstance(baseContext)
 
         setupViewPager()
         setupSummaryCard()

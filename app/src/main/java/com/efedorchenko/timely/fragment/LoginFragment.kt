@@ -18,6 +18,7 @@ import com.efedorchenko.timely.R
 import com.efedorchenko.timely.model.AuthRequest
 import com.efedorchenko.timely.model.AuthStatus
 import com.efedorchenko.timely.security.SecurityService
+import com.efedorchenko.timely.security.SecurityServiceImpl
 import com.efedorchenko.timely.service.ApiService
 import com.efedorchenko.timely.service.ApiServiceImpl
 import com.efedorchenko.timely.service.OnTryLoginListener
@@ -77,7 +78,7 @@ class LoginFragment : Fragment(), OnTryLoginListener {
 
     override fun tryLogin(loginData: Pair<String, String>) {
         val context = requireContext()
-            securityService = SecurityService.getInstance(context)
+            securityService = SecurityServiceImpl.getInstance(context)
 
         lifecycleScope.launch {
             val loginResalt = apiService.login(AuthRequest(loginData))

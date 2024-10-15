@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.model.Fine
 import com.efedorchenko.timely.security.SecurityService
+import com.efedorchenko.timely.security.SecurityServiceImpl
 import org.threeten.bp.format.DateTimeFormatter
 import java.text.DecimalFormat
 
@@ -34,7 +35,7 @@ class FinesAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val context = parent.context
         val view = LayoutInflater.from(context).inflate(R.layout.fine_item, parent, false)
-        securityService = SecurityService.getInstance(context)
+        securityService = SecurityServiceImpl.getInstance(context)
         return ViewHolder(view)
     }
 
