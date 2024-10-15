@@ -55,6 +55,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.material)
     implementation(libs.material)
+    implementation(libs.number.picker)
     implementation(libs.okhttp)
     implementation(libs.threetenabp)
 
