@@ -21,6 +21,7 @@ import com.efedorchenko.timely.security.SecurityService
 import com.efedorchenko.timely.service.ApiService
 import com.efedorchenko.timely.service.CalendarHelper
 import com.efedorchenko.timely.service.OnTryLoginListener
+import com.efedorchenko.timely.service.ToastHelper
 import kotlinx.coroutines.launch
 
 class LoginFragment : Fragment(), OnTryLoginListener {
@@ -59,7 +60,7 @@ class LoginFragment : Fragment(), OnTryLoginListener {
 
         val noAccountLink = view.findViewById<TextView>(R.id.noAccountTextView)
         noAccountLink.setOnClickListener {
-            CalendarHelper.showToast("Ну и пошел нахуй тогда", requireContext())
+            ToastHelper.showToast("Ну и пошел нахуй тогда", requireContext())
         }
 
         return view
@@ -81,14 +82,14 @@ class LoginFragment : Fragment(), OnTryLoginListener {
         lifecycleScope.launch {
             val loginResalt = apiService.login(AuthRequest(loginData))
             if (loginResalt == null) {
-                CalendarHelper.showToast(
+                ToastHelper.showToast(
                     "Проблемы с подключением, проверте работу сети Интернет",
                     context
                 )
                 return@launch
             }
             if (loginResalt.status == AuthStatus.FAIL) {
-                CalendarHelper.showToast("Неверный логин или пароль", context)
+                ToastHelper.showToast("Неверный логин или пароль", context)
                 return@launch
             }
 

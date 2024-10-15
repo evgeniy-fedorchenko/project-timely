@@ -8,8 +8,8 @@ import com.efedorchenko.timely.databinding.AddFineBinding
 import com.efedorchenko.timely.filter.CommentInputFilter
 import com.efedorchenko.timely.filter.FineAmountFilter
 import com.efedorchenko.timely.model.Fine
-import com.efedorchenko.timely.service.CalendarHelper
 import com.efedorchenko.timely.service.OnSaveFineListener
+import com.efedorchenko.timely.service.ToastHelper
 import com.google.android.material.R.id.design_bottom_sheet
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -54,10 +54,7 @@ class AddFineDialog : BottomSheetDialogFragment() {
         binding.buttonSave.setOnClickListener {
             val fineAmount = fineAmountField.text.toString().toIntOrNull()
             if (fineAmount == null || fineAmount <= 0) {
-                CalendarHelper.showToast("Слишком маленькая сумма", requireContext())
-
-//                Поставить вотчер на сумму чтоб не ввели больше 2 * 10^10
-//                И вотчер на коммент для ограничения по длине в 100 символов
+                ToastHelper.showToast("Слишком маленькая сумма", requireContext())
 
             } else {
                 val receiptDate = LocalDate.of(Year.now().value, targetMonth, selectedDayField.value)

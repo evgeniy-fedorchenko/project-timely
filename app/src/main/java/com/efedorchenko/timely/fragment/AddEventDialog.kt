@@ -14,8 +14,8 @@ import com.efedorchenko.timely.filter.CommentInputFilter
 import com.efedorchenko.timely.filter.HoursInputFilter
 import com.efedorchenko.timely.filter.MinutesInputFilter
 import com.efedorchenko.timely.model.Event
-import com.efedorchenko.timely.service.CalendarHelper
 import com.efedorchenko.timely.service.OnSaveEventListener
+import com.efedorchenko.timely.service.ToastHelper
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.threeten.bp.Duration
 import org.threeten.bp.LocalDate
@@ -74,7 +74,7 @@ class AddEventDialog : BottomSheetDialogFragment() {
             val workDuration = Duration.of(hours * 60 + minutes, ChronoUnit.MINUTES)
 
             if (workDuration.compareTo(MIN_WORK_DURATION) < 0) {
-                CalendarHelper.showToast("Минимальная длина: 8 часов", requireContext())
+                ToastHelper.showToast("Минимальная длина: 8 часов", requireContext())
             } else {
                 val event = Event(targetDate, workDuration, comment)
                 onSaveEventListener?.onSaveEvent(event, processedCellIdx)
