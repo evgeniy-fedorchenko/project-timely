@@ -61,7 +61,8 @@ class FinesAdapter(
             menu.add("Удалить")
             setOnMenuItemClickListener { item ->
                 if (item.title == "Удалить") {
-//                    viewModel.removeFineAt(position)
+                    viewModel.delete(position)
+                    fines?.removeAt(position)
                     notifyItemRemoved(position)
                 }
                 true

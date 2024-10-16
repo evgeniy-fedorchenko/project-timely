@@ -26,7 +26,7 @@ class DatabaseConfigurer private constructor(private val application: Applicatio
         const val EVENTS_TABLE_NAME = "events"
         const val FINES_TABLE_NAME = "fines"
 
-        private const val ID_COLUMN_NAME = "id"
+        const val ID_COLUMN_NAME = "id"
         const val MONTH_UID_COLUMN_NAME = "month_uid_hash"
 
         const val EVENT_DATE_COLUMN_NAME = "event_date"

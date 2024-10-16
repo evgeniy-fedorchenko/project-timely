@@ -52,9 +52,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun addFine(fine: Fine) {
-        _fines.value = (_fines.value ?: emptyList()) + fine
         viewModelScope.launch {
-            fineRepository.save(fine)
+            val id = fineRepository.save(fine)
+            if (id > 0) {
+                fine.id = id
+                _fines.value = (_fines.value ?: emptyList()) + fine
+            }
         }
     }
 
@@ -83,5 +86,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun updateMonthOffset(position: Int) {
         val monthOffset = CalendarAdapter.calculateMonthOffset(position)
         _monthOffset.value = monthOffset
+    }
+
+    fun delete(position: Int) {
+//        viewModelScope.launch {
+            val currentList = _fines.value?.toMutableList() ?: return
+
+            _fines.value?.let {
+                val fineIdForDelete = it.get(position).id
+                if (fineRepository.deleteById(fineIdForDelete)) {
+                    currentList.removeAt(position)
+                    _fines.value = currentList
+                }
+//            }
+        }
     }
 }

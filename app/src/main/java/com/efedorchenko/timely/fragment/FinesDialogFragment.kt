@@ -20,7 +20,6 @@ class FinesDialogFragment : DialogFragment() {
 
     private lateinit var viewModel: MainViewModel
 
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -35,12 +34,14 @@ class FinesDialogFragment : DialogFragment() {
         viewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
 
         binding.finesRecyclerView.layoutManager = LinearLayoutManager(context)
-        binding.finesRecyclerView.adapter = FinesAdapter(viewModel.fines.value, viewModel)
+        val fines = viewModel.fines.value
+        binding.finesRecyclerView.adapter = FinesAdapter(fines?.toMutableList(), viewModel)
 
         val spaceInPixels = resources.getDimensionPixelSize(R.dimen.item_spacing_horizontal)
         binding.finesRecyclerView.addItemDecoration(SpaceItemDecoration(spaceInPixels))
-
-        binding.closeButton.setOnClickListener { dismiss() }
+        binding.closeButton.setOnClickListener {
+            dismiss()
+        }
     }
 
     override fun onStart() {
