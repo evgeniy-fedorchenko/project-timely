@@ -18,6 +18,10 @@ class SecurityServiceImpl private constructor(baseContext: Context) : SecuritySe
                 _instance ?: SecurityServiceImpl(context.applicationContext).also { _instance = it }
             }
 
+        fun requireInstance(): SecurityService {
+            return _instance!!
+        }
+
         private const val ESP_NAME: String = "auth_data"
         private const val USER_ROLE_KEY: String = "user_role"
         private const val API_CREDS: String = "server_api_credentials"
