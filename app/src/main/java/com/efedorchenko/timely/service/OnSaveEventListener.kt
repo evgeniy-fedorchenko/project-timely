@@ -12,12 +12,13 @@ abstract class OnSaveEventListener : Fragment() {
     companion object {
         const val SELECTED_DATE_KEY = "selected_date"
 
-        fun eventDialog(date: LocalDate, fragment: CalendarFragment, processedCellIdx: Int): AddEventDialog {
-            val bundle = Bundle()
-            val selectedDateStr = date.toString()
-            bundle.putString(SELECTED_DATE_KEY, selectedDateStr)
+        fun eventDialog(date: LocalDate, fragment: CalendarFragment): AddEventDialog {
 
-            val addEventDialog = AddEventDialog.newInstance(fragment, processedCellIdx)
+            val bundle = Bundle()
+            bundle.putString(SELECTED_DATE_KEY, date.toString())
+
+            val cellIdx = date.dayOfMonth + ((date.withDayOfMonth(1).dayOfWeek.value + 6) % 7) - 1
+            val addEventDialog = AddEventDialog.newInstance(fragment, cellIdx)
             addEventDialog.arguments = bundle
             return addEventDialog
         }

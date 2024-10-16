@@ -16,9 +16,11 @@ import com.efedorchenko.timely.R
 import com.efedorchenko.timely.databinding.CalendarGridLayoutBinding
 import com.efedorchenko.timely.model.CalendarCellBuilder
 import com.efedorchenko.timely.model.CalendarCellBuilder.CellType
+import com.efedorchenko.timely.model.CalendarCellBuilder.Companion.CANNOT_EDIT
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.service.MainViewModel
 import com.efedorchenko.timely.service.OnSaveEventListener
+import com.efedorchenko.timely.service.ToastHelper
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
@@ -91,7 +93,10 @@ class CalendarFragment() : OnSaveEventListener() {
 
         if (event != null && processedCellIdx != null) {
             val targetCell = calendarGrid.getChildAt(processedCellIdx) as? ConstraintLayout
-            targetCell?.let { event.applyTo(targetCell) }
+            targetCell?.let {
+                it.setOnClickListener { ToastHelper.showToast(CANNOT_EDIT, requireContext())}
+                event.applyTo(targetCell)
+            }
         }
     }
 

@@ -17,7 +17,7 @@ class CalendarCellBuilder(private val context: Context) {
     companion object {
         private const val ADD_EVENT_DIALOG_TAG = "add_event_dialog"
         private const val DATE_PASSSED = "Эта дата уже прошла"
-        private const val CANNOT_EDIT = "Запланированную смену нельзя редактировать!"
+        const val CANNOT_EDIT = "Запланированную смену нельзя редактировать!"
     }
 
     private var fragment: CalendarFragment? = null
@@ -70,22 +70,14 @@ class CalendarCellBuilder(private val context: Context) {
         if (fragment != null) {
             onClickListener = View.OnClickListener {
                 when {
-                    LocalDate.now().isAfter(date) ->
-                        ToastHelper.showToast(DATE_PASSSED, context)
-
-                    event != null ->
-                        ToastHelper.showToast(CANNOT_EDIT, context)
-
-                    else -> OnSaveEventListener.eventDialog(date, fragment!!, cellIdxOf(date))
+                    LocalDate.now().isAfter(date) -> ToastHelper.showToast(DATE_PASSSED, context)
+                    event != null -> ToastHelper.showToast(CANNOT_EDIT, context)
+                    else -> OnSaveEventListener.eventDialog(date, fragment!!)
                         .show(fragment!!.parentFragmentManager, ADD_EVENT_DIALOG_TAG)
                 }
             }
         }
         return CalendarCell(text, textStyle, parentBackground, onClickListener, event)
-    }
-
-    fun cellIdxOf(date: LocalDate): Int {
-        return date.dayOfMonth + ((date.withDayOfMonth(1).dayOfWeek.value + 6) % 7) - 1
     }
 
     enum class CellType {
