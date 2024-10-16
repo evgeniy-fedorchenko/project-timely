@@ -6,16 +6,16 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.EditText
-import android.widget.TextView
-import com.efedorchenko.timely.R
+import com.efedorchenko.timely.databinding.AddEventBinding
 import com.efedorchenko.timely.filter.CommentInputFilter
 import com.efedorchenko.timely.filter.HoursInputFilter
 import com.efedorchenko.timely.filter.MinutesInputFilter
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.service.OnSaveEventListener
 import com.efedorchenko.timely.service.ToastHelper
+import com.google.android.material.R.id.design_bottom_sheet
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.threeten.bp.Duration
 import org.threeten.bp.LocalDate
@@ -33,6 +33,9 @@ class AddEventDialog : BottomSheetDialogFragment() {
         }
     }
 
+    private var _binding: AddEventBinding? = null
+    private val binding get() = _binding!!
+
     private var processedCellIdx: Int? = null
     private var onSaveEventListener: OnSaveEventListener? = null
 
@@ -46,17 +49,15 @@ class AddEventDialog : BottomSheetDialogFragment() {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
 
-        val view = inflater.inflate(R.layout.fill_day, container, false)
-        val selectedDateView = view.findViewById<TextView>(R.id.text_view_selected_date)
+        _binding = AddEventBinding.inflate(inflater, container, false)
 
         val targetDate = LocalDate.parse(arguments?.getString(OnSaveEventListener.SELECTED_DATE_KEY))
         val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale("ru"))
-        selectedDateView.text = targetDate.format(formatter)
+        binding.textViewSelectedDate.text = targetDate.format(formatter)
 
-        val hoursEditText = view.findViewById<EditText>(R.id.edit_text_hours)
-        val minutesEditText = view.findViewById<EditText>(R.id.edit_text_minutes)
-        val commentEditText = view.findViewById<EditText>(R.id.edit_text_comment)
-        val saveButton = view.findViewById<Button>(R.id.button_save)
+        val hoursEditText = binding.editTextHours
+        val minutesEditText = binding.editTextMinutes
+        val commentEditText = binding.editTextComment
 
         hoursEditText.nextFocusDownId = minutesEditText.id
         minutesEditText.nextFocusDownId = commentEditText.id
@@ -67,7 +68,7 @@ class AddEventDialog : BottomSheetDialogFragment() {
         minutesEditText.filters = arrayOf(MinutesInputFilter())
         commentEditText.filters = arrayOf(CommentInputFilter())
 
-        saveButton.setOnClickListener {
+        binding.buttonSave.setOnClickListener {
             val hours = hoursEditText.text.toString().toLongOrNull() ?: 0
             val minutes = minutesEditText.text.toString().toLongOrNull() ?: 0
             val comment = commentEditText.text.toString()
@@ -81,7 +82,23 @@ class AddEventDialog : BottomSheetDialogFragment() {
                 dismiss()
             }
         }
-        return view
+        return binding.root
+    }
+
+    //    Поднятие диалога над клавиатурой
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        dialog?.setOnShowListener {
+            val bottomSheet = dialog?.findViewById<View>(design_bottom_sheet)
+            bottomSheet?.let { bs ->
+                BottomSheetBehavior.from(bs).state = BottomSheetBehavior.STATE_EXPANDED
+            }
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
 }
@@ -91,11 +108,9 @@ private class AddEventDialogFieldsWatcher(
     private val nextField: EditText
 ) : TextWatcher {
 
-    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-    }
+    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { }
 
-    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-    }
+    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) { }
 
     override fun afterTextChanged(s: Editable?) {
         if (s?.length == requestNextAfterSymbols) {
