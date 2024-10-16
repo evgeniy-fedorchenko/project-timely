@@ -26,7 +26,7 @@
         android:layout_marginEnd="32dp"
         android:layout_marginBottom="10dp"
         android:background="@drawable/login_form_background"
-        android:hint="E-mail"
+        android:hint="ФИО или E-mail"
         android:inputType="textEmailAddress"
         android:padding="10dp"
         android:textColor="@color/black"

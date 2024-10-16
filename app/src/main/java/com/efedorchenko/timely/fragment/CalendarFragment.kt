@@ -76,12 +76,9 @@ class CalendarFragment() : OnSaveEventListener() {
         updateCalendar()
     }
 
-    private fun updateCell(event: Event?, processedCellIdx: Int?) {
-
-        if (event != null && processedCellIdx != null) {
-            val targetCell = calendarGrid.getChildAt(processedCellIdx) as? ConstraintLayout
-            targetCell?.let { event.applyTo(targetCell) }
-        }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onSaveEvent(event: Event, processedCellIdx: Int?) {
@@ -90,7 +87,15 @@ class CalendarFragment() : OnSaveEventListener() {
         // Отправить данные на бек
     }
 
-    fun updateCalendar() {
+    private fun updateCell(event: Event?, processedCellIdx: Int?) {
+
+        if (event != null && processedCellIdx != null) {
+            val targetCell = calendarGrid.getChildAt(processedCellIdx) as? ConstraintLayout
+            targetCell?.let { event.applyTo(targetCell) }
+        }
+    }
+
+    private fun updateCalendar() {
         runBlocking {
             monthEvents = withTimeoutOrNull(1000) { monthEventsDef.await() } ?: emptyMap()
         }

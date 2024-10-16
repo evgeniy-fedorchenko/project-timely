@@ -67,15 +67,6 @@ class LoginFragment : Fragment(), OnTryLoginListener {
         return view
     }
 
-    private fun hideKeyboard() {
-        val activity = activity
-        if (activity != null) {
-            val imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            val view = activity.currentFocus ?: View(activity)
-            imm.hideSoftInputFromWindow(view.windowToken, 0)
-        }
-    }
-
     override fun tryLogin(loginData: Pair<String, String>) {
         val context = requireContext()
             securityService = SecurityServiceImpl.getInstance(context)
@@ -99,4 +90,14 @@ class LoginFragment : Fragment(), OnTryLoginListener {
             findNavController().navigate(R.id.mainFragment)
         }
     }
+
+    private fun hideKeyboard() {
+        val activity = activity
+        if (activity != null) {
+            val imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            val view = activity.currentFocus ?: View(activity)
+            imm.hideSoftInputFromWindow(view.windowToken, 0)
+        }
+    }
+
 }
