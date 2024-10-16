@@ -20,7 +20,7 @@ import com.efedorchenko.timely.R
 import com.efedorchenko.timely.databinding.FragmentMainBinding
 import com.efedorchenko.timely.security.SecurityService
 import com.efedorchenko.timely.security.SecurityServiceImpl
-import com.efedorchenko.timely.service.CalendarPageAdapter
+import com.efedorchenko.timely.service.CalendarAdapter
 import com.efedorchenko.timely.service.MainViewModel
 import com.google.android.material.navigation.NavigationView
 
@@ -62,8 +62,8 @@ class MainFragment : Fragment() {
 
     private fun setupViewPager() {
         viewPager = binding.viewPager
-        viewPager.adapter = CalendarPageAdapter(requireActivity())
-        viewPager.setCurrentItem(CalendarPageAdapter.CALENDAR_SCROLL_BORDERS / 2, false)
+        viewPager.adapter = CalendarAdapter(requireActivity())
+        viewPager.setCurrentItem(CalendarAdapter.CALENDAR_SCROLL_BORDERS / 2, false)
 
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {

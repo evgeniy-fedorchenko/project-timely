@@ -5,7 +5,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.efedorchenko.timely.fragment.CalendarFragment
 
-class CalendarPageAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
+class CalendarAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
 
     companion object {
         const val CALENDAR_SCROLL_BORDERS = 100

@@ -38,7 +38,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val monthUID = MonthUID.create()
         _events.value = eventRepository.findByMonth(monthUID, false)
         _fines.value = fineRepository.findByMonth(monthUID)
-        _monthOffset.value = CalendarPageAdapter.INITIAL_MONTH_OFFSET
+        _monthOffset.value = CalendarAdapter.INITIAL_MONTH_OFFSET
         viewModelScope.launch { }   // Инициализация CoroutineContext
     }
 
@@ -59,7 +59,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun updateSummaryData(position: Int) {
-        val monthOffset = CalendarPageAdapter.calculateMonthOffset(position)
+        val monthOffset = CalendarAdapter.calculateMonthOffset(position)
         val monthUID = MonthUID.create(LocalDate.now().plusMonths(monthOffset.toLong()))
         viewModelScope.launch {
             _events.value = eventRepository.findByMonth(monthUID, false)
@@ -81,7 +81,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun updateMonthOffset(position: Int) {
-        val monthOffset = CalendarPageAdapter.calculateMonthOffset(position)
+        val monthOffset = CalendarAdapter.calculateMonthOffset(position)
         _monthOffset.value = monthOffset
     }
 }
