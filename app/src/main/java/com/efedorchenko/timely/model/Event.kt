@@ -8,13 +8,16 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.WRAP_CONTENT
 import androidx.core.widget.TextViewCompat
 import com.efedorchenko.timely.R
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import org.threeten.bp.Duration
 import org.threeten.bp.LocalDate
 import java.util.Locale
 
+@Serializable
 data class Event(
-    var eventDate: LocalDate,
-    var workDuration: Duration,
+    @Contextual var eventDate: LocalDate,
+    @Contextual var workDuration: Duration,
     var comment: String?,
 ) {
 
