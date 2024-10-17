@@ -1,5 +1,11 @@
 package com.efedorchenko.timely.fragment
 
+import android.animation.ValueAnimator
+import android.app.AlertDialog
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.Spannable
@@ -10,6 +16,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.core.animation.doOnEnd
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
@@ -17,6 +25,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.viewpager2.widget.ViewPager2
 import com.efedorchenko.timely.R
+import com.efedorchenko.timely.databinding.DialogAccessKeysBinding
 import com.efedorchenko.timely.databinding.FragmentMainBinding
 import com.efedorchenko.timely.security.SecurityService
 import com.efedorchenko.timely.security.SecurityServiceImpl
@@ -112,6 +121,11 @@ class MainFragment : Fragment() {
         )
         rateTextView.text = spannableRateText
 
+        if (securityService.isPrivileged()) {
+            val accessKeysMenuItem = navigationView.menu.findItem(R.id.access_keys)
+            accessKeysMenuItem.isVisible = true
+        }
+
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.fill_period -> {
@@ -119,13 +133,69 @@ class MainFragment : Fragment() {
 
                 R.id.my_team -> {
                 }
+
                 R.id.exit -> {
                     securityService.removeToken()
                     findNavController().navigate(R.id.authFragment)
+                }
+
+                R.id.access_keys -> {
+                    if (menuItem.isVisible) {
+                        showAccessKeysDialog(navigationView.context)
+                    }
                 }
             }
             drawerLayout.closeDrawer(GravityCompat.START)
             true
         }
+    }
+
+    fun showAccessKeysDialog(context: Context) {
+        val binding = DialogAccessKeysBinding.inflate(LayoutInflater.from(context))
+        val dialog = AlertDialog.Builder(context).setView(binding.root).create()
+        dialog.window?.setBackgroundDrawableResource(R.drawable.dialog_background)
+
+        val keys = securityService.requireAccessKeys()
+        binding.workerKey.text = keys.first
+        binding.adminKey.text = keys.second
+
+        setupButtonAnimationAndClick(binding.key1CopyButton, context) {
+            copyToClipboard(context, "worker_key", binding.workerKey.text.toString())
+        }
+
+        setupButtonAnimationAndClick(binding.key2CopyButton, context) {
+            copyToClipboard(context, "admin_key", binding.adminKey.text.toString())
+        }
+
+        dialog.show()
+    }
+
+    private fun setupButtonAnimationAndClick(
+        button: ImageButton, context: Context, onClick: () -> Unit
+    ) {
+        val whiteColor =  ContextCompat.getColor(context, R.color.weekend_gray)
+        val blackColor =  ContextCompat.getColor(context, R.color.dark_gray)
+
+        button.setOnClickListener {
+            button.animate().scaleX(0.9f).scaleY(0.9f).setDuration(150).withEndAction {
+                button.animate().scaleX(1f).scaleY(1f).setDuration(150).start()
+            }.start()
+
+            ValueAnimator.ofArgb(whiteColor, blackColor, whiteColor).apply {
+                duration = 300
+                addUpdateListener { animator ->
+                    button.imageTintList = ColorStateList.valueOf(animator.animatedValue as Int)
+                }
+                doOnEnd { onClick() }
+                start()
+            }
+        }
+    }
+
+
+    fun copyToClipboard(context: Context, label: String, text: String) {
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText(label, text)
+        clipboard.setPrimaryClip(clip)
     }
 }
