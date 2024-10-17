@@ -61,7 +61,7 @@ class LoginFragment : Fragment(), OnTryLoginListener {
 
         val noAccountLink = view.findViewById<TextView>(R.id.noAccountTextView)
         noAccountLink.setOnClickListener {
-            ToastHelper.showToast("Ну и пошел нахуй тогда", requireContext())
+            ToastHelper.noAccount(requireContext())
         }
 
         return view
@@ -74,14 +74,11 @@ class LoginFragment : Fragment(), OnTryLoginListener {
         lifecycleScope.launch {
             val loginResalt = apiService.login(AuthRequest(loginData))
             if (loginResalt == null) {
-                ToastHelper.showToast(
-                    "Проблемы с подключением, проверте работу сети Интернет",
-                    context
-                )
+                ToastHelper.networkError(context)
                 return@launch
             }
             if (loginResalt.status == AuthStatus.FAIL) {
-                ToastHelper.showToast("Неверный логин или пароль", context)
+                ToastHelper.incorrectLoginData(context)
                 return@launch
             }
 

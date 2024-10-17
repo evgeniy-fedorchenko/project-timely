@@ -94,7 +94,7 @@ class CalendarFragment() : OnSaveEventListener() {
         if (event != null && processedCellIdx != null) {
             val targetCell = calendarGrid.getChildAt(processedCellIdx) as? ConstraintLayout
             targetCell?.let {
-                it.setOnClickListener { ToastHelper.showToast(CANNOT_EDIT, requireContext())}
+                it.setOnClickListener { ToastHelper.cannotEditPlaned(requireContext()) }
                 event.applyTo(targetCell)
             }
         }

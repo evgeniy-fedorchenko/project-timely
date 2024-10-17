@@ -75,7 +75,7 @@ class AddEventDialog : BottomSheetDialogFragment() {
             val workDuration = Duration.of(hours * 60 + minutes, ChronoUnit.MINUTES)
 
             if (workDuration.compareTo(MIN_WORK_DURATION) < 0) {
-                ToastHelper.showToast("Минимальная длина: 8 часов", requireContext())
+                ToastHelper.workDurationTooShort(requireContext(), MIN_WORK_DURATION)
             } else {
                 val event = Event(targetDate, workDuration, comment)
                 onSaveEventListener?.onSaveEvent(event, processedCellIdx)

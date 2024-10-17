@@ -54,7 +54,7 @@ class AddFineDialog : BottomSheetDialogFragment() {
         binding.buttonSave.setOnClickListener {
             val fineAmount = fineAmountField.text.toString().toIntOrNull()
             if (fineAmount == null || fineAmount <= 0) {
-                ToastHelper.showToast("Слишком маленькая сумма", requireContext())
+                ToastHelper.fineAmountTooSmall(requireContext())
 
             } else {
                 val receiptDate = LocalDate.of(Year.now().value, targetMonth, selectedDayField.value)
