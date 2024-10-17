@@ -3,18 +3,14 @@ package com.efedorchenko.timely.fragment
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.efedorchenko.timely.R
+import com.efedorchenko.timely.databinding.AuthBinding
 import com.efedorchenko.timely.model.AuthRequest
 import com.efedorchenko.timely.model.AuthStatus
 import com.efedorchenko.timely.security.SecurityService
@@ -27,7 +23,9 @@ import kotlinx.coroutines.launch
 
 class LoginFragment : Fragment(), OnTryLoginListener {
 
-    private lateinit var navController: NavController
+    private var _binding: AuthBinding? = null
+    private val binding get() = _binding!!
+
     private lateinit var securityService: SecurityService
     private val apiService: ApiService by lazy { ApiServiceImpl() }
 
@@ -37,30 +35,20 @@ class LoginFragment : Fragment(), OnTryLoginListener {
         savedInstanceState: Bundle?
     ): View? {
 
-        val view = inflater.inflate(R.layout.auth, container, false)
+        _binding = AuthBinding.inflate(inflater, container, false)
+        val view = binding.root
 
-        view.setOnTouchListener { v, event ->
-            v.performClick()
-            if (event.action == MotionEvent.ACTION_DOWN) {
-                hideKeyboard()
-            }
-            true
-        }
+        view.setOnClickListener { hideKeyboard() }
 
-        val loginField = view.findViewById<EditText>(R.id.loginEditText)
-        val passwordField = view.findViewById<EditText>(R.id.passwordEditText)
-        val button = view.findViewById<Button>(R.id.loginButton)
-
-        button.setOnClickListener {
-            val login = loginField.text.toString()
-            val password = passwordField.text.toString()
+        binding.loginButton.setOnClickListener {
+            val login = binding.loginEditText.text.toString()
+            val password = binding.passwordEditText.text.toString()
             if (!login.isNullOrBlank() && !password.isNullOrBlank()) {
                 this.tryLogin(Pair(login, password))
             }
         }
 
-        val noAccountLink = view.findViewById<TextView>(R.id.noAccountTextView)
-        noAccountLink.setOnClickListener {
+        binding.noAccountTextView.setOnClickListener {
             ToastHelper.noAccount(requireContext())
         }
 
@@ -69,7 +57,7 @@ class LoginFragment : Fragment(), OnTryLoginListener {
 
     override fun tryLogin(loginData: Pair<String, String>) {
         val context = requireContext()
-            securityService = SecurityServiceImpl.getInstance(context)
+        securityService = SecurityServiceImpl.getInstance(context)
 
         lifecycleScope.launch {
             val loginResalt = apiService.login(AuthRequest(loginData))
@@ -83,7 +71,7 @@ class LoginFragment : Fragment(), OnTryLoginListener {
             }
 
 //            'uuid' and 'role' are null only if status = fail
-            securityService.saveToken(loginResalt.uuid!!, loginResalt.role!!)
+            securityService.saveToken(loginResalt.uuid!!, loginResalt.user!!.role)
             findNavController().navigate(R.id.mainFragment)
         }
     }

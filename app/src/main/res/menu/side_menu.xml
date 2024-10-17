@@ -1,12 +1,15 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
+    <menu xmlns:android="http://schemas.android.com/apk/res/android">
+        <item
             android:id="@+id/fill_period"
             android:title="Заполнить период" />
-    <item
+        <item
             android:id="@+id/my_team"
             android:title="Моя команда" />
-
-    <item
+        <item
+            android:id="@+id/access_keys"
+            android:title="Ключи доступа"
+            android:visible="false" />
+        <item
             android:id="@+id/exit"
             android:title="Выход" />
-</menu>
+    </menu>
