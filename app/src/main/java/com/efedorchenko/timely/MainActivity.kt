@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isUserAuthenticated(): Boolean {
-        return securityService.isUserAuthenticated()
+        return securityService.isAuthenticated()
     }
 
     private fun setupInsets() {

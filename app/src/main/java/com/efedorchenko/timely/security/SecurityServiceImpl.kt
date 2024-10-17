@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
 import com.efedorchenko.timely.model.UserRole
+import java.util.UUID
 
 
 class SecurityServiceImpl private constructor(baseContext: Context) : SecurityService {
@@ -24,9 +25,10 @@ class SecurityServiceImpl private constructor(baseContext: Context) : SecuritySe
 
         private const val ESP_NAME: String = "auth_data"
         private const val USER_ROLE_KEY: String = "user_role"
-        private const val API_CREDS: String = "server_api_credentials"
-        private const val CREDS_DELIMETER = ":::"
         private const val TOKEN_KEY = "user_token"
+        private const val ACCESS_KEYS_KEY = "access_keys"
+        private const val API_CREDS_KEY: String = "server_api_credentials"
+        private const val PAIR_DELIMITER = ":::"
     }
 
     private val encSharedPref by lazy {
@@ -39,9 +41,9 @@ class SecurityServiceImpl private constructor(baseContext: Context) : SecuritySe
         )
     }
 
-    override fun isUserAuthenticated(): Boolean {
-        return encSharedPref.contains(USER_ROLE_KEY)
-    }
+    override fun isAuthenticated(): Boolean = encSharedPref.contains(USER_ROLE_KEY)
+
+    override fun isPrivileged(): Boolean = authorize()?.isPrivileged() ?: false
 
     override fun authorize(): UserRole? {
         val userRoleStr = encSharedPref.getString(USER_ROLE_KEY, null)
@@ -50,7 +52,7 @@ class SecurityServiceImpl private constructor(baseContext: Context) : SecuritySe
 
     override fun getApiCreds(): Pair<String, String>? {
         val creds = encSharedPref.getString("auth_token", null)
-        val split = creds?.split(CREDS_DELIMETER)
+        val split = creds?.split(PAIR_DELIMITER)
         if (split != null && split.size == 2) {
             return Pair(split[0], split[1])
         }
@@ -59,7 +61,7 @@ class SecurityServiceImpl private constructor(baseContext: Context) : SecuritySe
 
     override fun setApiCreds(creds: Pair<String, String>) {
         with(encSharedPref.edit()) {
-            putString("basic_auth_credentials", creds.first + CREDS_DELIMETER + creds.second)
+            putString("basic_auth_credentials", creds.first + PAIR_DELIMITER + creds.second)
             apply()
         }
     }
@@ -79,7 +81,22 @@ class SecurityServiceImpl private constructor(baseContext: Context) : SecuritySe
             apply()
         }
     }
-    override fun isPrivileged(): Boolean {
-        return authorize()?.isPrivileged()?: false
+
+    override fun requireAccessKeys(): Pair<String, String> {
+        val keysString = encSharedPref.getString(ACCESS_KEYS_KEY, null)
+            ?: return generateAndSaveKeys()
+
+        return keysString.split(PAIR_DELIMITER).takeIf { it.size == 2 }?.let {
+            Pair(it[0], it[1])
+        } ?: generateAndSaveKeys()
+    }
+
+    private fun generateAndSaveKeys(): Pair<String, String> {
+
+        val workerKey = "worker" + UUID.randomUUID().toString().substring(8)
+        val adminKey = "admin" + UUID.randomUUID().toString().substring(8)
+
+        encSharedPref.edit().putString(ACCESS_KEYS_KEY, "${workerKey}$PAIR_DELIMITER${adminKey}").apply()
+        return Pair(workerKey, adminKey)
     }
 }

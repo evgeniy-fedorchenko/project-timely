@@ -4,7 +4,9 @@ import com.efedorchenko.timely.model.UserRole
 
 interface SecurityService {
 
-    fun isUserAuthenticated(): Boolean
+    fun isAuthenticated(): Boolean
+
+    fun isPrivileged(): Boolean
 
     fun authorize(): UserRole?
 
@@ -16,6 +18,6 @@ interface SecurityService {
 
     fun removeToken()
 
-    fun isPrivileged(): Boolean
+    fun requireAccessKeys(): Pair<String, String>
 
 }
