@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
+    kotlin("kapt")
 }
 
 android {
@@ -59,6 +60,8 @@ dependencies {
     implementation(libs.number.picker)
     implementation(libs.okhttp)
     implementation(libs.threetenabp)
+    implementation(libs.hilt.android)
+    kapt          (libs.hilt.android.compiler)
 
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
