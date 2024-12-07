@@ -4,24 +4,27 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.databinding.SummaryCardBinding
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.Fine
 import com.efedorchenko.timely.security.SecurityService
-import com.efedorchenko.timely.security.SecurityServiceImpl
 import com.efedorchenko.timely.service.MainViewModel
 import com.efedorchenko.timely.service.OnSaveFineListener
+import dagger.hilt.android.AndroidEntryPoint
 import org.threeten.bp.LocalDate
+import javax.inject.Inject
 
-class SummaryFragment() : OnSaveFineListener() {
-
-    private lateinit var viewModel: MainViewModel
-    private lateinit var securityService: SecurityService
+@AndroidEntryPoint
+class SummaryFragment : OnSaveFineListener() {
 
     private var _binding: SummaryCardBinding? = null
     private val binding get() = _binding!!
+    private val viewModel: MainViewModel by viewModels()
+
+    @Inject
+    lateinit var securityService: SecurityService
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,7 +34,6 @@ class SummaryFragment() : OnSaveFineListener() {
         _binding = SummaryCardBinding.inflate(inflater, container, false)
         val view = binding.root
 
-        securityService = SecurityServiceImpl.getInstance(requireContext())
         binding.showFinesButton.setOnClickListener {
             FinesDialogFragment().show(childFragmentManager, "FinesDialog")
         }
@@ -45,17 +47,14 @@ class SummaryFragment() : OnSaveFineListener() {
         addFineButton.setOnClickListener {
             val targetMonth =
                 LocalDate.now().plusMonths(viewModel.monthOffset.value?.toLong() ?: 0).month
-            OnSaveFineListener.fineDialog(targetMonth, this)
-                .show(parentFragmentManager, ADD_FINE_DIALOG_TAG)
+            fineDialog(targetMonth, this).show(parentFragmentManager, ADD_FINE_DIALOG_TAG)
         }
 
         return view
     }
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
         viewModel.events.observe(viewLifecycleOwner) { updateEvents(it) }
         viewModel.fines.observe(viewLifecycleOwner) { updateFines(it) }
     }
@@ -63,7 +62,6 @@ class SummaryFragment() : OnSaveFineListener() {
     override fun onSaveFine(newFine: Fine) {
         viewModel.addFine(newFine)
     }
-
 
     private fun updateEvents(events: List<Event>?) {
         val daysWorked = events?.count().toString()
