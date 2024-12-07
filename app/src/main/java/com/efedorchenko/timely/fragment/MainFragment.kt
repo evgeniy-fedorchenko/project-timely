@@ -21,25 +21,29 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.viewpager2.widget.ViewPager2
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.databinding.DialogAccessKeysBinding
 import com.efedorchenko.timely.databinding.FragmentMainBinding
 import com.efedorchenko.timely.security.SecurityService
-import com.efedorchenko.timely.security.SecurityServiceImpl
 import com.efedorchenko.timely.service.CalendarAdapter
 import com.efedorchenko.timely.service.MainViewModel
 import com.google.android.material.navigation.NavigationView
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainFragment : Fragment() {
 
     private var _binding: FragmentMainBinding? = null
     private val binding get() = _binding!!
+    private val viewModel: MainViewModel by viewModels()
 
-    private lateinit var viewModel: MainViewModel
-    private lateinit var securityService: SecurityService
+    @Inject
+    lateinit var securityService: SecurityService
+
     private lateinit var viewPager: ViewPager2
 
     override fun onCreateView(
@@ -53,10 +57,6 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val baseContext = requireActivity()
-
-        viewModel = ViewModelProvider(baseContext).get(MainViewModel::class.java)
-        securityService = SecurityServiceImpl.getInstance(baseContext)
 
         setupViewPager()
         setupSummaryCard()
@@ -155,7 +155,7 @@ class MainFragment : Fragment() {
         val dialog = AlertDialog.Builder(context).setView(binding.root).create()
         dialog.window?.setBackgroundDrawableResource(R.drawable.dialog_background)
 
-        val keys = securityService.requireAccessKeys()
+        val keys = securityService.getAccessKeys()
         binding.workerKey.text = keys.first
         binding.adminKey.text = keys.second
 
