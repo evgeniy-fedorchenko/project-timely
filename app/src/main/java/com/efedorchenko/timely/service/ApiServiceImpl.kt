@@ -2,6 +2,7 @@ package com.efedorchenko.timely.service
 
 import com.efedorchenko.timely.model.AuthRequest
 import com.efedorchenko.timely.model.AuthResponse
+import com.efedorchenko.timely.security.SecurityService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
@@ -13,8 +14,11 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import java.util.UUID
+import javax.inject.Inject
 
-class ApiServiceImpl : ApiService {
+class ApiServiceImpl @Inject constructor(
+    private val securityService: SecurityService
+) : ApiService {
 
     companion object {
         private const val RQUID = "RqUID"
