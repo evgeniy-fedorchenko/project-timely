@@ -50,6 +50,7 @@ java {
 }
 
 dependencies {
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
 
     implementation(libs.androidx.activity)
     implementation(libs.androidx.appcompat)
@@ -70,6 +71,7 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.threetenabp)
     implementation(libs.hilt.android)
+    implementation(libs.androidx.hilt.navigation.fragment)
     kapt          (libs.hilt.android.compiler)
 
     androidTestImplementation(libs.androidx.espresso.core)
