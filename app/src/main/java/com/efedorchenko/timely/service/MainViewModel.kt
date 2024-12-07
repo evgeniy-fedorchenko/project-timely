@@ -11,23 +11,28 @@ import com.efedorchenko.timely.model.MonthUID
 import com.efedorchenko.timely.model.toEventMap
 import com.efedorchenko.timely.repository.EventRepository
 import com.efedorchenko.timely.repository.FineRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDate
+import javax.inject.Inject
 
 // TODO: Когда юзер логинится - просить все ивенты с бека и обновлять бд
 
-class MainViewModel(application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    application: Application,
+    private val eventRepository: EventRepository,
+    private val fineRepository: FineRepository
+) : AndroidViewModel(application) {
 
     companion object {
         private val eventsCache: MutableMap<MonthUID, MutableMap<LocalDate, Event>> = HashMap()
     }
 
-    private val eventRepository: EventRepository = EventRepository(application)
     private val _events = MutableLiveData<List<Event>>()
     val events: LiveData<List<Event>> get() = _events
 
-    private val fineRepository: FineRepository = FineRepository(application)
     private val _fines = MutableLiveData<List<Fine>>()
     val fines: LiveData<List<Fine>> get() = _fines
 
@@ -89,16 +94,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun delete(position: Int) {
-//        viewModelScope.launch {
-            val currentList = _fines.value?.toMutableList() ?: return
+        val currentList = _fines.value?.toMutableList() ?: return
 
-            _fines.value?.let {
-                val fineIdForDelete = it.get(position).id
-                if (fineRepository.deleteById(fineIdForDelete)) {
-                    currentList.removeAt(position)
-                    _fines.value = currentList
-                }
-//            }
+        _fines.value?.let {
+            val fineIdForDelete = it[position].id
+            if (fineRepository.deleteById(fineIdForDelete)) {
+                currentList.removeAt(position)
+                _fines.value = currentList
+            }
         }
     }
 }
