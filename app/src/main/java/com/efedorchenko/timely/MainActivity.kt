@@ -5,31 +5,26 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.efedorchenko.timely.model.UserRole
 import com.efedorchenko.timely.security.SecurityService
-import com.efedorchenko.timely.security.SecurityServiceImpl
-import com.efedorchenko.timely.service.MainViewModel
-import com.jakewharton.threetenabp.AndroidThreeTen
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
-    lateinit var viewModel: MainViewModel
-
     private lateinit var navController: NavController
-    private lateinit var securityService: SecurityService
+
+    @Inject
+    lateinit var securityService: SecurityService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
         setupInsets()
-        AndroidThreeTen.init(this)
-
-        securityService = SecurityServiceImpl.getInstance(this)
-        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
 
         val navHost = supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment
         navController = navHost.navController
