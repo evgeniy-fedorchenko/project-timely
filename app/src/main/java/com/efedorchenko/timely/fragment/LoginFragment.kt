@@ -14,20 +14,24 @@ import com.efedorchenko.timely.databinding.AuthBinding
 import com.efedorchenko.timely.model.AuthRequest
 import com.efedorchenko.timely.model.AuthStatus
 import com.efedorchenko.timely.security.SecurityService
-import com.efedorchenko.timely.security.SecurityServiceImpl
 import com.efedorchenko.timely.service.ApiService
-import com.efedorchenko.timely.service.ApiServiceImpl
 import com.efedorchenko.timely.service.OnTryLoginListener
 import com.efedorchenko.timely.service.ToastHelper
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class LoginFragment : Fragment(), OnTryLoginListener {
+
+    @Inject
+    lateinit var securityService: SecurityService
+
+    @Inject
+    lateinit var apiService: ApiService
 
     private var _binding: AuthBinding? = null
     private val binding get() = _binding!!
-
-    private lateinit var securityService: SecurityService
-    private val apiService: ApiService by lazy { ApiServiceImpl() }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,7 +47,7 @@ class LoginFragment : Fragment(), OnTryLoginListener {
         binding.loginButton.setOnClickListener {
             val login = binding.loginEditText.text.toString()
             val password = binding.passwordEditText.text.toString()
-            if (!login.isNullOrBlank() && !password.isNullOrBlank()) {
+            if (login.isNotBlank() && password.isNotBlank()) {
                 this.tryLogin(Pair(login, password))
             }
         }
