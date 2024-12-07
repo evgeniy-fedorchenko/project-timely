@@ -13,13 +13,16 @@ import com.efedorchenko.timely.repository.DatabaseConfigurer.Companion.ID_COLUMN
 import com.efedorchenko.timely.repository.DatabaseConfigurer.Companion.MONTH_UID_COLUMN_NAME
 import com.efedorchenko.timely.repository.DatabaseConfigurer.Companion.RECEIPT_DATE_COLUMN_NAME
 import org.threeten.bp.LocalDate
+import javax.inject.Inject
 
-class FineRepository(private val application: Application) {
+class FineRepository @Inject constructor(application: Application) {
 
     private val dbHelper = DatabaseConfigurer.getInstance(application)
 
     fun save(vararg fines: Fine) {
-        fines.forEach { save(it) }
+        if (!fines.isEmpty()) {
+            fines.forEach { save(it) }
+        }
     }
 
     fun save(fine: Fine): Long {
@@ -33,7 +36,7 @@ class FineRepository(private val application: Application) {
 
         val id = db.insert(FINES_TABLE_NAME, null, values)
         if (id == -1L) {
-            Log.e("InsertError", "Error when insert fine ${fine}")
+            Log.e("InsertError", "Error when insert fine $fine")
         }
         return id
     }

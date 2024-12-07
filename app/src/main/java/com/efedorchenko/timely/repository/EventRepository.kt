@@ -13,8 +13,9 @@ import com.efedorchenko.timely.repository.DatabaseConfigurer.Companion.MONTH_UID
 import com.efedorchenko.timely.repository.DatabaseConfigurer.Companion.WORK_MINUTES_COLUMN_NAME
 import org.threeten.bp.Duration
 import org.threeten.bp.LocalDate
+import javax.inject.Inject
 
-class EventRepository(private val application: Application) {
+class EventRepository @Inject constructor(application: Application) {
 
     private val dbHelper = DatabaseConfigurer.getInstance(application)
 
