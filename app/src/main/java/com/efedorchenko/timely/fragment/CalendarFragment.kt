@@ -11,6 +11,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.WRAP_CONTENT
 import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.databinding.CalendarGridLayoutBinding
@@ -20,6 +21,7 @@ import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.service.MainViewModel
 import com.efedorchenko.timely.service.OnSaveEventListener
 import com.efedorchenko.timely.service.ToastHelper
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
@@ -27,8 +29,10 @@ import org.threeten.bp.LocalDate
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import kotlin.getValue
 
-class CalendarFragment() : OnSaveEventListener() {
+@AndroidEntryPoint
+class CalendarFragment : OnSaveEventListener() {
 
     companion object {
         private const val MONTH_OFFSET_ARG = "month_offset"
@@ -43,16 +47,15 @@ class CalendarFragment() : OnSaveEventListener() {
 
     private var _binding: CalendarGridLayoutBinding? = null
     private val binding get() = _binding!!
+    private val viewModel: MainViewModel by viewModels()
 
     private var monthOffset: Int = 0
     private lateinit var monthEventsDef: Deferred<Map<LocalDate, Event>>
     private lateinit var monthEvents: Map<LocalDate, Event>
-    private lateinit var viewModel: MainViewModel
 
     private lateinit var calendarGrid: GridLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        viewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
         monthOffset = arguments?.getInt(MONTH_OFFSET_ARG) ?: 0
         monthEventsDef = viewModel.getEventsAsync(monthOffset)
 
@@ -115,11 +118,9 @@ class CalendarFragment() : OnSaveEventListener() {
             val dayOfMonth = i - dayOfWeekOfFirstDay + 1
             val cellBuilder = CalendarCellBuilder(context)
             when {
-                dayOfMonth < 1 -> {
-                    cellBuilder.setDate(
+                dayOfMonth < 1 -> cellBuilder.setDate(
                         pastMonth.withDayOfMonth(dayOfMonth + pastMonth.lengthOfMonth())
                     )
-                }
 
                 dayOfMonth in 1..currentMonth.lengthOfMonth() -> {
                     val processDate = currentMonth.withDayOfMonth(dayOfMonth)

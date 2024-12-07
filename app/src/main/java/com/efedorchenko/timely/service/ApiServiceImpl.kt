@@ -1,7 +1,8 @@
 package com.efedorchenko.timely.service
 
 import com.efedorchenko.timely.model.AuthRequest
-import com.efedorchenko.timely.model.AuthResponse
+import com.efedorchenko.timely.model.auth.AuthResponse
+import com.efedorchenko.timely.model.auth.RegisterRequest
 import com.efedorchenko.timely.security.SecurityService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
