@@ -5,20 +5,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.databinding.FinesDialogBinding
 import com.efedorchenko.timely.service.FinesAdapter
 import com.efedorchenko.timely.service.MainViewModel
 import com.efedorchenko.timely.service.SpaceItemDecoration
+import kotlin.getValue
 
 class FinesDialogFragment : DialogFragment() {
 
     private var _binding: FinesDialogBinding? = null
     private val binding get() = _binding!!
-
-    private lateinit var viewModel: MainViewModel
+    private val viewModel: MainViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,7 +31,6 @@ class FinesDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
 
         binding.finesRecyclerView.layoutManager = LinearLayoutManager(context)
         val fines = viewModel.fines.value
