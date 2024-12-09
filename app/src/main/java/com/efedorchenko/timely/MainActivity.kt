@@ -7,7 +7,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
-import com.efedorchenko.timely.model.UserRole
+import com.efedorchenko.timely.model.auth.RoleType
 import com.efedorchenko.timely.security.SecurityService
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -38,17 +38,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun navigateToMain() {
-        val userRole = securityService.authorize()
+//        val userRole = securityService.authorize()
+        val userRole = RoleType.WORKER
         when (userRole) {
-            UserRole.WORKER -> navController.navigate(R.id.mainFragment)
-            UserRole.BOSS -> navController.navigate(R.id.mainFragment)
-            UserRole.CREATOR -> navController.navigate(R.id.mainFragment)
+            RoleType.WORKER -> navController.navigate(R.id.mainFragment)
+            RoleType.BOSS -> navController.navigate(R.id.mainFragment)
+            RoleType.CREATOR -> navController.navigate(R.id.mainFragment)
             null -> navController.navigate(R.id.authFragment)
         }
     }
 
     private fun isUserAuthenticated(): Boolean {
-        return securityService.isAuthenticated()
+//        return securityService.isAuthenticated()
+        return true
     }
 
     private fun setupInsets() {
