@@ -2,8 +2,8 @@
 agp = "8.7.3"
 desugar_jdk_libs = "2.1.3"
 hiltNavigationFragment = "1.2.0"
-kotlin = "2.0.20"
-coreKtx = "1.13.1"
+kotlin = "1.9.25"   # kapt doesn't supported 1.9+
+coreKtx = "1.13.1"   # for up needs targetSdk > 34
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"

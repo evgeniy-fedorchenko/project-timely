@@ -49,6 +49,10 @@ java {
     }
 }
 
+kapt {
+    correctErrorTypes = true   // Разрешить ссылки на сгенерированный код
+}
+
 dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 
