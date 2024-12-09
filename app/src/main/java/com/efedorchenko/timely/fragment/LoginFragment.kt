@@ -12,7 +12,6 @@ import androidx.navigation.fragment.findNavController
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.databinding.AuthBinding
 import com.efedorchenko.timely.model.AuthRequest
-import com.efedorchenko.timely.model.AuthStatus
 import com.efedorchenko.timely.security.SecurityService
 import com.efedorchenko.timely.service.ApiService
 import com.efedorchenko.timely.service.OnTryLoginListener
@@ -61,21 +60,29 @@ class LoginFragment : Fragment(), OnTryLoginListener {
 
     override fun tryLogin(loginData: Pair<String, String>) {
         val context = requireContext()
-        securityService = SecurityServiceImpl.getInstance(context)
 
         lifecycleScope.launch {
-            val loginResalt = apiService.login(AuthRequest(loginData))
-            if (loginResalt == null) {
+            val loginResult = apiService.login(AuthRequest(loginData))
+            loginResult.onFailure {
                 ToastHelper.networkError(context)
                 return@launch
             }
-            if (loginResalt.status == AuthStatus.FAIL) {
-                ToastHelper.incorrectLoginData(context)
+            val loginResponse = loginResult.getOrNull()
+            if (loginResponse == null) {
+                ToastHelper.networkError(context)
                 return@launch
             }
 
-//            'uuid' and 'role' are null only if status = fail
-            securityService.saveToken(loginResalt.uuid!!, loginResalt.user!!.role)
+            if (!loginResponse.isRegister) {
+                ToastHelper.message(loginResponse.errorCode?.description.toString(), context)
+                return@launch
+            }
+
+//            'jwtToken', 'userId' and 'role' are null only if isRegister == false
+            // TODO: объединить
+            securityService.saveApiToken(loginResponse.jwtToken.toString())
+            securityService.saveUserId(loginResponse.userId!!)
+            securityService.saveRole(loginResponse.role!!)
             findNavController().navigate(R.id.mainFragment)
         }
     }

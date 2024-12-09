@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
 
-class DatabaseConfigurer private constructor(private val application: Application) :
+class DatabaseConfigurer private constructor(application: Application) :
     SQLiteOpenHelper(application, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
