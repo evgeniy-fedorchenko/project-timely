@@ -1,6 +1,7 @@
 package com.efedorchenko.timely.security
 
-import com.efedorchenko.timely.model.UserRole
+import com.efedorchenko.timely.model.auth.RoleType
+import java.util.*
 
 interface SecurityService {
 
@@ -8,16 +9,18 @@ interface SecurityService {
 
     fun isPrivileged(): Boolean
 
-    fun authorize(): UserRole?
+    fun authorize(): RoleType?
 
-    fun getApiCreds(): Pair<String, String>?
+    fun saveApiToken(token: String)
 
-    fun setApiCreds(creds: Pair<String, String>)
-
-    fun saveToken(userToken: String, role: UserRole)
+    fun saveRole(role: RoleType)
 
     fun removeToken()
 
-    fun requireAccessKeys(): Pair<String, String>
+    fun removeRole()
+
+    fun getAccessKeys(): Pair<String, String>
+
+    fun saveUserId(userId: UUID)
 
 }

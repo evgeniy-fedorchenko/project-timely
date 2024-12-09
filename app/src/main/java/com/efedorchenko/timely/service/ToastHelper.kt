@@ -7,9 +7,9 @@ import org.threeten.bp.Duration
 
 object ToastHelper {
 
-    private const val KEY_CPOIED =                      "Ключ скопирован"
+    private const val KEY_COPIED =                      "Ключ скопирован"
     private const val NO_ACCOUNT =                      "Ну и пошел нахуй тогда"
-    private const val DATE_PASSSED =                    "Эта дата уже прошла"
+    private const val DATE_PASSED =                     "Эта дата уже прошла"
     private const val NETWORK_ERROR =                   "Проблемы с подключением, проверте работу сети Интернет"
     private const val CANNOT_EDIT_PLANED =              "Запланированную смену нельзя редактировать!"
     private const val INCORRECT_LOGIN_DATA =            "Неверный логин или пароль"
@@ -17,14 +17,15 @@ object ToastHelper {
     private const val WORK_DURATION_TOO_SHORT_PATTERN = "Минимальная длина: %s часов"
 
 
-    fun keyCopied(context: Context) =          showToast(KEY_CPOIED, context)
-    fun noAccount(context: Context) =          showToast(NO_ACCOUNT, context)
-    fun datePassed(context: Context) =         showToast(DATE_PASSSED, context)
-    fun networkError(context: Context) =       showToast(NETWORK_ERROR, context)
-    fun cannotEditPlaned(context: Context) =   showToast(CANNOT_EDIT_PLANED, context)
-    fun fineAmountTooSmall(context: Context) = showToast(FINE_AMOUNT_TOO_SMALL, context)
+    fun message(message: String, context: Context) = showToast(message, context)
+    fun keyCopied(context: Context) =                showToast(KEY_COPIED, context)
+    fun noAccount(context: Context) =                showToast(NO_ACCOUNT, context)
+    fun datePassed(context: Context) =               showToast(DATE_PASSED, context)
+    fun networkError(context: Context) =             showToast(NETWORK_ERROR, context)
+    fun cannotEditPlaned(context: Context) =         showToast(CANNOT_EDIT_PLANED, context)
+    fun fineAmountTooSmall(context: Context) =       showToast(FINE_AMOUNT_TOO_SMALL, context)
 
-    fun incorrectLoginData(context: Context) = showToast(INCORRECT_LOGIN_DATA, context)
+    fun incorrectLoginData(context: Context) =       showToast(INCORRECT_LOGIN_DATA, context)
 
     fun workDurationTooShort(context: Context, minWorkDuration: Duration) {
         return showToast(WORK_DURATION_TOO_SHORT_PATTERN.format(minWorkDuration), context)

@@ -3,8 +3,8 @@ package com.efedorchenko.timely.security
 import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
-import com.efedorchenko.timely.model.UserRole
-import java.util.UUID
+import com.efedorchenko.timely.model.auth.RoleType
+import java.util.*
 
 
 class SecurityServiceImpl private constructor(baseContext: Context) : SecurityService {
@@ -23,12 +23,12 @@ class SecurityServiceImpl private constructor(baseContext: Context) : SecuritySe
             return _instance!!
         }
 
-        private const val ESP_NAME: String = "auth_data"
+        private const val ESP_NAME: String = "security_data"
         private const val USER_ROLE_KEY: String = "user_role"
-        private const val TOKEN_KEY = "user_token"
-        private const val ACCESS_KEYS_KEY = "access_keys"
-        private const val API_CREDS_KEY: String = "server_api_credentials"
-        private const val PAIR_DELIMITER = ":::"
+        private const val API_TOKEN_KEY = "user_api_token"
+        private const val USER_ID_KEY = "user_id"
+        private const val SPACE_ACCESS_KEYS_KEY = "access_keys"
+//        private const val PAIR_DELIMITER = ":::"
     }
 
     private val encSharedPref by lazy {
@@ -41,62 +41,56 @@ class SecurityServiceImpl private constructor(baseContext: Context) : SecuritySe
         )
     }
 
-    override fun isAuthenticated(): Boolean = encSharedPref.contains(USER_ROLE_KEY)
+    override fun isAuthenticated(): Boolean {
+        return encSharedPref.contains(USER_ROLE_KEY)
+    }
 
-    override fun isPrivileged(): Boolean = authorize()?.isPrivileged() ?: false
+    override fun isPrivileged(): Boolean = authorize()?.isPrivileged() == true
 
-    override fun authorize(): UserRole? {
+    override fun authorize(): RoleType? {
         val userRoleStr = encSharedPref.getString(USER_ROLE_KEY, null)
-        return userRoleStr?.let { UserRole.valueOf(it) }
+        return userRoleStr?.let { RoleType.valueOf(it) }
     }
 
-    override fun getApiCreds(): Pair<String, String>? {
-        val creds = encSharedPref.getString("auth_token", null)
-        val split = creds?.split(PAIR_DELIMITER)
-        if (split != null && split.size == 2) {
-            return Pair(split[0], split[1])
-        }
-        return null;
-    }
-
-    override fun setApiCreds(creds: Pair<String, String>) {
+    override fun saveApiToken(token: String) {
         with(encSharedPref.edit()) {
-            putString("basic_auth_credentials", creds.first + PAIR_DELIMITER + creds.second)
+            putString(API_TOKEN_KEY, token)
             apply()
         }
     }
 
-    override fun saveToken(userToken: String, role: UserRole) {
-        with(encSharedPref.edit()) {
-            putString(TOKEN_KEY, userToken)
-            putString(USER_ROLE_KEY, role.name)
-            apply()
-        }
+    override fun saveRole(role: RoleType) {
+        TODO("Not yet implemented")
     }
 
     override fun removeToken() {
         with(encSharedPref.edit()) {
-            remove(TOKEN_KEY)
-            remove(USER_ROLE_KEY)
+            remove(API_TOKEN_KEY)
             apply()
         }
     }
 
-    override fun requireAccessKeys(): Pair<String, String> {
-        val keysString = encSharedPref.getString(ACCESS_KEYS_KEY, null)
-            ?: return generateAndSaveKeys()
-
-        return keysString.split(PAIR_DELIMITER).takeIf { it.size == 2 }?.let {
-            Pair(it[0], it[1])
-        } ?: generateAndSaveKeys()
+    override fun removeRole() {
+        TODO("Not yet implemented")
     }
 
-    private fun generateAndSaveKeys(): Pair<String, String> {
-
-        val workerKey = "worker" + UUID.randomUUID().toString().substring(8)
-        val adminKey = "admin" + UUID.randomUUID().toString().substring(8)
-
-        encSharedPref.edit().putString(ACCESS_KEYS_KEY, "${workerKey}$PAIR_DELIMITER${adminKey}").apply()
-        return Pair(workerKey, adminKey)
+    override fun getAccessKeys(): Pair<String, String> {
+        TODO("Not yet implemented")
     }
+
+    override fun saveUserId(userId: UUID) {
+        with(encSharedPref.edit()) {
+            putString(USER_ID_KEY, userId.toString())
+            apply()
+        }
+    }
+
+//    override fun getAccessKeys(): Pair<String, String> {
+//        val keysString = encSharedPref.getString(SPACE_ACCESS_KEYS_KEY, null)
+//            ?: return generateAndSaveKeys()
+//
+//        return keysString.split(PAIR_DELIMITER).takeIf { it.size == 2 }?.let {
+//            Pair(it[0], it[1])
+//        } ?: generateAndSaveKeys()
+//    }
 }
