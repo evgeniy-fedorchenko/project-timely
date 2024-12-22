@@ -11,8 +11,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.WRAP_CONTENT
 import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.databinding.CalendarGridLayoutBinding
 import com.efedorchenko.timely.model.CalendarCellBuilder
@@ -29,7 +28,6 @@ import org.threeten.bp.LocalDate
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
-import kotlin.getValue
 
 @AndroidEntryPoint
 class CalendarFragment : OnSaveEventListener() {
@@ -47,7 +45,7 @@ class CalendarFragment : OnSaveEventListener() {
 
     private var _binding: CalendarGridLayoutBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: MainViewModel by viewModels()
+    private val viewModel: MainViewModel by activityViewModels()
 
     private var monthOffset: Int = 0
     private lateinit var monthEventsDef: Deferred<Map<LocalDate, Event>>

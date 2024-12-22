@@ -5,26 +5,27 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.databinding.FinesDialogBinding
 import com.efedorchenko.timely.service.FinesAdapter
 import com.efedorchenko.timely.service.MainViewModel
 import com.efedorchenko.timely.service.SpaceItemDecoration
-import kotlin.getValue
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class FinesDialogFragment : DialogFragment() {
 
     private var _binding: FinesDialogBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: MainViewModel by viewModels()
+    private val viewModel: MainViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FinesDialogBinding.inflate(inflater, container, false)
         return binding.root
     }

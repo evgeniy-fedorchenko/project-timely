@@ -51,7 +51,7 @@ class MainViewModel @Inject constructor(
         _events.value = (_events.value ?: emptyList()) + event
         viewModelScope.launch {
             eventRepository.save(event)
-            var monthEvents = eventsCache[MonthUID.create(event.eventDate)]
+            val monthEvents = eventsCache[MonthUID.create(event.eventDate)]
             monthEvents?.let { monthEvents[event.eventDate] = event }
         }
     }

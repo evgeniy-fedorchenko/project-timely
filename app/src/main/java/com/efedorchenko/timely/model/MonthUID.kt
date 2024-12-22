@@ -20,8 +20,12 @@ class MonthUID private constructor(private val value: Int) {
     }
 
     override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
+        if (this === other) {
+            return true
+        }
+        if (other == null || this::class != other::class) {
+            return false
+        }
         other as MonthUID
         return value == other.value
     }

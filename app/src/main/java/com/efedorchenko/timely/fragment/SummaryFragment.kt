@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.databinding.SummaryCardBinding
 import com.efedorchenko.timely.model.Event
@@ -21,7 +21,7 @@ class SummaryFragment : OnSaveFineListener() {
 
     private var _binding: SummaryCardBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: MainViewModel by viewModels()
+    private val viewModel: MainViewModel by activityViewModels()
 
     @Inject
     lateinit var securityService: SecurityService
@@ -30,7 +30,7 @@ class SummaryFragment : OnSaveFineListener() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = SummaryCardBinding.inflate(inflater, container, false)
         val view = binding.root
 
@@ -45,8 +45,9 @@ class SummaryFragment : OnSaveFineListener() {
         val addFineButton = binding.addFineButton
         addFineButton.visibility = View.VISIBLE
         addFineButton.setOnClickListener {
-            val targetMonth =
-                LocalDate.now().plusMonths(viewModel.monthOffset.value?.toLong() ?: 0).month
+            val monthOffset = viewModel.monthOffset.value?.toLong() ?: 0
+            val targetDate = LocalDate.now().plusMonths(monthOffset)
+            val targetMonth = targetDate.month
             fineDialog(targetMonth, this).show(parentFragmentManager, ADD_FINE_DIALOG_TAG)
         }
 

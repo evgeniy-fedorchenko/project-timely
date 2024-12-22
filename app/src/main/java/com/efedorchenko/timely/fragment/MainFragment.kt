@@ -20,8 +20,8 @@ import androidx.core.animation.doOnEnd
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.commit
-import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.viewpager2.widget.ViewPager2
 import com.efedorchenko.timely.R
@@ -39,7 +39,7 @@ class MainFragment : Fragment() {
 
     private var _binding: FragmentMainBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: MainViewModel by viewModels()
+    private val viewModel: MainViewModel by activityViewModels()
 
     @Inject
     lateinit var securityService: SecurityService
@@ -50,7 +50,7 @@ class MainFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentMainBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -150,7 +150,7 @@ class MainFragment : Fragment() {
         }
     }
 
-    fun showAccessKeysDialog(context: Context) {
+    private fun showAccessKeysDialog(context: Context) {
         val binding = DialogAccessKeysBinding.inflate(LayoutInflater.from(context))
         val dialog = AlertDialog.Builder(context).setView(binding.root).create()
         dialog.window?.setBackgroundDrawableResource(R.drawable.dialog_background)
@@ -193,7 +193,7 @@ class MainFragment : Fragment() {
     }
 
 
-    fun copyToClipboard(context: Context, label: String, text: String) {
+    private fun copyToClipboard(context: Context, label: String, text: String) {
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText(label, text)
         clipboard.setPrimaryClip(clip)
