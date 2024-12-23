@@ -10,6 +10,7 @@
     <color name="orange">#ea7f13</color>
     <color name="base_background">#202020</color>
     <color name="red">#b20000</color>
+    <color name="light_red">#ffd9d9</color>
     <color name="green">#009100</color>
 
 </resources>

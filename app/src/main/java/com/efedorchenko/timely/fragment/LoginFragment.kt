@@ -36,27 +36,59 @@ class LoginFragment : Fragment(), OnTryLoginListener {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
         _binding = AuthBinding.inflate(inflater, container, false)
         val view = binding.root
 
-        view.setOnClickListener { hideKeyboard() }
+        view.setOnClickListener {
+            hideKeyboard()
+        }
 
+        binding.loginEditText.addTextChangedListener(
+            createTextWatcher(binding.loginEditText, Model::isLoginValid)
+        )
+        binding.passwordEditText.addTextChangedListener(
+            createTextWatcher(binding.passwordEditText, Model::isPasswordValid)
+        )
+
+        val context = requireContext()
         binding.loginButton.setOnClickListener {
             val login = binding.loginEditText.text.toString()
             val password = binding.passwordEditText.text.toString()
-            if (login.isNotBlank() && password.isNotBlank()) {
-                this.tryLogin(Pair(login, password))
+            val loginPair = Pair(login, password)
+            if (!Model.isLoginPairValid(loginPair)) {
+                ToastHelper.incorrectLoginData(context)
+            } else {
+                this.tryLogin(loginPair)
             }
         }
 
         binding.noAccountTextView.setOnClickListener {
-            ToastHelper.noAccount(requireContext())
+            ToastHelper.noAccount(context)
         }
 
         return view
     }
+
+    private fun createTextWatcher(editText: EditText, validator: (String) -> Boolean) =
+        object : TextWatcher {
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                val input = s.toString()
+                if (input.isEmpty()) {
+                    editText.setBackgroundResource(R.drawable.login_form_background)
+                } else {
+                    val isValid = validator(input)
+                    editText.setBackgroundResource(
+                        if (isValid) R.drawable.login_form_background
+                        else R.drawable.login_form_background_error
+                    )
+                }
+            }
+        }
 
     override fun tryLogin(loginData: Pair<String, String>) {
         val context = requireContext()
