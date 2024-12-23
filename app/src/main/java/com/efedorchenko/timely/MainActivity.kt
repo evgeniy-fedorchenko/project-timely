@@ -38,8 +38,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun navigateToMain() {
-//        val userRole = securityService.authorize()
-        val userRole = RoleType.WORKER
+        val userRole = securityService.authorize()
         when (userRole) {
             RoleType.WORKER -> navController.navigate(R.id.mainFragment)
             RoleType.BOSS -> navController.navigate(R.id.mainFragment)
@@ -49,8 +48,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isUserAuthenticated(): Boolean {
-//        return securityService.isAuthenticated()
-        return true
+        return securityService.isAuthenticated()
     }
 
     private fun setupInsets() {

@@ -13,8 +13,9 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
 import org.json.JSONException
-import java.util.*
+import java.util.UUID
 import javax.inject.Inject
 
 class ApiServiceImpl @Inject constructor(
@@ -24,7 +25,7 @@ class ApiServiceImpl @Inject constructor(
     companion object {
         private const val RQUID = "RqUID"
         private const val AUTHORIZATION = "Authorization"
-        private const val BASE_URL = "http://localhost:8080/api/v1"
+        private const val BASE_URL = "http://192.168.1.104:8080/api/v1"
         private const val REG_PATH = "/auth/reg"
         private const val LOGIN_PATH = "/auth/login"
         private val APPLICATION_JSON = "application/json".toMediaType()
@@ -40,7 +41,8 @@ class ApiServiceImpl @Inject constructor(
                 .post(Json.encodeToString(authRequest).toRequestBody(APPLICATION_JSON))
                 .build()
 
-            return@withContext execute<AuthResponse>(request)
+            val execute = execute<AuthResponse>(request)
+            return@withContext execute
         }
 
     override suspend fun register(registerRequest: RegisterRequest): Result<AuthResponse> =
@@ -55,15 +57,22 @@ class ApiServiceImpl @Inject constructor(
         }
 
     private inline fun <reified T> execute(request: Request): Result<T> = runCatching {
+        var response: Response? = null;
         try {
 
-            val response = client.newCall(request).execute()
+            response = client.newCall(request).execute()
+            if (!response.isSuccessful) {
+                throw NetworkException(response.code, "Request is not successful. ")
+            }
             val body = response.body?.string()
-                ?: throw NetworkException("Response body is null or empty")
+                ?: throw NetworkException(response.code, "Response body is null or empty")
 
             return Result.success(Json.decodeFromString<T>(body))
         } catch (ex: JSONException) {
-            throw NetworkException("Unexpected response body. Ex: " + ex.message)
+            throw NetworkException(
+                response?.code ?: 0,
+                "Unexpected response body. Ex: " + ex.message
+            )
         }
     }
 

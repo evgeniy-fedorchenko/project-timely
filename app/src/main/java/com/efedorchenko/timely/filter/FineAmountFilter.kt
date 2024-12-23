@@ -16,9 +16,9 @@ class FineAmountFilter : InputFilter {
     ): CharSequence? {
 
         return when {
-            source.isEmpty() == true -> ALLOWED
-            source.matches(Regex("[0-9:]*")) == false -> PROHIBITED
-            dest.let { dest.length >= MAX_SYMBOLS } == true -> PROHIBITED
+            source.isEmpty() -> ALLOWED
+            !source.matches(Regex("[0-9:]*")) -> PROHIBITED
+            dest.let { dest.length >= MAX_SYMBOLS } -> PROHIBITED
             source.length + dest.length > MAX_SYMBOLS -> PROHIBITED
 
             else -> ALLOWED

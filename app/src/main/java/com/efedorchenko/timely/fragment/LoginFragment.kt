@@ -2,16 +2,20 @@ package com.efedorchenko.timely.fragment
 
 import android.content.Context
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.databinding.AuthBinding
 import com.efedorchenko.timely.model.AuthRequest
+import com.efedorchenko.timely.model.Model
 import com.efedorchenko.timely.security.SecurityService
 import com.efedorchenko.timely.service.ApiService
 import com.efedorchenko.timely.service.OnTryLoginListener
@@ -95,11 +99,18 @@ class LoginFragment : Fragment(), OnTryLoginListener {
 
         lifecycleScope.launch {
             val loginResult = apiService.login(AuthRequest(loginData))
-            loginResult.onFailure {
-                ToastHelper.networkError(context)
-                return@launch
-            }
             val loginResponse = loginResult.getOrNull()
+            loginResult.onFailure {
+                if (loginResponse == null) {
+                    ToastHelper.networkError(context)
+                    return@launch
+//                } else if (loginResponse.) {
+//
+                }
+
+
+
+            }
             if (loginResponse == null) {
                 ToastHelper.networkError(context)
                 return@launch
