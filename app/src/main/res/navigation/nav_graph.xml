@@ -6,15 +6,47 @@
 
     <fragment
             android:id="@+id/authFragment"
-            android:name="com.efedorchenko.timely.fragment.LoginFragment"
+            android:name="com.efedorchenko.timely.fragment.AuthFragment"
             android:label="AuthFragment" >
         <action
                 android:id="@+id/action_authFragment_to_mainFragment"
                 app:destination="@id/mainFragment" />
+        <action
+            android:id="@+id/action_authFragment_to_registerDispatcherFragment"
+            app:destination="@id/registerDispatcherFragment" />
     </fragment>
 
     <fragment
             android:id="@+id/mainFragment"
             android:name="com.efedorchenko.timely.fragment.MainFragment"
             android:label="MainFragment" />
+
+    <fragment
+            android:id="@+id/registerDispatcherFragment"
+            android:name="com.efedorchenko.timely.fragment.RegisterDispatcherFragment"
+            android:label="MainFragment">
+        <action
+            android:id="@+id/action_registerDispatcherFragment_to_registerWorkerFragment"
+            app:destination="@id/registerWorkerFragment" />
+        <action
+            android:id="@+id/action_registerDispatcherFragment_to_registerBossFragment"
+            app:destination="@id/registerBossFragment" />
+        <action
+            android:id="@+id/action_registerDispatcherFragment_to_registerCreatorFragment"
+            app:destination="@id/registerCreatorFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/registerWorkerFragment"
+        android:name="com.efedorchenko.timely.fragment.RegisterWorkerFragment"
+        android:label="RegisterWorkerFragment" />
+    <fragment
+        android:id="@+id/registerBossFragment"
+        android:name="com.efedorchenko.timely.fragment.RegisterBossFragment"
+        android:label="RegisterBossFragment" />
+    <fragment
+        android:id="@+id/registerCreatorFragment"
+        android:name="com.efedorchenko.timely.fragment.RegisterCreatorFragment"
+        android:label="RegisterCreatorFragment" />
+
 </navigation>
