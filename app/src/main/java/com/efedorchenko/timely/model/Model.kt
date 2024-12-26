@@ -77,4 +77,16 @@ object Model {
     fun isLoginPairValid(loginPair: Pair<String, String>): Boolean {
         return isLoginValid(loginPair.first) && isPasswordValid(loginPair.second)
     }
+
+    fun isRepeatPasswordValid(repeatPassword: String, password: String): Boolean {
+        return password == repeatPassword && isPasswordValid(repeatPassword)
+    }
+
+    fun isNameValid(name: String): Boolean {
+        return name.isNotEmpty() && name.length < 255
+    }
+
+    fun isSpaceKeyValid(spaceKey: String): Boolean {
+        return spaceKey.isNotEmpty() && spaceKey.length < 36
+    }
 }

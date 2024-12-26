@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.filter
+package com.efedorchenko.timely.input
 
 import android.text.InputFilter
 import android.text.Spanned

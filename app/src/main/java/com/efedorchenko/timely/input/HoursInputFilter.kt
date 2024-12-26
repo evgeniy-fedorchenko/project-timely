@@ -1,12 +1,12 @@
-package com.efedorchenko.timely.filter
+package com.efedorchenko.timely.input
 
 import android.text.InputFilter
 import android.text.Spanned
 
-class MinutesInputFilter : InputFilter {
+class HoursInputFilter : InputFilter {
 
     companion object {
-        private val VALID_FIRST_CHAR: List<String> = listOf("0", "1", "2", "3", "4", "5")
+        private val VALID_PAST_TWO: List<CharSequence> = listOf("0", "1", "2", "3")
         private val ALLOWED: String? = null
         private const val PROHIBITED: String = ""
     }
@@ -18,14 +18,18 @@ class MinutesInputFilter : InputFilter {
         return when {
             dest?.isEmpty() == true -> ALLOWED
             source?.matches(Regex("[0-9:]*")) == false -> PROHIBITED
-
-            else -> {
+            else ->
                 when (source?.length?.let { dest?.length?.plus(it) }) {
                     1 -> ALLOWED
-                    2 -> if (VALID_FIRST_CHAR.contains(dest.toString())) ALLOWED else PROHIBITED
+                    2 -> if ("0" == dest.toString()
+                        || "1" == dest.toString()
+                        || ("2" == dest.toString() && VALID_PAST_TWO.contains(source))
+                    ) {
+                        ALLOWED
+                    } else PROHIBITED
+
                     else -> PROHIBITED
                 }
-            }
         }
     }
 
