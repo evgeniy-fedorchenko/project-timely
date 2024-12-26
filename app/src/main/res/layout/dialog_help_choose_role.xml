@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/summary_card_background"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start"
+        android:text="Регистрация"
+        android:textColor="@color/light_gray"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start"
+        android:paddingTop="5dp"
+        android:text="Чтобы начать следить за своим рабочим временем, вам необходимо зарегистрировать аккаунт и выбрать свою роль, которую вы занимаете в компании"
+        android:textColor="@color/light_gray"
+        android:textSize="16sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start"
+        android:paddingTop="20dp"
+        android:text="Выбор роли"
+        android:textColor="@color/light_gray"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start"
+        android:paddingTop="5dp"
+        android:text="Выбирайте роль, изходя из действительно занимаемой вами должности в компаии, например:"
+        android:textColor="@color/light_gray"
+        android:textSize="16sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start"
+        android:paddingStart="20dp"
+        android:paddingTop="5dp"
+        android:text="Для планирования своего рабочего времени под контролем руководителя, выберете первую роль"
+        android:textColor="@color/light_gray"
+        android:textSize="14sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start"
+        android:paddingStart="20dp"
+        android:paddingTop="5dp"
+        android:text="Для присоединения к существующей компании и управления сменами сотрудников выберете вторую роль"
+        android:textColor="@color/light_gray"
+        android:textSize="14sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start"
+        android:paddingStart="20dp"
+        android:paddingTop="5dp"
+        android:text="Для создания нового рабочего пространства, куда смогут вступать сотрудники и другие руководители, выберете третью роль"
+        android:textColor="@color/light_gray"
+        android:textSize="14sp" />
+
+    <Button
+        android:id="@+id/closeButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:background="@android:color/transparent"
+        android:text="Ок"
+        android:textColor="@color/orange"
+        android:textSize="16sp" />
+</LinearLayout>

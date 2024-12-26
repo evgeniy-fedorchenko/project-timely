@@ -9,14 +9,31 @@
     android:padding="16dp"
     tools:context=".MainActivity">
 
-    <TextView
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="20dp"
+        android:orientation="vertical"
         android:gravity="center"
-        android:text="Timely"
-        android:textSize="24sp"
-        android:textStyle="bold" />
+        android:layout_marginBottom="40dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:gravity="center"
+            android:text="Timely"
+            android:textSize="32sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Вход"
+            android:textSize="20sp"
+            android:textColor="#666666" />
+    </LinearLayout>
+
 
     <EditText
         android:id="@+id/loginEditText"
@@ -25,7 +42,7 @@
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
         android:layout_marginBottom="10dp"
-        android:background="@drawable/login_form_background"
+        android:background="@drawable/auth_form_background"
         android:hint="ФИО или E-mail"
         android:padding="10dp"
         android:textColor="@color/black"
@@ -38,7 +55,7 @@
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
         android:layout_marginBottom="20dp"
-        android:background="@drawable/login_form_background"
+        android:background="@drawable/auth_form_background"
         android:hint="Пароль"
         android:inputType="textPassword"
         android:padding="10dp"
@@ -61,7 +78,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="30dp"
         android:autoLink="web"
         android:clickable="true"
         android:focusable="true"

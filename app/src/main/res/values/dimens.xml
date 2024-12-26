@@ -5,4 +5,5 @@
     <dimen name="half_px">0.5px</dimen>
     <dimen name="work_duration_bottom">6dp</dimen>
     <dimen name="item_spacing_horizontal">1dp</dimen>
+    <dimen name="scroll_margin_top">80dp</dimen>
 </resources>

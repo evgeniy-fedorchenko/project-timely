@@ -5,4 +5,9 @@
     <string name="hours_worked_text">Отработано часов: %s</string>
     <string name="fines_count_text">Всего: %s</string>
     <string name="fines_amount_text">Сумма: %s руб.</string>
+    <string name="choose_role_first_buttons_description">
+1ый вариант: Для планирования своего рабочего времени под контролем руководителя\n
+Для присоединения к существующей компании и управления сменами сотрудников выберете 2ую роль
+Для создания нового рабочего пространства, куда смогут вступать сотрудники и другие руководители выберете 3ю роль
+    </string>
 </resources>
