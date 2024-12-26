@@ -8,9 +8,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import com.efedorchenko.timely.databinding.AddEventBinding
-import com.efedorchenko.timely.filter.CommentInputFilter
-import com.efedorchenko.timely.filter.HoursInputFilter
-import com.efedorchenko.timely.filter.MinutesInputFilter
+import com.efedorchenko.timely.input.CommentInputFilter
+import com.efedorchenko.timely.input.HoursInputFilter
+import com.efedorchenko.timely.input.MinutesInputFilter
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.service.OnSaveEventListener
 import com.efedorchenko.timely.service.ToastHelper

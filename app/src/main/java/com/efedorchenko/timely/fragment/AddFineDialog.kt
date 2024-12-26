@@ -5,8 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.efedorchenko.timely.databinding.AddFineBinding
-import com.efedorchenko.timely.filter.CommentInputFilter
-import com.efedorchenko.timely.filter.FineAmountFilter
+import com.efedorchenko.timely.input.CommentInputFilter
+import com.efedorchenko.timely.input.FineAmountFilter
 import com.efedorchenko.timely.model.Fine
 import com.efedorchenko.timely.service.OnSaveFineListener
 import com.efedorchenko.timely.service.ToastHelper
