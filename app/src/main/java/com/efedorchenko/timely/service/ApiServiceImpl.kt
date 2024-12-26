@@ -1,6 +1,6 @@
 package com.efedorchenko.timely.service
 
-import com.efedorchenko.timely.exception.NetworkException
+import com.efedorchenko.timely.model.ApiResponse
 import com.efedorchenko.timely.model.AuthRequest
 import com.efedorchenko.timely.model.auth.AuthResponse
 import com.efedorchenko.timely.model.auth.RegisterRequest
@@ -13,8 +13,6 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Response
-import org.json.JSONException
 import java.util.UUID
 import javax.inject.Inject
 
@@ -33,7 +31,7 @@ class ApiServiceImpl @Inject constructor(
 
     private val client = OkHttpClient()
 
-    override suspend fun login(authRequest: AuthRequest): Result<AuthResponse> =
+    override suspend fun login(authRequest: AuthRequest): ApiResponse<AuthResponse> =
         withContext(Dispatchers.IO) {
             val request = Request.Builder()
                 .url(BASE_URL + LOGIN_PATH)
@@ -45,7 +43,7 @@ class ApiServiceImpl @Inject constructor(
             return@withContext execute
         }
 
-    override suspend fun register(registerRequest: RegisterRequest): Result<AuthResponse> =
+    override suspend fun register(registerRequest: RegisterRequest): ApiResponse<AuthResponse> =
         withContext(Dispatchers.IO) {
             val request = Request.Builder()
                 .url(BASE_URL + REG_PATH)
@@ -56,23 +54,29 @@ class ApiServiceImpl @Inject constructor(
             return@withContext execute<AuthResponse>(request)
         }
 
-    private inline fun <reified T> execute(request: Request): Result<T> = runCatching {
-        var response: Response? = null;
+    private inline fun <reified T> execute(request: Request): ApiResponse<T> {
         try {
+            val response = client.newCall(request).execute()
 
-            response = client.newCall(request).execute()
-            if (!response.isSuccessful) {
-                throw NetworkException(response.code, "Request is not successful. ")
+            return when (response.code) {
+                in 200..299 -> {
+                    val body = response.body?.string()
+                    if (body != null) {
+                        ApiResponse(data = Json.decodeFromString(body))
+                    } else {
+                        ApiResponse(errorMessage = "Empty response")
+                    }
+                }
+                401, 403 -> {
+                    ApiResponse(isAuthError = true)
+                }
+                else -> {
+                    val errorBody = response.body?.string()
+                    ApiResponse(errorMessage = errorBody ?: "Server error")
+                }
             }
-            val body = response.body?.string()
-                ?: throw NetworkException(response.code, "Response body is null or empty")
-
-            return Result.success(Json.decodeFromString<T>(body))
-        } catch (ex: JSONException) {
-            throw NetworkException(
-                response?.code ?: 0,
-                "Unexpected response body. Ex: " + ex.message
-            )
+        } catch (e: Exception) {
+            return ApiResponse(errorMessage = "Server error")
         }
     }
 

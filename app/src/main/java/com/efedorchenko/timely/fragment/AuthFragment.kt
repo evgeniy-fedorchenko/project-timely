@@ -2,20 +2,19 @@ package com.efedorchenko.timely.fragment
 
 import android.content.Context
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.efedorchenko.timely.R
-import com.efedorchenko.timely.databinding.AuthBinding
+import com.efedorchenko.timely.databinding.FragmentLoginBinding
+import com.efedorchenko.timely.input.AuthInputWatcher
 import com.efedorchenko.timely.model.AuthRequest
 import com.efedorchenko.timely.model.Model
+import com.efedorchenko.timely.model.auth.AuthResponse
 import com.efedorchenko.timely.security.SecurityService
 import com.efedorchenko.timely.service.ApiService
 import com.efedorchenko.timely.service.OnTryLoginListener
@@ -25,7 +24,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class LoginFragment : Fragment(), OnTryLoginListener {
+class AuthFragment : Fragment(), OnTryLoginListener {
 
     @Inject
     lateinit var securityService: SecurityService
@@ -33,7 +32,7 @@ class LoginFragment : Fragment(), OnTryLoginListener {
     @Inject
     lateinit var apiService: ApiService
 
-    private var _binding: AuthBinding? = null
+    private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -42,7 +41,7 @@ class LoginFragment : Fragment(), OnTryLoginListener {
         savedInstanceState: Bundle?
     ): View {
 
-        _binding = AuthBinding.inflate(inflater, container, false)
+        _binding = FragmentLoginBinding.inflate(inflater, container, false)
         val view = binding.root
 
         view.setOnClickListener {
@@ -50,11 +49,14 @@ class LoginFragment : Fragment(), OnTryLoginListener {
         }
 
         binding.loginEditText.addTextChangedListener(
-            createTextWatcher(binding.loginEditText, Model::isLoginValid)
+            AuthInputWatcher(binding.loginEditText, Model::isLoginValid)
         )
         binding.passwordEditText.addTextChangedListener(
-            createTextWatcher(binding.passwordEditText, Model::isPasswordValid)
+            AuthInputWatcher(binding.passwordEditText, Model::isPasswordValid)
         )
+        binding.noAccountTextView.setOnClickListener {
+            findNavController().navigate(R.id.registerDispatcherFragment)
+        }
 
         val context = requireContext()
         binding.loginButton.setOnClickListener {
@@ -68,64 +70,29 @@ class LoginFragment : Fragment(), OnTryLoginListener {
             }
         }
 
-        binding.noAccountTextView.setOnClickListener {
-            ToastHelper.noAccount(context)
-        }
-
         return view
     }
-
-    private fun createTextWatcher(editText: EditText, validator: (String) -> Boolean) =
-        object : TextWatcher {
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                val input = s.toString()
-                if (input.isEmpty()) {
-                    editText.setBackgroundResource(R.drawable.login_form_background)
-                } else {
-                    val isValid = validator(input)
-                    editText.setBackgroundResource(
-                        if (isValid) R.drawable.login_form_background
-                        else R.drawable.login_form_background_error
-                    )
-                }
-            }
-        }
 
     override fun tryLogin(loginData: Pair<String, String>) {
         val context = requireContext()
 
         lifecycleScope.launch {
-            val loginResult = apiService.login(AuthRequest(loginData))
-            val loginResponse = loginResult.getOrNull()
-            loginResult.onFailure {
-                if (loginResponse == null) {
-                    ToastHelper.networkError(context)
-                    return@launch
-//                } else if (loginResponse.) {
-//
+            val response = apiService.login(AuthRequest(loginData))
+            val authResponse: AuthResponse? = response.data.also { r ->
+                when {
+                    r == null && response.isAuthError -> ToastHelper.incorrectLoginData(context)
+                    r == null -> ToastHelper.networkError(context)
                 }
-
-
-
             }
-            if (loginResponse == null) {
-                ToastHelper.networkError(context)
-                return@launch
-            }
-
-            if (!loginResponse.isRegister) {
-                ToastHelper.message(loginResponse.errorCode?.description.toString(), context)
+            if (authResponse == null) {
                 return@launch
             }
 
 //            'jwtToken', 'userId' and 'role' are null only if isRegister == false
             // TODO: объединить
-            securityService.saveApiToken(loginResponse.jwtToken.toString())
-            securityService.saveUserId(loginResponse.userId!!)
-            securityService.saveRole(loginResponse.role!!)
+            securityService.saveApiToken(authResponse.jwtToken.toString())
+            securityService.saveUserId(authResponse.userId!!)
+            securityService.saveRole(authResponse.role!!)
             findNavController().navigate(R.id.mainFragment)
         }
     }
