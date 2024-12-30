@@ -6,4 +6,7 @@ interface OnTryRegisterListener {
 
     fun tryRegister(registerRequest: RegisterRequest)
 
+    fun showLoading()
+
+    fun hideLoading()
 }

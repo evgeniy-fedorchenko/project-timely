@@ -4,4 +4,8 @@ interface OnTryLoginListener {
 
     fun tryLogin(loginData: Pair<String, String>)
 
+    fun showLoading()
+
+    fun hideLoading()
+
 }

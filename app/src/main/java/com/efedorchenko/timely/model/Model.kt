@@ -89,4 +89,8 @@ object Model {
     fun isSpaceKeyValid(spaceKey: String): Boolean {
         return spaceKey.isNotEmpty() && spaceKey.length < 36
     }
+
+    fun isPositionValid(position: String): Boolean {
+        return position.isNotEmpty() && position.length < 128
+    }
 }
