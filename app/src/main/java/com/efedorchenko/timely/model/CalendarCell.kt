@@ -7,5 +7,5 @@ data class CalendarCell(
     val textStyle: Int,
     val parentBackground: Int,
     val onClickListener: OnClickListener?,
-    val event: Event?,
+    val event: Event?
 )

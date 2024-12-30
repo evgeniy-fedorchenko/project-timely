@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.model
+package com.efedorchenko.timely.model.auth
 
 import kotlinx.serialization.Serializable
 
