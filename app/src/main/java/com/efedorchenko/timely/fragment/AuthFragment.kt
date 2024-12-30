@@ -6,15 +6,24 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.databinding.FragmentLoginBinding
 import com.efedorchenko.timely.input.AuthInputWatcher
-import com.efedorchenko.timely.model.AuthRequest
 import com.efedorchenko.timely.model.Model
-import com.efedorchenko.timely.model.auth.AuthResponse
+import com.efedorchenko.timely.model.api.ApiErrorCode.AUTH
+import com.efedorchenko.timely.model.api.ApiErrorCode.CLIENT
+import com.efedorchenko.timely.model.api.ApiErrorCode.SERVER
+import com.efedorchenko.timely.model.api.ApiErrorCode.VALIDATION
+import com.efedorchenko.timely.model.api.onError
+import com.efedorchenko.timely.model.api.onSuccess
+import com.efedorchenko.timely.model.auth.AuthData
+import com.efedorchenko.timely.model.auth.AuthRequest
 import com.efedorchenko.timely.security.SecurityService
 import com.efedorchenko.timely.service.ApiService
 import com.efedorchenko.timely.service.OnTryLoginListener
@@ -42,7 +51,14 @@ class AuthFragment : Fragment(), OnTryLoginListener {
     ): View {
 
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
-        val view = binding.root
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val context = requireContext()
+        setupImeInsets()
 
         view.setOnClickListener {
             hideKeyboard()
@@ -58,8 +74,8 @@ class AuthFragment : Fragment(), OnTryLoginListener {
             findNavController().navigate(R.id.registerDispatcherFragment)
         }
 
-        val context = requireContext()
         binding.loginButton.setOnClickListener {
+            hideKeyboard()
             val login = binding.loginEditText.text.toString()
             val password = binding.passwordEditText.text.toString()
             val loginPair = Pair(login, password)
@@ -69,31 +85,67 @@ class AuthFragment : Fragment(), OnTryLoginListener {
                 this.tryLogin(loginPair)
             }
         }
-
-        return view
     }
 
     override fun tryLogin(loginData: Pair<String, String>) {
         val context = requireContext()
 
         lifecycleScope.launch {
-            val response = apiService.login(AuthRequest(loginData))
-            val authResponse: AuthResponse? = response.data.also { r ->
-                when {
-                    r == null && response.isAuthError -> ToastHelper.incorrectLoginData(context)
-                    r == null -> ToastHelper.networkError(context)
-                }
+            showLoading()
+            try {
+                apiService.login(AuthRequest(loginData))
+                    .onSuccess { data ->
+                        data?.let {
+                            if (it.userUuid == null || it.jwtToken == null || it.role == null) {
+                                ToastHelper.networkError(context)
+                                return@onSuccess
+                            }
+                            val authData = AuthData(
+                                it.userUuid,
+                                it.jwtToken,
+                                it.role,
+                                it.generatedSpaceKeys
+                            )
+                            securityService.saveAuthData(authData)
+                            findNavController().navigate(R.id.mainFragment)
+                        }
+                    }
+                    .onError { apiErrorCode, _, errorData ->
+                        when (apiErrorCode) {
+                            VALIDATION -> ToastHelper.incorrectLoginData(context)
+                            SERVER -> ToastHelper.networkError(context)
+                            AUTH -> ToastHelper.incorrectLoginData(context)
+                            CLIENT -> ToastHelper.message(
+                                errorData?.errorCode?.description ?: "Client error", context
+                            )
+                        }
+                    }
+            } finally {
+                hideLoading()
             }
-            if (authResponse == null) {
-                return@launch
-            }
+        }
+    }
 
-//            'jwtToken', 'userId' and 'role' are null only if isRegister == false
-            // TODO: объединить
-            securityService.saveApiToken(authResponse.jwtToken.toString())
-            securityService.saveUserId(authResponse.userId!!)
-            securityService.saveRole(authResponse.role!!)
-            findNavController().navigate(R.id.mainFragment)
+    override fun showLoading() {
+        binding.loadingProgressBar.apply {
+            visibility = View.VISIBLE
+            alpha = 0f
+            animate()
+                .alpha(1f)
+                .setDuration(200)
+                .start()
+        }
+    }
+
+    override fun hideLoading() {
+        binding.loadingProgressBar.visibility = View.GONE
+    }
+
+    private fun setupImeInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, windowInsets ->
+            val imeHeight = windowInsets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+            view.updatePadding(bottom = imeHeight)
+            windowInsets
         }
     }
 
