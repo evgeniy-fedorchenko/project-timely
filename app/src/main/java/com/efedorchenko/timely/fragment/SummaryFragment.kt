@@ -6,11 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import com.efedorchenko.timely.R
+import com.efedorchenko.timely.data.EncProfileStorage
+import com.efedorchenko.timely.data.MainViewModel
 import com.efedorchenko.timely.databinding.SummaryCardBinding
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.Fine
-import com.efedorchenko.timely.security.SecurityService
-import com.efedorchenko.timely.service.MainViewModel
 import com.efedorchenko.timely.service.OnSaveFineListener
 import dagger.hilt.android.AndroidEntryPoint
 import org.threeten.bp.LocalDate
@@ -24,7 +24,7 @@ class SummaryFragment : OnSaveFineListener() {
     private val viewModel: MainViewModel by activityViewModels()
 
     @Inject
-    lateinit var securityService: SecurityService
+    lateinit var encProfileStorage: EncProfileStorage
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,7 +38,7 @@ class SummaryFragment : OnSaveFineListener() {
             FinesDialogFragment().show(childFragmentManager, "FinesDialog")
         }
 
-        if (!securityService.isPrivileged()) {
+        if (!encProfileStorage.isPrivileged()) {
             return view
         }
 

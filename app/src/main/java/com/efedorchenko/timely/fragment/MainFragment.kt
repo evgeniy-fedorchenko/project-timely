@@ -25,11 +25,12 @@ import androidx.fragment.app.commit
 import androidx.navigation.fragment.findNavController
 import androidx.viewpager2.widget.ViewPager2
 import com.efedorchenko.timely.R
+import com.efedorchenko.timely.data.EncProfileStorage
+import com.efedorchenko.timely.data.MainViewModel
+import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.databinding.DialogAccessKeysBinding
 import com.efedorchenko.timely.databinding.FragmentMainBinding
-import com.efedorchenko.timely.security.SecurityService
 import com.efedorchenko.timely.service.CalendarAdapter
-import com.efedorchenko.timely.service.MainViewModel
 import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -42,7 +43,10 @@ class MainFragment : Fragment() {
     private val viewModel: MainViewModel by activityViewModels()
 
     @Inject
-    lateinit var securityService: SecurityService
+    lateinit var encProfileStorage: EncProfileStorage
+
+    @Inject
+    lateinit var profileStorage: ProfileStorage
 
     private lateinit var viewPager: ViewPager2
 
@@ -99,29 +103,30 @@ class MainFragment : Fragment() {
         val navigationView: NavigationView = binding.navView
         val headerView = navigationView.getHeaderView(0)
 
-        headerView.findViewById<TextView>(R.id.user_name).text = "Федорченко Евгений Викторович"
+        val userData = profileStorage.getUserData()
+        headerView.findViewById<TextView>(R.id.user_name).text = userData?.name
 
-        val positionTextView = headerView.findViewById<TextView>(R.id.position)
-        val spannablePositionText = SpannableString("Должность: колотильщик паллетов")
-        spannablePositionText.setSpan(
-            StyleSpan(Typeface.BOLD),
-            0,
-            9,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-        )
-        positionTextView.text = spannablePositionText
+        userData?.position.let {
+            val positionTextView = headerView.findViewById<TextView>(R.id.position)
+            val spannablePositionText = SpannableString("Должность: $it")
+            spannablePositionText.setSpan(
+                StyleSpan(Typeface.BOLD), 0,
+                9, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            positionTextView.text = spannablePositionText
+        }
 
-        val rateTextView = headerView.findViewById<TextView>(R.id.rate)
-        val spannableRateText = SpannableString("Ставка: 200 руб./ч.")
-        spannableRateText.setSpan(
-            StyleSpan(Typeface.BOLD),
-            0,
-            6,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-        )
-        rateTextView.text = spannableRateText
+        userData?.rate.let {
+            val rateTextView = headerView.findViewById<TextView>(R.id.rate)
+            val spannableRateText = SpannableString("Ставка: $it руб./ч.")
+            spannableRateText.setSpan(
+                StyleSpan(Typeface.BOLD), 0,
+                6, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            rateTextView.text = spannableRateText
+        }
 
-        if (securityService.isPrivileged()) {
+        if (encProfileStorage.isPrivileged()) {
             val accessKeysMenuItem = navigationView.menu.findItem(R.id.access_keys)
             accessKeysMenuItem.isVisible = true
         }
@@ -135,7 +140,8 @@ class MainFragment : Fragment() {
                 }
 
                 R.id.exit -> {
-                    securityService.deleteUserData()
+                    encProfileStorage.deleteAuthData()
+                    profileStorage.deleteUserData()
                     findNavController().navigate(R.id.authFragment)
                 }
 
@@ -155,7 +161,7 @@ class MainFragment : Fragment() {
         val dialog = AlertDialog.Builder(context).setView(binding.root).create()
         dialog.window?.setBackgroundDrawableResource(R.drawable.dialog_background)
 
-        val keys = securityService.getSpaceKeys()
+        val keys = encProfileStorage.getSpaceKeys()
         binding.workerKey.text = keys?.workerKey
         binding.bossKey.text = keys?.bossKey
 
@@ -164,7 +170,7 @@ class MainFragment : Fragment() {
         }
 
         setupButtonAnimationAndClick(binding.key2CopyButton, context) {
-            copyToClipboard(context, "admin_key", binding.bossKey.text.toString())
+            copyToClipboard(context, "boss_key", binding.bossKey.text.toString())
         }
 
         dialog.show()
@@ -173,8 +179,8 @@ class MainFragment : Fragment() {
     private fun setupButtonAnimationAndClick(
         button: ImageButton, context: Context, onClick: () -> Unit
     ) {
-        val whiteColor =  ContextCompat.getColor(context, R.color.weekend_gray)
-        val blackColor =  ContextCompat.getColor(context, R.color.dark_gray)
+        val whiteColor = ContextCompat.getColor(context, R.color.weekend_gray)
+        val blackColor = ContextCompat.getColor(context, R.color.dark_gray)
 
         button.setOnClickListener {
             button.animate().scaleX(0.9f).scaleY(0.9f).setDuration(150).withEndAction {

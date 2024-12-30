@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.service
+package com.efedorchenko.timely.data
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -9,8 +9,7 @@ import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.Fine
 import com.efedorchenko.timely.model.MonthUID
 import com.efedorchenko.timely.model.toEventMap
-import com.efedorchenko.timely.repository.EventRepository
-import com.efedorchenko.timely.repository.FineRepository
+import com.efedorchenko.timely.service.CalendarAdapter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -22,8 +21,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     application: Application,
-    private val eventRepository: EventRepository,
-    private val fineRepository: FineRepository
+    private val eventRepository: DataRepository<Event>,
+    private val fineRepository: DataRepository<Fine>
 ) : AndroidViewModel(application) {
 
     companion object {
@@ -42,7 +41,7 @@ class MainViewModel @Inject constructor(
     init {
         val monthUID = MonthUID.create()
         _events.value = eventRepository.findByMonth(monthUID, false)
-        _fines.value = fineRepository.findByMonth(monthUID)
+        _fines.value = fineRepository.findByMonth(monthUID, true)
         _monthOffset.value = CalendarAdapter.INITIAL_MONTH_OFFSET
         viewModelScope.launch { }   // Инициализация CoroutineContext
     }
@@ -73,7 +72,7 @@ class MainViewModel @Inject constructor(
             _events.value = eventRepository.findByMonth(monthUID, false)
         }
         viewModelScope.launch {
-            _fines.value = fineRepository.findByMonth(monthUID)
+            _fines.value = fineRepository.findByMonth(monthUID, true)
         }
     }
 

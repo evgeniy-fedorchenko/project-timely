@@ -8,9 +8,9 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.efedorchenko.timely.R
+import com.efedorchenko.timely.data.MainViewModel
 import com.efedorchenko.timely.databinding.FinesDialogBinding
 import com.efedorchenko.timely.service.FinesAdapter
-import com.efedorchenko.timely.service.MainViewModel
 import com.efedorchenko.timely.service.SpaceItemDecoration
 import dagger.hilt.android.AndroidEntryPoint
 

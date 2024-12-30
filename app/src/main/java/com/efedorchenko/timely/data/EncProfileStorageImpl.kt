@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.security
+package com.efedorchenko.timely.data
 
 import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences
@@ -7,29 +7,32 @@ import com.efedorchenko.timely.model.auth.AuthData
 import com.efedorchenko.timely.model.auth.RoleType
 import com.efedorchenko.timely.model.auth.SpaceKeys
 
-
-class SecurityServiceImpl private constructor(baseContext: Context) : SecurityService {
+// TODO: Возможно не стоит создавать DI-модули а помечать класс @Singleton,
+//  а контекст в конструкторе как @ApplicationContext
+class EncProfileStorageImpl private constructor(baseContext: Context) : EncProfileStorage {
 
     companion object {
 
+        // TODO: Не нужно ручное создание синглота, теперь этим занимается Hilt
         @Volatile
-        private var _instance: SecurityServiceImpl? = null
+        private var _instance: EncProfileStorageImpl? = null
 
-        fun getInstance(context: Context): SecurityServiceImpl =
+        fun getInstance(context: Context): EncProfileStorageImpl =
             _instance ?: synchronized(this) {
-                _instance ?: SecurityServiceImpl(context.applicationContext).also { _instance = it }
+                _instance ?: EncProfileStorageImpl(context.applicationContext).also { _instance = it }
             }
 
-        fun requireInstance(): SecurityService {
+        fun requireInstance(): EncProfileStorage {
             return _instance!!
         }
 
-        private const val ESP_NAME = "security_data"
+        private const val ESP_NAME = "encrypted_profile_storage"
+
         private const val ROLE_KEY = "user_role"
-        private const val API_TOKEN_KEY = "user_api_token"
         private const val USER_ID_KEY = "user_id"
-        private const val SPACE_BOSS_KEY_KEY = "space_access_boss_key_key"
-        private const val SPACE_WORKER_KEY_KEY = "space_access_worker_key_key"
+        private const val API_TOKEN_KEY = "api_token"
+        private const val SPACE_BOSS_KEY_KEY = "space_access_boss_key"
+        private const val SPACE_WORKER_KEY_KEY = "space_access_worker_key"
     }
 
     private val encSharedPref by lazy {
@@ -59,7 +62,7 @@ class SecurityServiceImpl private constructor(baseContext: Context) : SecuritySe
         }
     }
 
-    override fun deleteUserData() {
+    override fun deleteAuthData() {
         with(encSharedPref.edit()) {
             remove(API_TOKEN_KEY)
             remove(ROLE_KEY)
@@ -155,4 +158,5 @@ class SecurityServiceImpl private constructor(baseContext: Context) : SecuritySe
     }
 
     override fun getUserUuid(): String? = encSharedPref.getString(USER_ID_KEY, null)
+
 }

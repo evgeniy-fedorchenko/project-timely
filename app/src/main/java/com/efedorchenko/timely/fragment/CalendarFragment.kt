@@ -13,11 +13,11 @@ import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.activityViewModels
 import com.efedorchenko.timely.R
+import com.efedorchenko.timely.data.MainViewModel
 import com.efedorchenko.timely.databinding.CalendarGridLayoutBinding
 import com.efedorchenko.timely.model.CalendarCellBuilder
 import com.efedorchenko.timely.model.CalendarCellBuilder.CellType
 import com.efedorchenko.timely.model.Event
-import com.efedorchenko.timely.service.MainViewModel
 import com.efedorchenko.timely.service.OnSaveEventListener
 import com.efedorchenko.timely.service.ToastHelper
 import dagger.hilt.android.AndroidEntryPoint

@@ -7,8 +7,8 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.model.auth.RoleType
-import com.efedorchenko.timely.security.SecurityService
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -18,7 +18,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var navController: NavController
 
     @Inject
-    lateinit var securityService: SecurityService
+    lateinit var encProfileStorage: EncProfileStorage
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun navigateToMain() {
-        val userRole = securityService.getRole()
+        val userRole = encProfileStorage.getRole()
         when (userRole) {
             RoleType.WORKER -> navController.navigate(R.id.mainFragment)
             RoleType.BOSS -> navController.navigate(R.id.mainFragment)
@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isUserAuthenticated(): Boolean {
-        return securityService.isAuthenticated()
+        return encProfileStorage.isAuthenticated()
     }
 
     private fun setupInsets() {

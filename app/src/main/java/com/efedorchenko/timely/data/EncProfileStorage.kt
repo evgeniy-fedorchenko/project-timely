@@ -1,10 +1,10 @@
-package com.efedorchenko.timely.security
+package com.efedorchenko.timely.data
 
 import com.efedorchenko.timely.model.auth.AuthData
 import com.efedorchenko.timely.model.auth.RoleType
 import com.efedorchenko.timely.model.auth.SpaceKeys
 
-interface SecurityService {
+interface EncProfileStorage {
 
     // TODO: Разобраться какие методы не нужны
 
@@ -14,7 +14,7 @@ interface SecurityService {
 
     fun saveAuthData(authData: AuthData)
 
-    fun deleteUserData()
+    fun deleteAuthData()
 
     fun saveApiToken(token: String)
 
@@ -43,4 +43,5 @@ interface SecurityService {
     fun deleteUserUuid()
 
     fun getUserUuid(): String?
+
 }

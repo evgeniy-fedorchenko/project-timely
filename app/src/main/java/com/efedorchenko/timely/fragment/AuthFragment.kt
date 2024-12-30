@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.efedorchenko.timely.R
+import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.databinding.FragmentLoginBinding
 import com.efedorchenko.timely.input.AuthInputWatcher
 import com.efedorchenko.timely.model.Model
@@ -24,7 +25,6 @@ import com.efedorchenko.timely.model.api.onError
 import com.efedorchenko.timely.model.api.onSuccess
 import com.efedorchenko.timely.model.auth.AuthData
 import com.efedorchenko.timely.model.auth.AuthRequest
-import com.efedorchenko.timely.security.SecurityService
 import com.efedorchenko.timely.service.ApiService
 import com.efedorchenko.timely.service.OnTryLoginListener
 import com.efedorchenko.timely.service.ToastHelper
@@ -36,7 +36,7 @@ import javax.inject.Inject
 class AuthFragment : Fragment(), OnTryLoginListener {
 
     @Inject
-    lateinit var securityService: SecurityService
+    lateinit var encProfileStorage: EncProfileStorage
 
     @Inject
     lateinit var apiService: ApiService
@@ -106,7 +106,7 @@ class AuthFragment : Fragment(), OnTryLoginListener {
                                 it.role,
                                 it.generatedSpaceKeys
                             )
-                            securityService.saveAuthData(authData)
+                            encProfileStorage.saveAuthData(authData)
                             findNavController().navigate(R.id.mainFragment)
                         }
                     }

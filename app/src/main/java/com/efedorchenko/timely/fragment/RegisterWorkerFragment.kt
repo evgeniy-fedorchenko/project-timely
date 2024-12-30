@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.viewbinding.ViewBinding
 import com.efedorchenko.timely.R
+import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.databinding.DialogRegisterWorkerEmailHelpBinding
 import com.efedorchenko.timely.databinding.DialogRegisterWorkerNameHelpBinding
 import com.efedorchenko.timely.databinding.DialogRegisterWorkerPasswordHelpBinding
@@ -33,7 +34,6 @@ import com.efedorchenko.timely.model.api.onError
 import com.efedorchenko.timely.model.api.onSuccess
 import com.efedorchenko.timely.model.auth.RegisterRequest
 import com.efedorchenko.timely.model.auth.RoleType
-import com.efedorchenko.timely.security.SecurityService
 import com.efedorchenko.timely.service.ApiService
 import com.efedorchenko.timely.service.OnTryRegisterListener
 import com.efedorchenko.timely.service.ToastHelper
@@ -48,7 +48,7 @@ class RegisterWorkerFragment : Fragment(), OnTryRegisterListener {
     lateinit var apiService: ApiService
 
     @Inject
-    lateinit var securityService: SecurityService
+    lateinit var encProfileStorage: EncProfileStorage
 
     private var _binding: FragmentRegisterWorkerBinding? = null
     private val binding get() = _binding!!
@@ -101,9 +101,9 @@ class RegisterWorkerFragment : Fragment(), OnTryRegisterListener {
                 apiService.register(registerRequest)
                     .onSuccess { data ->
                         data?.let {
-                            securityService.saveApiToken(it.jwtToken.toString())
-                            securityService.saveUserUuid(it.userUuid!!)
-                            securityService.saveRole(it.role!!)
+                            encProfileStorage.saveApiToken(it.jwtToken.toString())
+                            encProfileStorage.saveUserUuid(it.userUuid!!)
+                            encProfileStorage.saveRole(it.role!!)
                             findNavController().navigate(R.id.mainFragment)
                         }
                     }

@@ -1,12 +1,12 @@
 package com.efedorchenko.timely.service
 
 import android.util.Log
+import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.model.api.ApiErrorCode
 import com.efedorchenko.timely.model.api.ApiResponse
 import com.efedorchenko.timely.model.auth.AuthRequest
 import com.efedorchenko.timely.model.auth.AuthResponse
 import com.efedorchenko.timely.model.auth.RegisterRequest
-import com.efedorchenko.timely.security.SecurityService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
@@ -19,7 +19,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 class ApiServiceImpl @Inject constructor(
-    private val securityService: SecurityService
+    private val encProfileStorage: EncProfileStorage
 ) : ApiService {
 
     companion object {
