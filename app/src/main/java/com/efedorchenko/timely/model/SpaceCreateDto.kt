@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.model.other
+package com.efedorchenko.timely.model
 
 import kotlinx.serialization.Serializable
 
