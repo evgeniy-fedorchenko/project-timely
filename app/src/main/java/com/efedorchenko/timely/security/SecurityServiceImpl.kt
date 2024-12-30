@@ -3,8 +3,9 @@ package com.efedorchenko.timely.security
 import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
+import com.efedorchenko.timely.model.auth.AuthData
 import com.efedorchenko.timely.model.auth.RoleType
-import java.util.*
+import com.efedorchenko.timely.model.auth.SpaceKeys
 
 
 class SecurityServiceImpl private constructor(baseContext: Context) : SecurityService {
@@ -23,12 +24,12 @@ class SecurityServiceImpl private constructor(baseContext: Context) : SecuritySe
             return _instance!!
         }
 
-        private const val ESP_NAME: String = "security_data"
-        private const val USER_ROLE_KEY: String = "user_role"
+        private const val ESP_NAME = "security_data"
+        private const val ROLE_KEY = "user_role"
         private const val API_TOKEN_KEY = "user_api_token"
         private const val USER_ID_KEY = "user_id"
-        private const val SPACE_ACCESS_KEYS_KEY = "access_keys"
-//        private const val PAIR_DELIMITER = ":::"
+        private const val SPACE_BOSS_KEY_KEY = "space_access_boss_key_key"
+        private const val SPACE_WORKER_KEY_KEY = "space_access_worker_key_key"
     }
 
     private val encSharedPref by lazy {
@@ -41,15 +42,32 @@ class SecurityServiceImpl private constructor(baseContext: Context) : SecuritySe
         )
     }
 
-    override fun isAuthenticated(): Boolean {
-        return encSharedPref.contains(USER_ROLE_KEY)
+    override fun isAuthenticated(): Boolean = encSharedPref.contains(ROLE_KEY)
+
+    override fun isPrivileged(): Boolean = getRole()?.isPrivileged() == true
+
+    override fun saveAuthData(authData: AuthData) {
+        with(encSharedPref.edit()) {
+            putString(API_TOKEN_KEY, authData.jwtToken)
+            putString(ROLE_KEY, authData.role.name)
+            putString(USER_ID_KEY, authData.userUuid)
+            authData.generatedSpaceKeys?.let {
+                putString(SPACE_BOSS_KEY_KEY, authData.generatedSpaceKeys.bossKey)
+                putString(SPACE_WORKER_KEY_KEY, authData.generatedSpaceKeys.workerKey)
+            }
+            apply()
+        }
     }
 
-    override fun isPrivileged(): Boolean = authorize()?.isPrivileged() == true
-
-    override fun authorize(): RoleType? {
-        val userRoleStr = encSharedPref.getString(USER_ROLE_KEY, null)
-        return userRoleStr?.let { RoleType.valueOf(it) }
+    override fun deleteUserData() {
+        with(encSharedPref.edit()) {
+            remove(API_TOKEN_KEY)
+            remove(ROLE_KEY)
+            remove(SPACE_BOSS_KEY_KEY)
+            remove(SPACE_WORKER_KEY_KEY)
+            remove(USER_ID_KEY)
+            apply()
+        }
     }
 
     override fun saveApiToken(token: String) {
@@ -59,38 +77,82 @@ class SecurityServiceImpl private constructor(baseContext: Context) : SecuritySe
         }
     }
 
-    override fun saveRole(role: RoleType) {
-        TODO("Not yet implemented")
-    }
-
-    override fun removeToken() {
+    override fun deleteApiToken() {
         with(encSharedPref.edit()) {
             remove(API_TOKEN_KEY)
             apply()
         }
     }
 
-    override fun removeRole() {
-        TODO("Not yet implemented")
-    }
+    override fun getApiToken(): String? = encSharedPref.getString(API_TOKEN_KEY, null)
 
-    override fun getAccessKeys(): Pair<String, String> {
-        TODO("Not yet implemented")
-    }
 
-    override fun saveUserId(userId: UUID) {
+    override fun saveRole(role: RoleType) {
         with(encSharedPref.edit()) {
-            putString(USER_ID_KEY, userId.toString())
+            putString(ROLE_KEY, role.toString())
             apply()
         }
     }
 
-//    override fun getAccessKeys(): Pair<String, String> {
-//        val keysString = encSharedPref.getString(SPACE_ACCESS_KEYS_KEY, null)
-//            ?: return generateAndSaveKeys()
-//
-//        return keysString.split(PAIR_DELIMITER).takeIf { it.size == 2 }?.let {
-//            Pair(it[0], it[1])
-//        } ?: generateAndSaveKeys()
-//    }
+    override fun deleteRole() {
+        with(encSharedPref.edit()) {
+            remove(ROLE_KEY)
+            apply()
+        }
+    }
+
+    override fun getRole(): RoleType? {
+        val userRoleStr = encSharedPref.getString(ROLE_KEY, null)
+        return userRoleStr?.let { RoleType.valueOf(it) }
+    }
+
+    override fun setSpaceKeys(keys: SpaceKeys) {
+        with(encSharedPref.edit()) {
+            putString(SPACE_BOSS_KEY_KEY, keys.bossKey)
+            putString(SPACE_WORKER_KEY_KEY, keys.workerKey)
+            apply()
+        }
+    }
+
+    override fun deleteSpaceKeys() {
+        with(encSharedPref.edit()) {
+            remove(SPACE_BOSS_KEY_KEY)
+            remove(SPACE_WORKER_KEY_KEY)
+            apply()
+        }
+    }
+
+    override fun getSpaceKeys(): SpaceKeys? {
+        with(encSharedPref) {
+            val workerKey = getString(SPACE_WORKER_KEY_KEY, null)
+            val bossKey = getString(SPACE_BOSS_KEY_KEY, null)
+            if (workerKey != null && bossKey != null) {
+                return SpaceKeys(workerKey, bossKey)
+            }
+            return null
+        }
+    }
+
+    override fun getSpaceBossKey(): String? =
+        encSharedPref.getString(SPACE_BOSS_KEY_KEY, null)
+
+    override fun getSpaceWorkerKey(): String? =
+        encSharedPref.getString(SPACE_WORKER_KEY_KEY, null)
+
+
+    override fun saveUserUuid(userUuid: String) {
+        with(encSharedPref.edit()) {
+            putString(USER_ID_KEY, userUuid)
+            apply()
+        }
+    }
+
+    override fun deleteUserUuid() {
+        with(encSharedPref.edit()) {
+            remove(USER_ID_KEY)
+            apply()
+        }
+    }
+
+    override fun getUserUuid(): String? = encSharedPref.getString(USER_ID_KEY, null)
 }

@@ -1,26 +1,46 @@
 package com.efedorchenko.timely.security
 
+import com.efedorchenko.timely.model.auth.AuthData
 import com.efedorchenko.timely.model.auth.RoleType
-import java.util.*
+import com.efedorchenko.timely.model.auth.SpaceKeys
 
 interface SecurityService {
+
+    // TODO: Разобраться какие методы не нужны
 
     fun isAuthenticated(): Boolean
 
     fun isPrivileged(): Boolean
 
-    fun authorize(): RoleType?
+    fun saveAuthData(authData: AuthData)
+
+    fun deleteUserData()
 
     fun saveApiToken(token: String)
 
+    fun deleteApiToken()
+
+    fun getApiToken(): String?
+
     fun saveRole(role: RoleType)
 
-    fun removeToken()
+    fun deleteRole()
 
-    fun removeRole()
+    fun getRole(): RoleType?
 
-    fun getAccessKeys(): Pair<String, String>
+    fun setSpaceKeys(keys: SpaceKeys)
 
-    fun saveUserId(userId: UUID)
+    fun deleteSpaceKeys()
 
+    fun getSpaceKeys(): SpaceKeys?
+
+    fun getSpaceBossKey(): String?
+
+    fun getSpaceWorkerKey(): String?
+
+    fun saveUserUuid(userUuid: String)
+
+    fun deleteUserUuid()
+
+    fun getUserUuid(): String?
 }

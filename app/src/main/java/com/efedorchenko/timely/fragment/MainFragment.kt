@@ -135,7 +135,7 @@ class MainFragment : Fragment() {
                 }
 
                 R.id.exit -> {
-                    securityService.removeToken()
+                    securityService.deleteUserData()
                     findNavController().navigate(R.id.authFragment)
                 }
 
@@ -155,16 +155,16 @@ class MainFragment : Fragment() {
         val dialog = AlertDialog.Builder(context).setView(binding.root).create()
         dialog.window?.setBackgroundDrawableResource(R.drawable.dialog_background)
 
-        val keys = securityService.getAccessKeys()
-        binding.workerKey.text = keys.first
-        binding.adminKey.text = keys.second
+        val keys = securityService.getSpaceKeys()
+        binding.workerKey.text = keys?.workerKey
+        binding.bossKey.text = keys?.bossKey
 
         setupButtonAnimationAndClick(binding.key1CopyButton, context) {
             copyToClipboard(context, "worker_key", binding.workerKey.text.toString())
         }
 
         setupButtonAnimationAndClick(binding.key2CopyButton, context) {
-            copyToClipboard(context, "admin_key", binding.adminKey.text.toString())
+            copyToClipboard(context, "admin_key", binding.bossKey.text.toString())
         }
 
         dialog.show()

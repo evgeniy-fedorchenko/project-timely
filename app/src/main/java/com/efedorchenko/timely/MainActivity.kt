@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun navigateToMain() {
-        val userRole = securityService.authorize()
+        val userRole = securityService.getRole()
         when (userRole) {
             RoleType.WORKER -> navController.navigate(R.id.mainFragment)
             RoleType.BOSS -> navController.navigate(R.id.mainFragment)

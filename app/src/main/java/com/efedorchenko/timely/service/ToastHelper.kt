@@ -18,11 +18,14 @@ object ToastHelper {
     private const val WORK_DURATION_TOO_SHORT_PATTERN = "Минимальная длина: %s часов"
     private const val INVALID_LOGIN =                   "E-mail должен быть корректным электронным адресом, длиной до 128 символов"
     private const val INVALID_PASSWORD =                "Пароль должен быть длиной от 8 до 32"
-    private const val INVALID_NAME_ON_REG =             "Неподходящее имя. Смотри подсказку справа под знаком вопроса"
-    private const val INVALID_EMAIL_ON_REG =            "Неподходящий email. Смотри подсказку справа под знаком вопроса"
-    private const val INVALID_PASSWORD_ON_REG =         "Неподходящий пароль. Смотри подсказку справа под знаком вопроса"
-    private const val DIFFERENT_PASSWORDS_ON_REG =      "Пароли не соответствуют друг другу"
+    private const val INVALID_NAME_ON_REG =             "Неподходящее имя. Смотри подсказку справа"
+    private const val INVALID_EMAIL_ON_REG =            "Неподходящий email. Смотри подсказку справа"
+    private const val INVALID_PASSWORD_ON_REG =         "Неподходящий пароль. Смотри подсказку справа"
+    private const val DIFFERENT_PASSWORDS_ON_REG =      "Пароли не совпадают"
     private const val INVALID_SPACE_KEY_ON_REG =        "Недействительный ключ пространства. Обратитесь к руководителю для его получения"
+    private const val INVALID_POSITION_ON_REG =         "Неподходящая должность. Смотри подсказку справа "
+    private const val INVALID_DATA_ON_REG =             "Упс! Некорректные  данные, смотри подсказки справа"
+    private const val USERNAME_ALREADY_EXISTS=          "Пользователь с таким email уже существует"
 
 
     fun message(message: String, c: Context) =    showToast(message, c, LENGTH_SHORT)
@@ -31,15 +34,21 @@ object ToastHelper {
     fun networkError(c: Context) =                showToast(NETWORK_ERROR, c, LENGTH_SHORT)
     fun cannotEditPlaned(c: Context) =            showToast(CANNOT_EDIT_PLANED, c, LENGTH_SHORT)
     fun fineAmountTooSmall(c: Context) =          showToast(FINE_AMOUNT_TOO_SMALL, c, LENGTH_SHORT)
-    fun incorrectLoginData(c: Context) =          showToast(INCORRECT_LOGIN_DATA, c, LENGTH_SHORT)
+
+    /* Вход */
+    fun incorrectLoginData(c: Context) =          showToast(INCORRECT_LOGIN_DATA, c, LENGTH_LONG)
     fun invalidLogin(c: Context) =                showToast(INVALID_LOGIN, c, LENGTH_LONG)
     fun invalidPassword(c: Context) =             showToast(INVALID_PASSWORD, c, LENGTH_LONG)
-    fun invalidNameOnReg(c: Context) =            showToast(INVALID_NAME_ON_REG, c, LENGTH_SHORT)
-    fun invalidEmailOnReg(c: Context) =           showToast(INVALID_EMAIL_ON_REG, c, LENGTH_SHORT)
-    fun invalidPasswordOnReg(c: Context) =        showToast(INVALID_PASSWORD_ON_REG, c, LENGTH_SHORT)
-    fun passwordsAreDifferentOnReg(c: Context) =  showToast(DIFFERENT_PASSWORDS_ON_REG, c, LENGTH_SHORT)
-    fun invalidSpaceKeyOnReg(c: Context) =        showToast(INVALID_SPACE_KEY_ON_REG, c, LENGTH_SHORT)
 
+    /* Регистрация */
+    fun invalidNameOnReg(c: Context) =            showToast(INVALID_NAME_ON_REG, c, LENGTH_LONG)
+    fun invalidEmailOnReg(c: Context) =           showToast(INVALID_EMAIL_ON_REG, c, LENGTH_LONG)
+    fun invalidPasswordOnReg(c: Context) =        showToast(INVALID_PASSWORD_ON_REG, c, LENGTH_LONG)
+    fun passwordsAreDifferentOnReg(c: Context) =  showToast(DIFFERENT_PASSWORDS_ON_REG, c, LENGTH_LONG)
+    fun invalidSpaceKeyOnReg(c: Context) =        showToast(INVALID_SPACE_KEY_ON_REG, c, LENGTH_LONG)
+    fun invalidPositionOnReg(c: Context) =        showToast(INVALID_POSITION_ON_REG, c, LENGTH_LONG)
+    fun invalidDataOnReg(c: Context) =            showToast(INVALID_DATA_ON_REG, c, LENGTH_LONG)
+    fun usernameAlreadyExists(c: Context) =       showToast(USERNAME_ALREADY_EXISTS, c, LENGTH_LONG)
 
     fun workDurationTooShort(c: Context, minWorkDuration: Duration) {
         return showToast(WORK_DURATION_TOO_SHORT_PATTERN.format(minWorkDuration), c, LENGTH_SHORT)
