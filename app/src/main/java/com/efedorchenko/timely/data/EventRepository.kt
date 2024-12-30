@@ -1,36 +1,47 @@
-package com.efedorchenko.timely.repository
+package com.efedorchenko.timely.data
 
 import android.app.Application
 import android.content.ContentValues
 import android.database.Cursor
 import android.util.Log
+import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.COMMENT_COLUMN_NAME
+import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.EVENTS_TABLE_NAME
+import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.EVENT_DATE_COLUMN_NAME
+import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.ID_COLUMN_NAME
+import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.MONTH_UID_COLUMN_NAME
+import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.WORK_MINUTES_COLUMN_NAME
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.MonthUID
-import com.efedorchenko.timely.repository.DatabaseConfigurer.Companion.COMMENT_COLUMN_NAME
-import com.efedorchenko.timely.repository.DatabaseConfigurer.Companion.EVENTS_TABLE_NAME
-import com.efedorchenko.timely.repository.DatabaseConfigurer.Companion.EVENT_DATE_COLUMN_NAME
-import com.efedorchenko.timely.repository.DatabaseConfigurer.Companion.MONTH_UID_COLUMN_NAME
-import com.efedorchenko.timely.repository.DatabaseConfigurer.Companion.WORK_MINUTES_COLUMN_NAME
 import org.threeten.bp.Duration
 import org.threeten.bp.LocalDate
 import javax.inject.Inject
 
-class EventRepository @Inject constructor(application: Application) {
+class EventRepository @Inject constructor(application: Application): DataRepository<Event> {
 
     private val dbHelper = DatabaseConfigurer.getInstance(application)
 
-    fun save(event: Event) {
-        val db = dbHelper.writableDatabase
-        val values = ContentValues().apply {
-            put(MONTH_UID_COLUMN_NAME, MonthUID.create(event.eventDate).hashCode())
-            put(EVENT_DATE_COLUMN_NAME, event.eventDate.toString())
-            put(WORK_MINUTES_COLUMN_NAME, event.workDuration.toMinutes().toInt())
-            put(COMMENT_COLUMN_NAME, event.comment)
+    override fun save(vararg data: Event) {
+        if (data.isNotEmpty()) {
+            data.forEach { save(it) }
         }
-        db.insert(EVENTS_TABLE_NAME, null, values)
     }
 
-    fun findByMonth(monthUID: MonthUID, withComment: Boolean): MutableList<Event> {
+    override fun save(data: Event): Long {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put(MONTH_UID_COLUMN_NAME, MonthUID.create(data.eventDate).hashCode())
+            put(EVENT_DATE_COLUMN_NAME, data.eventDate.toString())
+            put(WORK_MINUTES_COLUMN_NAME, data.workDuration.toMinutes().toInt())
+            put(COMMENT_COLUMN_NAME, data.comment)
+        }
+        val id = db.insert(EVENTS_TABLE_NAME, null, values)
+        if (id == -1L) {
+            Log.e("InsertError", "Error when insert event $data")
+        }
+        return id
+    }
+
+    override fun findByMonth(monthUID: MonthUID, withComment: Boolean): MutableList<Event> {
         val events = mutableListOf<Event>()
         val db = dbHelper.readableDatabase
         var cursor: Cursor? = null
@@ -78,5 +89,22 @@ class EventRepository @Inject constructor(application: Application) {
         }
 
         return events
+    }
+
+    override fun deleteById(id: Long?): Boolean {
+        val db = dbHelper.writableDatabase
+
+        val deletedRows = db.delete(
+            EVENTS_TABLE_NAME,
+            "$ID_COLUMN_NAME = ?",
+            arrayOf(id.toString())
+        )
+
+        if (deletedRows > 0) {
+            return true
+        } else {
+            Log.e("DeleteError", "No event was deleted with id: $id")
+            return false
+        }
     }
 }

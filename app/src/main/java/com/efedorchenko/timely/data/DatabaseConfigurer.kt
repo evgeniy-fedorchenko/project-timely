@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.repository
+package com.efedorchenko.timely.data
 
 import android.app.Application
 import android.database.sqlite.SQLiteDatabase
