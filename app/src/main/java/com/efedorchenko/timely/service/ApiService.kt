@@ -1,7 +1,7 @@
 package com.efedorchenko.timely.service
 
-import com.efedorchenko.timely.model.ApiResponse
-import com.efedorchenko.timely.model.AuthRequest
+import com.efedorchenko.timely.model.api.ApiResponse
+import com.efedorchenko.timely.model.auth.AuthRequest
 import com.efedorchenko.timely.model.auth.AuthResponse
 import com.efedorchenko.timely.model.auth.RegisterRequest
 

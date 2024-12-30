@@ -1,7 +1,9 @@
 package com.efedorchenko.timely.service
 
-import com.efedorchenko.timely.model.ApiResponse
-import com.efedorchenko.timely.model.AuthRequest
+import android.util.Log
+import com.efedorchenko.timely.model.api.ApiErrorCode
+import com.efedorchenko.timely.model.api.ApiResponse
+import com.efedorchenko.timely.model.auth.AuthRequest
 import com.efedorchenko.timely.model.auth.AuthResponse
 import com.efedorchenko.timely.model.auth.RegisterRequest
 import com.efedorchenko.timely.security.SecurityService
@@ -21,12 +23,16 @@ class ApiServiceImpl @Inject constructor(
 ) : ApiService {
 
     companion object {
+
+        /* Headers */
         private const val RQUID = "RqUID"
         private const val AUTHORIZATION = "Authorization"
+        private val APPLICATION_JSON_MT = "application/json".toMediaType()
+
+        /* Paths */
         private const val BASE_URL = "http://192.168.1.104:8080/api/v1"
         private const val REG_PATH = "/auth/reg"
         private const val LOGIN_PATH = "/auth/login"
-        private val APPLICATION_JSON = "application/json".toMediaType()
     }
 
     private val client = OkHttpClient()
@@ -36,7 +42,7 @@ class ApiServiceImpl @Inject constructor(
             val request = Request.Builder()
                 .url(BASE_URL + LOGIN_PATH)
                 .header(RQUID, UUID.randomUUID().toString())
-                .post(Json.encodeToString(authRequest).toRequestBody(APPLICATION_JSON))
+                .post(Json.encodeToString(authRequest).toRequestBody(APPLICATION_JSON_MT))
                 .build()
 
             val execute = execute<AuthResponse>(request)
@@ -48,36 +54,68 @@ class ApiServiceImpl @Inject constructor(
             val request = Request.Builder()
                 .url(BASE_URL + REG_PATH)
                 .header(RQUID, UUID.randomUUID().toString())
-                .post(Json.encodeToString(registerRequest).toRequestBody(APPLICATION_JSON))
+                .post(Json.encodeToString(registerRequest).toRequestBody(APPLICATION_JSON_MT))
                 .build()
 
             return@withContext execute<AuthResponse>(request)
         }
 
     private inline fun <reified T> execute(request: Request): ApiResponse<T> {
-        try {
+        return try {
             val response = client.newCall(request).execute()
+            val body = response.body?.string()
 
-            return when (response.code) {
-                in 200..299 -> {
-                    val body = response.body?.string()
-                    if (body != null) {
-                        ApiResponse(data = Json.decodeFromString(body))
-                    } else {
-                        ApiResponse(errorMessage = "Empty response")
-                    }
-                }
-                401, 403 -> {
-                    ApiResponse(isAuthError = true)
-                }
-                else -> {
-                    val errorBody = response.body?.string()
-                    ApiResponse(errorMessage = errorBody ?: "Server error")
-                }
+            when (response.code) {
+                in 200..299 -> handleSuccess<T>(body)
+                400, in 404..408, in 410..499 -> handleClientError(body)
+                401, 403, 409 -> handleAuthError<T>(body)
+                else -> ApiResponse.Error(ApiErrorCode.SERVER)
             }
+
         } catch (e: Exception) {
-            return ApiResponse(errorMessage = "Server error")
+            e.message?.let { Log.d("e", it) }
+            ApiResponse.Error(ApiErrorCode.SERVER)
         }
     }
 
+    private inline fun <reified T> handleSuccess(body: String?): ApiResponse<T> {
+        val success = if (body.isNullOrEmpty()) {
+            ApiResponse.Success()
+        } else {
+            ApiResponse.Success(Json.decodeFromString<T>(body))
+        }
+        return success
+    }
+
+    private inline fun <reified T> handleClientError(body: String?): ApiResponse<T> {
+        val error = if (body.isNullOrEmpty()) {
+            ApiResponse.Error(ApiErrorCode.VALIDATION)
+        } else {
+            ApiResponse.Error(
+                apiErrorCode = ApiErrorCode.CLIENT,
+                errorData = Json.decodeFromString<T>(body)
+            )
+        }
+        return error
+    }
+
+    private inline fun <reified T> handleAuthError(body: String?): ApiResponse<T> {
+        val error = if (body.isNullOrEmpty()) {
+            ApiResponse.Error(ApiErrorCode.AUTH)
+        } else {
+            ApiResponse.Error(
+                apiErrorCode = ApiErrorCode.AUTH,
+                errorData = Json.decodeFromString<T>(body)
+            )
+        }
+        return error
+    }
+
 }
+/*
+- 2xx + какие-то данные (json типа Т)
+- 400 + какие-то данные (json типа ErrorResponse)
+- 401, 403, 409 + какие-то данные (json типа AuthResponse)
+- 401, 403 без данных (пустое тело)
+- 500 + какие-то данные или без данных, если что-то сломалось
+*/
