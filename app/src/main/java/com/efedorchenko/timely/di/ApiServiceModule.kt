@@ -16,5 +16,4 @@ object ApiServiceModule {
     fun provideApiService(encProfileStorage: EncProfileStorage): ApiService {
         return ApiServiceImpl(encProfileStorage);
     }
-
 }

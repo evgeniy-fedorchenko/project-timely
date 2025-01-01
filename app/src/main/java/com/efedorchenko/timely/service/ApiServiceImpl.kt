@@ -4,8 +4,8 @@ import android.util.Log
 import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.model.api.ApiErrorCode
 import com.efedorchenko.timely.model.api.ApiResponse
-import com.efedorchenko.timely.model.auth.AuthRequest
 import com.efedorchenko.timely.model.auth.AuthResponse
+import com.efedorchenko.timely.model.auth.Credentials
 import com.efedorchenko.timely.model.auth.RegisterRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -37,17 +37,16 @@ class ApiServiceImpl @Inject constructor(
 
     private val client = OkHttpClient()
 
-    override suspend fun login(authRequest: AuthRequest): ApiResponse<AuthResponse> =
-        withContext(Dispatchers.IO) {
-            val request = Request.Builder()
-                .url(BASE_URL + LOGIN_PATH)
-                .header(RQUID, UUID.randomUUID().toString())
-                .post(Json.encodeToString(authRequest).toRequestBody(APPLICATION_JSON_MT))
-                .build()
+    override suspend fun login(credentials: Credentials): ApiResponse<AuthResponse> = withContext(Dispatchers.IO) {
+        val request = Request.Builder()
+            .url(BASE_URL + LOGIN_PATH)
+            .header(RQUID, UUID.randomUUID().toString())
+            .post(Json.encodeToString(credentials).toRequestBody(APPLICATION_JSON_MT))
+            .build()
 
-            val execute = execute<AuthResponse>(request)
-            return@withContext execute
-        }
+        val execute = execute<AuthResponse>(request)
+        return@withContext execute
+    }
 
     override suspend fun register(registerRequest: RegisterRequest): ApiResponse<AuthResponse> =
         withContext(Dispatchers.IO) {
