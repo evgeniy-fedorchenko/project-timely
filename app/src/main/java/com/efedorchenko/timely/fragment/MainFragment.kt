@@ -31,6 +31,7 @@ import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.databinding.DialogAccessKeysBinding
 import com.efedorchenko.timely.databinding.FragmentMainBinding
 import com.efedorchenko.timely.service.CalendarAdapter
+import com.efedorchenko.timely.service.ToastHelper
 import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -106,7 +107,7 @@ class MainFragment : Fragment() {
         val userData = profileStorage.getUserData()
         headerView.findViewById<TextView>(R.id.user_name).text = userData?.name
 
-        userData?.position.let {
+        userData?.position?.let {
             val positionTextView = headerView.findViewById<TextView>(R.id.position)
             val spannablePositionText = SpannableString("Должность: $it")
             spannablePositionText.setSpan(
@@ -116,7 +117,17 @@ class MainFragment : Fragment() {
             positionTextView.text = spannablePositionText
         }
 
-        userData?.rate.let {
+        userData?.spaceName?.let {
+            val spaceTextView = headerView.findViewById<TextView>(R.id.space)
+            val spannableSpaceText = SpannableString("Компания: $it")
+            spannableSpaceText.setSpan(
+                StyleSpan(Typeface.BOLD), 0,
+                8, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            spaceTextView.text = spannableSpaceText
+        }
+
+        userData?.rate?.let {
             val rateTextView = headerView.findViewById<TextView>(R.id.rate)
             val spannableRateText = SpannableString("Ставка: $it руб./ч.")
             spannableRateText.setSpan(
@@ -183,6 +194,7 @@ class MainFragment : Fragment() {
         val blackColor = ContextCompat.getColor(context, R.color.dark_gray)
 
         button.setOnClickListener {
+            ToastHelper.keyCopied(context)
             button.animate().scaleX(0.9f).scaleY(0.9f).setDuration(150).withEndAction {
                 button.animate().scaleX(1f).scaleY(1f).setDuration(150).start()
             }.start()
