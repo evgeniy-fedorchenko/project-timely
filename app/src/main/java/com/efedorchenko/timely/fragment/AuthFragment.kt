@@ -13,33 +13,22 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.efedorchenko.timely.R
-import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.databinding.FragmentLoginBinding
 import com.efedorchenko.timely.input.AuthInputWatcher
 import com.efedorchenko.timely.model.Model
-import com.efedorchenko.timely.model.api.ApiErrorCode.AUTH
-import com.efedorchenko.timely.model.api.ApiErrorCode.CLIENT
-import com.efedorchenko.timely.model.api.ApiErrorCode.SERVER
-import com.efedorchenko.timely.model.api.ApiErrorCode.VALIDATION
-import com.efedorchenko.timely.model.api.onError
-import com.efedorchenko.timely.model.api.onSuccess
-import com.efedorchenko.timely.model.auth.AuthData
-import com.efedorchenko.timely.model.auth.AuthRequest
-import com.efedorchenko.timely.service.ApiService
-import com.efedorchenko.timely.service.OnTryLoginListener
+import com.efedorchenko.timely.model.api.Resource
+import com.efedorchenko.timely.model.auth.Credentials
+import com.efedorchenko.timely.service.AuthService
 import com.efedorchenko.timely.service.ToastHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class AuthFragment : Fragment(), OnTryLoginListener {
+class AuthFragment : Fragment() {
 
     @Inject
-    lateinit var encProfileStorage: EncProfileStorage
-
-    @Inject
-    lateinit var apiService: ApiService
+    lateinit var authService: AuthService
 
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
@@ -75,58 +64,40 @@ class AuthFragment : Fragment(), OnTryLoginListener {
         }
 
         binding.loginButton.setOnClickListener {
-            hideKeyboard()
-            val login = binding.loginEditText.text.toString()
-            val password = binding.passwordEditText.text.toString()
-            val loginPair = Pair(login, password)
-            if (!Model.isLoginPairValid(loginPair)) {
-                ToastHelper.incorrectLoginData(context)
-            } else {
-                this.tryLogin(loginPair)
-            }
+            doLogin(context)
         }
     }
 
-    override fun tryLogin(loginData: Pair<String, String>) {
-        val context = requireContext()
+    private fun doLogin(context: Context) {
+        binding.loginButton.isEnabled = false
+        hideKeyboard()
+        val login = binding.loginEditText.text.toString()
+        val password = binding.passwordEditText.text.toString()
+        val loginPair = Pair(login, password)
+
+        if (!Model.isLoginPairValid(loginPair)) {
+            ToastHelper.incorrectLoginData(context)
+            binding.loginButton.isEnabled = true
+            return
+        }
 
         lifecycleScope.launch {
             showLoading()
             try {
-                apiService.login(AuthRequest(loginData))
-                    .onSuccess { data ->
-                        data?.let {
-                            if (it.userUuid == null || it.jwtToken == null || it.role == null) {
-                                ToastHelper.networkError(context)
-                                return@onSuccess
-                            }
-                            val authData = AuthData(
-                                it.userUuid,
-                                it.jwtToken,
-                                it.role,
-                                it.generatedSpaceKeys
-                            )
-                            encProfileStorage.saveAuthData(authData)
-                            findNavController().navigate(R.id.mainFragment)
-                        }
-                    }
-                    .onError { apiErrorCode, _, errorData ->
-                        when (apiErrorCode) {
-                            VALIDATION -> ToastHelper.incorrectLoginData(context)
-                            SERVER -> ToastHelper.networkError(context)
-                            AUTH -> ToastHelper.incorrectLoginData(context)
-                            CLIENT -> ToastHelper.message(
-                                errorData?.errorCode?.description ?: "Client error", context
-                            )
-                        }
-                    }
+                val credentials = Credentials(login, password)
+                when (val result = authService.tryLogin(credentials)) {
+                    is Resource.Success -> findNavController().navigate(R.id.mainFragment)
+                    is Resource.Error -> ToastHelper.message(result.message, context)
+                }
+
             } finally {
+                binding.loginButton.isEnabled = true
                 hideLoading()
             }
         }
     }
 
-    override fun showLoading() {
+    private fun showLoading() {
         binding.loadingProgressBar.apply {
             visibility = View.VISIBLE
             alpha = 0f
@@ -137,7 +108,7 @@ class AuthFragment : Fragment(), OnTryLoginListener {
         }
     }
 
-    override fun hideLoading() {
+    private fun hideLoading() {
         binding.loadingProgressBar.visibility = View.GONE
     }
 

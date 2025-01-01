@@ -16,7 +16,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.viewbinding.ViewBinding
 import com.efedorchenko.timely.R
-import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.databinding.DialogRegisterWorkerEmailHelpBinding
 import com.efedorchenko.timely.databinding.DialogRegisterWorkerNameHelpBinding
 import com.efedorchenko.timely.databinding.DialogRegisterWorkerPasswordHelpBinding
@@ -26,29 +25,20 @@ import com.efedorchenko.timely.databinding.DialogRegisterWorkerSpaceKeyHelpBindi
 import com.efedorchenko.timely.databinding.FragmentRegisterWorkerBinding
 import com.efedorchenko.timely.input.AuthInputWatcher
 import com.efedorchenko.timely.model.Model
-import com.efedorchenko.timely.model.api.ApiErrorCode.AUTH
-import com.efedorchenko.timely.model.api.ApiErrorCode.CLIENT
-import com.efedorchenko.timely.model.api.ApiErrorCode.SERVER
-import com.efedorchenko.timely.model.api.ApiErrorCode.VALIDATION
-import com.efedorchenko.timely.model.api.onError
-import com.efedorchenko.timely.model.api.onSuccess
+import com.efedorchenko.timely.model.api.Resource
 import com.efedorchenko.timely.model.auth.RegisterRequest
 import com.efedorchenko.timely.model.auth.RoleType
-import com.efedorchenko.timely.service.ApiService
-import com.efedorchenko.timely.service.OnTryRegisterListener
+import com.efedorchenko.timely.service.AuthService
 import com.efedorchenko.timely.service.ToastHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class RegisterWorkerFragment : Fragment(), OnTryRegisterListener {
+class RegisterWorkerFragment : Fragment() {
 
     @Inject
-    lateinit var apiService: ApiService
-
-    @Inject
-    lateinit var encProfileStorage: EncProfileStorage
+    lateinit var authService: AuthService
 
     private var _binding: FragmentRegisterWorkerBinding? = null
     private val binding get() = _binding!!
@@ -82,9 +72,7 @@ class RegisterWorkerFragment : Fragment(), OnTryRegisterListener {
         }
 
         binding.registerButton.setOnClickListener {
-            hideKeyboard()
-            val registerRequest = validateAndCreateDto(context)
-            registerRequest?.let { dto -> this.tryRegister(dto) }
+            doRegister(context)
         }
     }
 
@@ -93,37 +81,33 @@ class RegisterWorkerFragment : Fragment(), OnTryRegisterListener {
         _binding = null
     }
 
-    override fun tryRegister(registerRequest: RegisterRequest) {
-        val context = requireContext()
+    private fun doRegister(context: Context) {
+        binding.registerButton.isEnabled = false
+        hideKeyboard()
+
+        val registerRequest = validateAndCreateDto(context)
+        if (registerRequest == null) {
+            binding.registerButton.isEnabled = true
+            return
+        }
+
         lifecycleScope.launch {
             showLoading()
             try {
-                apiService.register(registerRequest)
-                    .onSuccess { data ->
-                        data?.let {
-                            encProfileStorage.saveApiToken(it.jwtToken.toString())
-                            encProfileStorage.saveUserUuid(it.userUuid!!)
-                            encProfileStorage.saveRole(it.role!!)
-                            findNavController().navigate(R.id.mainFragment)
-                        }
-                    }
-                    .onError { apiErrorCode, _, errorData ->
-                        when (apiErrorCode) {
-                            VALIDATION -> ToastHelper.invalidDataOnReg(context)
-                            SERVER -> ToastHelper.networkError(context)
-                            AUTH -> ToastHelper.message("Client error", context)
-                            CLIENT -> ToastHelper.message(
-                                errorData?.errorCode?.description ?: "Client error", context
-                            )
-                        }
-                    }
+                when (val result = authService.tryRegister(registerRequest)) {
+                    is Resource.Success -> findNavController().navigate(R.id.mainFragment)
+                    is Resource.Error -> ToastHelper.message(result.message, context)
+                }
+
             } finally {
+                binding.registerButton.isEnabled = true
                 hideLoading()
             }
         }
+
     }
 
-    override fun showLoading() {
+    private fun showLoading() {
         binding.loadingProgressBar.apply {
             visibility = View.VISIBLE
             alpha = 0f
@@ -134,7 +118,7 @@ class RegisterWorkerFragment : Fragment(), OnTryRegisterListener {
         }
     }
 
-    override fun hideLoading() {
+    private fun hideLoading() {
         binding.loadingProgressBar.visibility = View.GONE
     }
 
