@@ -24,5 +24,4 @@ object RepositoryModule {
     fun provideFineRepository(application: Application): DataRepository<Fine> {
         return FineRepository(application);
     }
-
 }
