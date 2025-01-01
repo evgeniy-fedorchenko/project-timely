@@ -1,6 +1,5 @@
 package com.efedorchenko.timely.model.auth
 
-import com.efedorchenko.timely.model.SpaceCreateDto
 import kotlinx.serialization.Serializable
 
 @Serializable

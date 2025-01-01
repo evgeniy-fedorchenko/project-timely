@@ -1,6 +1,6 @@
 package com.efedorchenko.timely.data
 
-import com.efedorchenko.timely.model.UserData
+import com.efedorchenko.timely.model.auth.UserData
 
 interface ProfileStorage {
 
@@ -22,7 +22,9 @@ interface ProfileStorage {
 
     fun getPosition(): String?
 
-    fun getUserData(): UserData?
+    fun saveUserData(userData: UserData)
 
     fun deleteUserData()
+
+    fun getUserData(): UserData?
 }

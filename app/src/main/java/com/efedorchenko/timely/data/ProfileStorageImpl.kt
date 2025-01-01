@@ -1,7 +1,7 @@
 package com.efedorchenko.timely.data
 
 import android.content.Context
-import com.efedorchenko.timely.model.UserData
+import com.efedorchenko.timely.model.auth.UserData
 
 class ProfileStorageImpl(context: Context) : ProfileStorage {
 
@@ -11,6 +11,7 @@ class ProfileStorageImpl(context: Context) : ProfileStorage {
         private const val NAME_KEY = "user_name"
         private const val RATE_KEY = "user_rate"
         private const val POSITION_KEY = "user_position"
+        private const val SPACE_NAME_KEY = "space_name_where_user_consist"
     }
 
     private val sharedPref by lazy {
@@ -69,16 +70,15 @@ class ProfileStorageImpl(context: Context) : ProfileStorage {
 
     override fun getPosition(): String? = sharedPref.getString(POSITION_KEY, null)
 
-    override fun getUserData(): UserData? {
-        with(sharedPref) {
-            val name = getString(NAME_KEY, null)
-            val position = getString(POSITION_KEY, null)
-            val rate = getInt(RATE_KEY, -1)
-
-            if (name != null && position != null) {
-                return UserData(name, position, rate)
+    override fun saveUserData(userData: UserData) {
+        with(sharedPref.edit()) {
+            putString(NAME_KEY, userData.name)
+            putString(POSITION_KEY, userData.position)
+            putString(SPACE_NAME_KEY, userData.spaceName)
+            userData.rate?.let {
+                putInt(RATE_KEY, it)
             }
-            return null
+            apply()
         }
     }
 
@@ -88,6 +88,21 @@ class ProfileStorageImpl(context: Context) : ProfileStorage {
             remove(POSITION_KEY)
             remove(RATE_KEY)
             apply()
+        }
+    }
+
+    override fun getUserData(): UserData? {
+        with(sharedPref) {
+            val name = getString(NAME_KEY, null)
+            val position = getString(POSITION_KEY, null)
+            val rate = getInt(RATE_KEY, -1)
+            val spaceName = getString(SPACE_NAME_KEY, null)
+
+            if (name != null && position != null && spaceName != null) {
+                val nullableRate = if (rate == -1) null else rate
+                return UserData(name, position, nullableRate, spaceName)
+            }
+            return null
         }
     }
 }

@@ -13,7 +13,7 @@ import dagger.hilt.components.SingletonComponent
 
 @Module
 @InstallIn(SingletonComponent::class)
-object ProfileModule {
+object ProfileStorageModule {
 
     @Provides
     fun provideEncProfileStorage(@ApplicationContext context: Context): EncProfileStorage {
