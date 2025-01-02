@@ -11,7 +11,7 @@ data class RegisterRequest(
     val position: String,
     val rate: Int?,
     val creatingSpace: SpaceCreateDto?,
-    val spaceKey: String,
+    val spaceKey: String?,
 ) {
 
     companion object {
@@ -32,7 +32,7 @@ data class RegisterRequest(
         var position: String = ""
         var rate: Int? = null
         var creatingSpace: SpaceCreateDto? = null
-        var spaceKey: String = ""
+        var spaceKey: String? = null
 
         fun build() = RegisterRequest(
             username = username,
