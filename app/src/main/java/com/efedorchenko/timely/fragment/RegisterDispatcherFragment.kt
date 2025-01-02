@@ -10,29 +10,30 @@ import androidx.navigation.fragment.findNavController
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.databinding.DialogHelpChooseRoleBinding
 import com.efedorchenko.timely.databinding.FragmentRegisterDispatcherBinding
+import com.efedorchenko.timely.model.auth.RoleType
 
 class RegisterDispatcherFragment : Fragment() {
 
     private var _binding: FragmentRegisterDispatcherBinding? = null
     private val binding get() = _binding!!
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentRegisterDispatcherBinding.inflate(inflater, container, false)
-        val view = binding.root
+        return binding.root
+    }
 
-        val context = requireContext()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
         val navController = findNavController()
         binding.buttonWorker.setOnClickListener {
-            navController.navigate(R.id.registerWorkerFragment)
+            val action = RegisterDispatcherFragmentDirections.dispatchToRegisterUserFragment(RoleType.WORKER.name)
+            navController.navigate(action)
         }
 
         binding.buttonBoss.setOnClickListener {
-            navController.navigate(R.id.registerBossFragment)
+            val action = RegisterDispatcherFragmentDirections.dispatchToRegisterUserFragment(RoleType.BOSS.name)
+            navController.navigate(action)
         }
 
         binding.buttonCreator.setOnClickListener {
@@ -43,6 +44,7 @@ class RegisterDispatcherFragment : Fragment() {
             navController.navigate(R.id.authFragment)
         }
 
+        val context = requireContext()
         binding.chooseRoleHelpButton.setOnClickListener {
             val binding = DialogHelpChooseRoleBinding.inflate(LayoutInflater.from(context))
             val dialog = AlertDialog.Builder(context).setView(binding.root).create()
@@ -57,7 +59,5 @@ class RegisterDispatcherFragment : Fragment() {
                 dialog.cancel()
             }
         }
-
-        return view
     }
 }

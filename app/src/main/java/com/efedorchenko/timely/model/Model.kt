@@ -93,4 +93,8 @@ object Model {
     fun isPositionValid(position: String): Boolean {
         return position.isNotEmpty() && position.length < 128
     }
+
+    fun isSpaceNameValid(spaceName: String): Boolean {
+        return spaceName.isNotEmpty() && spaceName.length < 128
+    }
 }
