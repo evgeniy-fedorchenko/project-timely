@@ -48,9 +48,10 @@ class AuthServiceImpl @Inject constructor(
         return when (val response = apiService.register(registerRequest)) {
             is ApiResponse.Success -> {
                 response.data?.let {
-                    if (it.authData == null) {
+                    if (it.authData == null || it.userData == null) {
                         Resource.Error("Network error")
                     } else {
+                        profileStorage.saveUserData(it.userData)
                         encProfileStorage.saveAuthData(it.authData)
                         Resource.Success()
                     }
