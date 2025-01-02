@@ -20,14 +20,14 @@ okhttp = "4.9.3"
 securityCrypto = "1.0.0"
 threetenabp = "1.4.7"
 viewpager2 = "1.1.0"
-navigationFragmentKtx = "2.8.4"
-navigationUiKtx = "2.8.4"
+nav = "2.8.5"
 hilt = "2.53"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-hilt-navigation-fragment = { module = "androidx.hilt:hilt-navigation-fragment", version.ref = "hiltNavigationFragment" }
 androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
+androidx-navigation-safe-args-gradle-plugin = { module = "androidx.navigation:navigation-safe-args-gradle-plugin", version.ref = "nav" }
 androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "securityCrypto" }
 androidx-viewpager2 = { module = "androidx.viewpager2:viewpager2", version.ref = "viewpager2" }
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
@@ -48,8 +48,8 @@ androidx-constraintlayout = { group = "androidx.constraintlayout", name = "const
 number-picker = { module = "io.github.ShawnLin013:number-picker", version.ref = "numberPicker" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 threetenabp = { module = "com.jakewharton.threetenabp:threetenabp", version.ref = "threetenabp" }
-androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
-androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigationUiKtx" }
+androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "nav" }
+androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "nav" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
