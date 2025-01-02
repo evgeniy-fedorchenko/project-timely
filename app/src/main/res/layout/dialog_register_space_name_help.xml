@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="Имя"
+        android:text="Название пространства"
         android:textColor="@color/light_gray"
         android:textSize="16sp"
         android:textStyle="bold" />
@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:paddingTop="8dp"
-        android:text="Пожалуйста, введите сюда свои фамилию, имя и отчество"
+        android:text="Пожалуйста, введите название компании, для которой вы хотите создать пространство. Это название будет отображено на странице всех участников"
         android:textColor="@color/light_gray"
         android:textSize="16sp" />
 
@@ -31,25 +31,16 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:paddingTop="8dp"
-        android:text="Эти данные будут отображены на вашей странице. Их увидят все в вашей компании. Пример:"
+        android:text="За более подробной информацией о концепции пространств обратитесь к кнопке 'Помощь'"
         android:textColor="@color/light_gray"
         android:textSize="16sp" />
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:paddingTop="12dp"
-        android:text="Иван Иван Иванович"
-        android:textColor="@color/light_gray"
-        android:textStyle="bold"
-        android:textSize="16sp" />
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="end"
         android:paddingTop="12dp"
-        android:text="*Вам необходимо уложиться в 255 символов"
+        android:text="*Вам необходимо уложиться в 128 символов"
         android:textColor="@color/light_gray"
         android:textSize="12sp" />
-
 </LinearLayout>
