@@ -6,6 +6,9 @@
             android:id="@+id/my_team"
             android:title="Моя команда" />
         <item
+            android:id="@+id/do_sync"
+            android:title="Синхронизировать данные" />
+        <item
             android:id="@+id/access_keys"
             android:title="Ключи доступа"
             android:visible="false" />

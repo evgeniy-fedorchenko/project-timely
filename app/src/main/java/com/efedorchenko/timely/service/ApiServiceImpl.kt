@@ -2,6 +2,8 @@ package com.efedorchenko.timely.service
 
 import android.util.Log
 import com.efedorchenko.timely.data.EncProfileStorage
+import com.efedorchenko.timely.model.Event
+import com.efedorchenko.timely.model.Fine
 import com.efedorchenko.timely.model.api.ApiErrorCode
 import com.efedorchenko.timely.model.api.ApiResponse
 import com.efedorchenko.timely.model.auth.AuthResponse
@@ -31,33 +33,56 @@ class ApiServiceImpl @Inject constructor(
 
         /* Paths */
         private const val BASE_URL = "http://192.168.1.104:8080/api/v1"
-        private const val REG_PATH = "/auth/reg"
-        private const val LOGIN_PATH = "/auth/login"
+        private const val REG_PATH = "$BASE_URL/auth/reg"
+        private const val LOGIN_PATH = "$BASE_URL/auth/login"
+        private const val DATA_PATH = "$BASE_URL/data"
     }
 
     private val client = OkHttpClient()
 
     override suspend fun login(credentials: Credentials): ApiResponse<AuthResponse> = withContext(Dispatchers.IO) {
         val request = Request.Builder()
-            .url(BASE_URL + LOGIN_PATH)
+            .url(LOGIN_PATH)
             .header(RQUID, UUID.randomUUID().toString())
             .post(Json.encodeToString(credentials).toRequestBody(APPLICATION_JSON_MT))
             .build()
 
-        val execute = execute<AuthResponse>(request)
-        return@withContext execute
+        return@withContext execute<AuthResponse>(request)
     }
 
     override suspend fun register(registerRequest: RegisterRequest): ApiResponse<AuthResponse> =
         withContext(Dispatchers.IO) {
             val request = Request.Builder()
-                .url(BASE_URL + REG_PATH)
+                .url(REG_PATH)
                 .header(RQUID, UUID.randomUUID().toString())
                 .post(Json.encodeToString(registerRequest).toRequestBody(APPLICATION_JSON_MT))
                 .build()
 
             return@withContext execute<AuthResponse>(request)
         }
+
+    override suspend fun save(event: Event): ApiResponse<Event> = withContext(Dispatchers.IO) {
+        val request = Request.Builder()
+            .url(DATA_PATH)
+            .header(RQUID, UUID.randomUUID().toString())
+            .header(AUTHORIZATION, getJwtToken())
+            .post(Json.encodeToString(event).toRequestBody(APPLICATION_JSON_MT))
+            .build()
+
+        return@withContext execute<Event>(request)
+    }
+
+    // TODO: need testing
+    override suspend fun save(fine: Fine): ApiResponse<Fine> = withContext(Dispatchers.IO){
+        val request = Request.Builder()
+            .url(DATA_PATH)
+            .header(RQUID, UUID.randomUUID().toString())
+            .header(AUTHORIZATION, getJwtToken())
+            .post(Json.encodeToString(fine).toRequestBody(APPLICATION_JSON_MT))
+            .build()
+
+        return@withContext execute<Fine>(request)
+    }
 
     private inline fun <reified T> execute(request: Request): ApiResponse<T> {
         return try {
@@ -110,7 +135,10 @@ class ApiServiceImpl @Inject constructor(
         return error
     }
 
+    private fun getJwtToken() = "Bearer ${encProfileStorage.getApiToken()}"
+
 }
+
 /*
 - 2xx + какие-то данные (json типа Т)
 - 400 + какие-то данные (json типа ErrorResponse)

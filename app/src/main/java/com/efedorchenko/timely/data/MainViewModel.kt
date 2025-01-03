@@ -141,4 +141,12 @@ class MainViewModel @Inject constructor(
             }
         }
     }
+
+    fun getEventsOutOfSync(): List<Event> {
+        return eventRepository.findNullableBackendId()
+    }
+
+    fun getFinesOutOfSync(): List<Fine> {
+        return fineRepository.findNullableBackendId()
+    }
 }
