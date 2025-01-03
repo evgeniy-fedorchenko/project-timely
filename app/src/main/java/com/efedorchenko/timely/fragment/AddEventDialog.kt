@@ -7,7 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
-import com.efedorchenko.timely.databinding.AddEventBinding
+import com.efedorchenko.timely.databinding.DialogEventAddBinding
 import com.efedorchenko.timely.input.CommentInputFilter
 import com.efedorchenko.timely.input.HoursInputFilter
 import com.efedorchenko.timely.input.MinutesInputFilter
@@ -33,7 +33,7 @@ class AddEventDialog : BottomSheetDialogFragment() {
         }
     }
 
-    private var _binding: AddEventBinding? = null
+    private var _binding: DialogEventAddBinding? = null
     private val binding get() = _binding!!
 
     private var processedCellIdx: Int? = null
@@ -49,7 +49,7 @@ class AddEventDialog : BottomSheetDialogFragment() {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
 
-        _binding = AddEventBinding.inflate(inflater, container, false)
+        _binding = DialogEventAddBinding.inflate(inflater, container, false)
 
         val targetDate = LocalDate.parse(arguments?.getString(OnSaveEventListener.SELECTED_DATE_KEY))
         val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale("ru"))

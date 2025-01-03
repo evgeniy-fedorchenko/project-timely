@@ -9,7 +9,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.MainViewModel
-import com.efedorchenko.timely.databinding.FinesDialogBinding
+import com.efedorchenko.timely.databinding.DialogFinesShowBinding
 import com.efedorchenko.timely.service.FinesAdapter
 import com.efedorchenko.timely.service.SpaceItemDecoration
 import dagger.hilt.android.AndroidEntryPoint
@@ -17,7 +17,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class FinesDialogFragment : DialogFragment() {
 
-    private var _binding: FinesDialogBinding? = null
+    private var _binding: DialogFinesShowBinding? = null
     private val binding get() = _binding!!
     private val viewModel: MainViewModel by activityViewModels()
 
@@ -26,7 +26,7 @@ class FinesDialogFragment : DialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FinesDialogBinding.inflate(inflater, container, false)
+        _binding = DialogFinesShowBinding.inflate(inflater, container, false)
         return binding.root
     }
 

@@ -10,7 +10,7 @@ import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.data.EncProfileStorageImpl
 import com.efedorchenko.timely.data.MainViewModel
-import com.efedorchenko.timely.databinding.FineItemBinding
+import com.efedorchenko.timely.databinding.FineItemIntoShowDialogBinding
 import com.efedorchenko.timely.model.Fine
 import org.threeten.bp.format.DateTimeFormatter
 import java.text.DecimalFormat
@@ -20,7 +20,7 @@ class FinesAdapter(
     private val viewModel: MainViewModel
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private var _binding: FineItemBinding? = null
+    private var _binding: FineItemIntoShowDialogBinding? = null
     private val binding get() = _binding!!
 
     private val encProfileStorage: EncProfileStorage = EncProfileStorageImpl.requireInstance()
@@ -31,7 +31,7 @@ class FinesAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        _binding = FineItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        _binding = FineItemIntoShowDialogBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return object : RecyclerView.ViewHolder(binding.root) {}
     }
 

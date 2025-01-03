@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.efedorchenko.timely.databinding.AddFineBinding
+import com.efedorchenko.timely.databinding.DialogFineAddBinding
 import com.efedorchenko.timely.input.CommentInputFilter
 import com.efedorchenko.timely.input.FineAmountFilter
 import com.efedorchenko.timely.model.Fine
@@ -25,7 +25,7 @@ class AddFineDialog : BottomSheetDialogFragment() {
         }
     }
 
-    private var _binding: AddFineBinding? = null
+    private var _binding: DialogFineAddBinding? = null
     private val binding get() = _binding!!
 
     private var targetMonth: Month? = null
@@ -38,9 +38,9 @@ class AddFineDialog : BottomSheetDialogFragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
-        _binding = AddFineBinding.inflate(inflater, container, false)
+        _binding = DialogFineAddBinding.inflate(inflater, container, false)
         val view = binding.root
 
         val fineAmountField = binding.fineAmount
