@@ -6,6 +6,7 @@ import androidx.security.crypto.MasterKeys
 import com.efedorchenko.timely.model.auth.AuthData
 import com.efedorchenko.timely.model.auth.RoleType
 import com.efedorchenko.timely.model.auth.SpaceKeys
+import okio.IOException
 
 // TODO: Возможно не стоит создавать DI-модули а помечать класс @Singleton,
 //  а контекст в конструкторе как @ApplicationContext
@@ -36,14 +37,21 @@ class EncProfileStorageImpl private constructor(baseContext: Context) : EncProfi
     }
 
     private val encSharedPref by lazy {
-        EncryptedSharedPreferences.create(
-            ESP_NAME,
-            MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC),
-            baseContext,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
+        try {
+            create(baseContext)
+        } catch (ex: IOException) {
+            baseContext.getSharedPreferences(ESP_NAME, Context.MODE_PRIVATE).edit().clear().apply()
+            create(baseContext)
+        }
     }
+
+    private fun create(baseContext: Context) = EncryptedSharedPreferences.create(
+        ESP_NAME,
+        MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC),
+        baseContext,
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
 
     override fun isAuthenticated(): Boolean = encSharedPref.contains(ROLE_KEY)
 
@@ -88,7 +96,6 @@ class EncProfileStorageImpl private constructor(baseContext: Context) : EncProfi
     }
 
     override fun getApiToken(): String? = encSharedPref.getString(API_TOKEN_KEY, null)
-
 
     override fun saveRole(role: RoleType) {
         with(encSharedPref.edit()) {
