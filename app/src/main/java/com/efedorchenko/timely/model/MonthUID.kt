@@ -3,7 +3,7 @@ package com.efedorchenko.timely.model
 import org.threeten.bp.LocalDate
 import org.threeten.bp.YearMonth
 
-class MonthUID private constructor(private val value: Int) {
+class MonthUID private constructor(val value: Int) {
 
     companion object {
 

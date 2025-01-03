@@ -4,11 +4,14 @@ import android.app.Application
 import android.content.ContentValues
 import android.database.Cursor
 import android.util.Log
+import androidx.core.content.contentValuesOf
+import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.BACKEND_ID_COLUMN_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.COMMENT_COLUMN_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.EVENTS_TABLE_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.EVENT_DATE_COLUMN_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.ID_COLUMN_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.MONTH_UID_COLUMN_NAME
+import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.TAG
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.WORK_MINUTES_COLUMN_NAME
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.MonthUID
@@ -20,23 +23,17 @@ class EventRepository @Inject constructor(application: Application): DataReposit
 
     private val dbHelper = DatabaseConfigurer.getInstance(application)
 
-    override fun save(vararg data: Event) {
-        if (data.isNotEmpty()) {
-            data.forEach { save(it) }
-        }
-    }
-
     override fun save(data: Event): Long {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
-            put(MONTH_UID_COLUMN_NAME, MonthUID.create(data.eventDate).hashCode())
-            put(EVENT_DATE_COLUMN_NAME, data.eventDate.toString())
+            put(MONTH_UID_COLUMN_NAME, MonthUID.create(data.date).value)
+            put(EVENT_DATE_COLUMN_NAME, data.date.toString())
             put(WORK_MINUTES_COLUMN_NAME, data.workDuration.toMinutes().toInt())
             put(COMMENT_COLUMN_NAME, data.comment)
         }
         val id = db.insert(EVENTS_TABLE_NAME, null, values)
         if (id == -1L) {
-            Log.e("InsertError", "Error when insert event $data")
+            Log.e(TAG, "Error when insert event $data")
         }
         return id
     }
@@ -60,11 +57,15 @@ class EventRepository @Inject constructor(application: Application): DataReposit
 
             cursor?.let {
                 while (cursor.moveToNext()) {
+                    val idIndex = cursor.getColumnIndex(ID_COLUMN_NAME)
+                    val backendIdIndex = cursor.getColumnIndex(BACKEND_ID_COLUMN_NAME)
                     val eventDateIdx = cursor.getColumnIndex(EVENT_DATE_COLUMN_NAME)
                     val workMinutesIdx = cursor.getColumnIndex(WORK_MINUTES_COLUMN_NAME)
 
                     val eventDate = cursor.getString(eventDateIdx)
                     val workMinutes = cursor.getInt(workMinutesIdx)
+                    val id = cursor.getInt(idIndex)
+                    val backendId = cursor.getInt(backendIdIndex)
                     var comment: String? = null
 
                     if (withComment) {
@@ -73,6 +74,8 @@ class EventRepository @Inject constructor(application: Application): DataReposit
                     }
 
                     val event = Event(
+                        id.toLong(),
+                        backendId.toLong(),
                         LocalDate.parse(eventDate),
                         Duration.ofMinutes(workMinutes.toLong()),
                         comment
@@ -82,12 +85,62 @@ class EventRepository @Inject constructor(application: Application): DataReposit
             }
             db.setTransactionSuccessful()
         } catch (ex: Exception) {
-            Log.e("DatabaseError", "Error when extracting events. Cause: :${ex.message}")
+            Log.e(TAG, "Error when extracting events. Cause: :${ex.message}")
         } finally {
             cursor?.close()
             db.endTransaction()
         }
 
+        return events
+    }
+
+    override fun setBackendId(data: Event) {
+        val db = dbHelper.writableDatabase
+        val update = db.update(
+            EVENTS_TABLE_NAME,
+            contentValuesOf(Pair(BACKEND_ID_COLUMN_NAME, data.backendId)),
+            "$ID_COLUMN_NAME = ?",
+            arrayOf(data.appId.toString())
+        )
+    }
+
+    override fun findNullableBackendId(): List<Event> {
+        val db = dbHelper.readableDatabase
+        val events = mutableListOf<Event>()
+        var cursor: Cursor? = null
+        db.beginTransaction()
+
+        try {
+            cursor = db.query(
+                EVENTS_TABLE_NAME,
+                null,
+                "$BACKEND_ID_COLUMN_NAME IS NULL",
+                null,
+                null,
+                null,
+                null
+            )
+            cursor?.let {
+                while (cursor.moveToNext()) {
+                    val eventDateIdx = cursor.getColumnIndex(EVENT_DATE_COLUMN_NAME)
+                    val workMinutesIdx = cursor.getColumnIndex(WORK_MINUTES_COLUMN_NAME)
+                    val commentIdx = cursor.getColumnIndex(COMMENT_COLUMN_NAME)
+
+                    val eventDate = cursor.getString(eventDateIdx)
+                    val workMinutes = cursor.getInt(workMinutesIdx)
+                    val comment = cursor.getString(commentIdx)
+
+                    val event = Event(LocalDate.parse(eventDate), Duration.ofMinutes(workMinutes.toLong()), comment)
+                    events.add(event)
+                }
+            }
+            db.setTransactionSuccessful()
+        } catch (ex: Exception) {
+            Log.e(TAG, "Error when extracting events with nullable backendId. Cause: :${ex.message}")
+        } finally {
+            cursor?.close()
+            db.endTransaction()
+        }
         return events
     }
 
@@ -103,7 +156,7 @@ class EventRepository @Inject constructor(application: Application): DataReposit
         if (deletedRows > 0) {
             return true
         } else {
-            Log.e("DeleteError", "No event was deleted with id: $id")
+            Log.e(TAG, "No event was deleted with id: $id")
             return false
         }
     }

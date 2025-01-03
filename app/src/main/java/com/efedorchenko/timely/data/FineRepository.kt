@@ -5,11 +5,13 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.util.Log
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.AMOUNT_COLUMN_NAME
+import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.BACKEND_ID_COLUMN_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.DESCRIPTION_COLUMN_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.FINES_TABLE_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.ID_COLUMN_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.MONTH_UID_COLUMN_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.RECEIPT_DATE_COLUMN_NAME
+import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.TAG
 import com.efedorchenko.timely.model.Fine
 import com.efedorchenko.timely.model.MonthUID
 import org.threeten.bp.LocalDate
@@ -18,12 +20,6 @@ import javax.inject.Inject
 class FineRepository @Inject constructor(application: Application): DataRepository<Fine> {
 
     private val dbHelper = DatabaseConfigurer.getInstance(application)
-
-    override fun save(vararg data: Fine) {
-        if (data.isNotEmpty()) {
-            data.forEach { save(it) }
-        }
-    }
 
     override fun save(data: Fine): Long {
         val db = dbHelper.writableDatabase
@@ -36,7 +32,7 @@ class FineRepository @Inject constructor(application: Application): DataReposito
 
         val id = db.insert(FINES_TABLE_NAME, null, values)
         if (id == -1L) {
-            Log.e("InsertError", "Error when insert fine $data")
+            Log.e(TAG, "Error when insert fine $data")
         }
         return id
     }
@@ -77,7 +73,7 @@ class FineRepository @Inject constructor(application: Application): DataReposito
             }
             db.setTransactionSuccessful()
         } catch (ex: Exception) {
-            Log.e("DatabaseError", "Error when extracting events. Cause: :${ex.message}")
+            Log.e(TAG, "Error when extracting events. Cause: :${ex.message}")
         } finally {
             cursor?.close()
             db.endTransaction()
@@ -132,8 +128,12 @@ class FineRepository @Inject constructor(application: Application): DataReposito
         if (deletedRows > 0) {
             return true
         } else {
-            Log.e("DeleteError", "No fine was deleted with id: $id")
+            Log.e(TAG, "No fine was deleted with id: $id")
             return false
         }
+    }
+
+    override fun setBackendId(data: Fine) {
+        TODO("Not yet implemented")
     }
 }

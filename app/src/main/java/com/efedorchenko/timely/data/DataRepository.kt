@@ -4,8 +4,6 @@ import com.efedorchenko.timely.model.MonthUID
 
 interface DataRepository<T> {
 
-    fun save(vararg data: T)
-
     fun save(data:  T): Long
 
     // TODO: Проверить, может быть стоит возвращать immutableList
@@ -13,4 +11,7 @@ interface DataRepository<T> {
 
     fun deleteById(id: Long?): Boolean
 
+    fun setBackendId(data: T)
+
+    fun findNullableBackendId(): List<T>
 }

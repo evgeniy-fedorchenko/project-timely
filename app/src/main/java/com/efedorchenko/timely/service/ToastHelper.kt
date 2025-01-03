@@ -16,6 +16,9 @@ object ToastHelper {
     private const val FINE_AMOUNT_TOO_SMALL =           "Слишком маленькая сумма"
     private const val WORK_DURATION_TOO_SHORT_PATTERN = "Минимальная длина: %s часов"
     const val INCORRECT_LOGIN_DATA =                    "Неверный логин или пароль"
+    const val NOT_SYNCHRONIZED =                        "Проблемы с интернетом, синхронизируйте данные позже"
+    const val ALL_SYNCED =                              "Все данные синхронизированы"
+    private const val FIND_NOT_SYNCED_OBJECTS_PATTERN = "Найдено %s несинхронизированных объектов"
 
     /* Регистрация */
     private const val INVALID_NAME_ON_REG =        "Неподходящее имя. Смотри подсказку справа"
@@ -47,6 +50,10 @@ object ToastHelper {
 
     fun workDurationTooShort(c: Context, minWorkDuration: Duration) {
         return doShow(WORK_DURATION_TOO_SHORT_PATTERN.format(minWorkDuration), c, LENGTH_SHORT)
+    }
+
+    fun findNotSyncedObjects(c: Context, objsCount: Int) {
+        return doShow(FIND_NOT_SYNCED_OBJECTS_PATTERN.format(objsCount), c, LENGTH_SHORT)
     }
 
     private fun doShow(toastText: String, c: Context, toastLength: Int) {

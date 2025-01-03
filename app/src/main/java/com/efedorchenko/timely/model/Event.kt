@@ -8,7 +8,8 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.WRAP_CONTENT
 import androidx.core.widget.TextViewCompat
 import com.efedorchenko.timely.R
-import kotlinx.serialization.Contextual
+import com.efedorchenko.timely.model.serializer.CustomDurationSerializer
+import com.efedorchenko.timely.model.serializer.LocalDateSerializer
 import kotlinx.serialization.Serializable
 import org.threeten.bp.Duration
 import org.threeten.bp.LocalDate
@@ -16,10 +17,35 @@ import java.util.Locale
 
 @Serializable
 data class Event(
-    @Contextual var eventDate: LocalDate,
-    @Contextual var workDuration: Duration,
+
+    val type: String,
+
+    var appId: Long? = null,
+
+    var backendId: Long? = null,
+
+    @Serializable(with = LocalDateSerializer::class)
+    val date: LocalDate,
+
+    @Serializable(with = CustomDurationSerializer::class)
+    val workDuration: Duration,
+
     var comment: String?,
 ) {
+
+    constructor(
+        appId: Long?,
+        backendId: Long?,
+        eventDate: LocalDate,
+        workDuration: Duration,
+        comment: String?
+    ) : this("event", appId, backendId, eventDate, workDuration, comment)
+
+    constructor(
+        eventDate: LocalDate,
+        workDuration: Duration,
+        comment: String?
+    ) : this("event", null, null, eventDate, workDuration, comment)
 
     fun applyTo(parentLayout: ConstraintLayout) {
         val context = parentLayout.context
@@ -29,7 +55,7 @@ data class Event(
 
         squareView.layoutParams = cellColorMarkParams(resources)
         val color = when {
-            eventDate.isBefore(LocalDate.now()) -> Color.GREEN.getColorValue(context)
+            date.isBefore(LocalDate.now()) -> Color.GREEN.getColorValue(context)
             else -> Color.ORANGE.getColorValue(context)
         }
         squareView.setBackgroundColor(color)
@@ -78,7 +104,7 @@ data class Event(
 fun MutableList<Event>.toEventMap(): MutableMap<LocalDate, Event> {
     val map = HashMap<LocalDate, Event>()
     for (event in this) {
-        map[event.eventDate] = event
+        map[event.date] = event
     }
     return map
 }

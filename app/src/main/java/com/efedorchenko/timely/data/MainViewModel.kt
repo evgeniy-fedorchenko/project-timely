@@ -8,11 +8,17 @@ import androidx.lifecycle.viewModelScope
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.Fine
 import com.efedorchenko.timely.model.MonthUID
+import com.efedorchenko.timely.model.api.ApiResponse
 import com.efedorchenko.timely.model.toEventMap
+import com.efedorchenko.timely.service.ApiService
 import com.efedorchenko.timely.service.CalendarAdapter
+import com.efedorchenko.timely.service.ToastHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import okio.IOException
 import org.threeten.bp.LocalDate
 import javax.inject.Inject
 
@@ -22,12 +28,9 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     application: Application,
     private val eventRepository: DataRepository<Event>,
-    private val fineRepository: DataRepository<Fine>
+    private val fineRepository: DataRepository<Fine>,
+    private val apiService: ApiService
 ) : AndroidViewModel(application) {
-
-    companion object {
-        private val eventsCache: MutableMap<MonthUID, MutableMap<LocalDate, Event>> = HashMap()
-    }
 
     private val _events = MutableLiveData<List<Event>>()
     val events: LiveData<List<Event>> get() = _events
@@ -38,6 +41,13 @@ class MainViewModel @Inject constructor(
     private val _monthOffset = MutableLiveData<Int>()
     val monthOffset: LiveData<Int> get() = _monthOffset
 
+    private val _alert = MutableSharedFlow<String>()
+    val alert = _alert.asSharedFlow()
+
+    private val emitError: suspend () -> Unit = {
+        _alert.emit(ToastHelper.NOT_SYNCHRONIZED)
+    }
+
     init {
         val monthUID = MonthUID.create()
         _events.value = eventRepository.findByMonth(monthUID, false)
@@ -47,12 +57,38 @@ class MainViewModel @Inject constructor(
     }
 
     fun addEvent(event: Event) {
-        _events.value = (_events.value ?: emptyList()) + event
         viewModelScope.launch {
-            eventRepository.save(event)
-            val monthEvents = eventsCache[MonthUID.create(event.eventDate)]
-            monthEvents?.let { monthEvents[event.eventDate] = event }
+            val localDdId = eventRepository.save(event)
+            event.appId = localDdId
+            _events.value = (_events.value ?: emptyList()) + event
+
+            sendEvent(event)
         }
+    }
+
+    suspend fun sendEvent(event: Event) {
+        try {
+            when (val eventFromServer = apiService.save(event)) {
+                is ApiResponse.Success -> eventFromServer.data?.let {
+                    it.appId = event.appId
+                    eventRepository.setBackendId(it)
+                } ?: run {
+                    emitError.invoke()
+                }
+
+                is ApiResponse.Error -> emitError.invoke()
+            }
+        } catch (ex: IOException) {
+            emitError.invoke()
+        }
+    }
+
+    fun deleteEvent(event: Event) {
+        // TODO: not implemented
+    }
+
+    fun changeEvent(event: Event) {
+        // TODO: not implemented
     }
 
     fun addFine(fine: Fine) {
@@ -63,6 +99,14 @@ class MainViewModel @Inject constructor(
                 _fines.value = (_fines.value ?: emptyList()) + fine
             }
         }
+    }
+
+    fun deleteFine(fine: Fine) {
+        // TODO: not implemented
+    }
+
+    fun changeFine(fine: Fine) {
+        // TODO: not implemented
     }
 
     fun updateSummaryData(position: Int) {
@@ -78,13 +122,7 @@ class MainViewModel @Inject constructor(
 
     fun getEventsAsync(monthOffset: Int) = viewModelScope.async {
         val monthUID = MonthUID.create(LocalDate.now().plusMonths(monthOffset.toLong()))
-        var monthEvents = eventsCache[monthUID]
-
-        if (monthEvents == null) {
-            monthEvents = eventRepository.findByMonth(monthUID, false).toEventMap()
-            eventsCache[monthUID] = monthEvents
-        }
-        monthEvents
+        return@async eventRepository.findByMonth(monthUID, false).toEventMap()
     }
 
     fun updateMonthOffset(position: Int) {

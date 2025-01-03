@@ -66,6 +66,12 @@ class MainFragment : Fragment() {
         setupViewPager()
         setupSummaryCard()
         setupSideMenu()
+
+        lifecycleScope.launch {
+            viewModel.alert.collect {
+                ToastHelper.message(it, context)
+            }
+        }
     }
 
     override fun onDestroyView() {
