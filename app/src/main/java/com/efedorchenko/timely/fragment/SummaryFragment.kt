@@ -8,7 +8,7 @@ import androidx.fragment.app.activityViewModels
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.data.MainViewModel
-import com.efedorchenko.timely.databinding.SummaryCardBinding
+import com.efedorchenko.timely.databinding.FragmentSummaryCardBinding
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.Fine
 import com.efedorchenko.timely.service.OnSaveFineListener
@@ -19,7 +19,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class SummaryFragment : OnSaveFineListener() {
 
-    private var _binding: SummaryCardBinding? = null
+    private var _binding: FragmentSummaryCardBinding? = null
     private val binding get() = _binding!!
     private val viewModel: MainViewModel by activityViewModels()
 
@@ -31,7 +31,7 @@ class SummaryFragment : OnSaveFineListener() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = SummaryCardBinding.inflate(inflater, container, false)
+        _binding = FragmentSummaryCardBinding.inflate(inflater, container, false)
         val view = binding.root
 
         binding.showFinesButton.setOnClickListener {
@@ -66,14 +66,14 @@ class SummaryFragment : OnSaveFineListener() {
 
     private fun updateEvents(events: List<Event>?) {
         val daysWorked = events?.count().toString()
-        val hoursWorked = events?.map { it.workDuration.toHours() }?.sum().toString()
+        val hoursWorked = events?.sumOf { it.workDuration.toHours() }.toString()
         binding.daysWorked.text = resources.getString(R.string.days_worked_text, daysWorked)
         binding.hoursWorked.text = resources.getString(R.string.hours_worked_text, hoursWorked)
     }
 
     private fun updateFines(fines: List<Fine>?) {
         val finesCount = fines?.count().toString()
-        val finesAmount = fines?.map { it.amount }?.sum().toString()
+        val finesAmount = fines?.sumOf { it.amount }.toString()
         binding.finesCount.text = resources.getString(R.string.fines_count_text, finesCount)
         binding.finesAmount.text = resources.getString(R.string.fines_amount_text, finesAmount)
     }
