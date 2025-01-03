@@ -18,6 +18,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class ApiServiceImpl @Inject constructor(
@@ -38,7 +39,11 @@ class ApiServiceImpl @Inject constructor(
         private const val DATA_PATH = "$BASE_URL/data"
     }
 
-    private val client = OkHttpClient()
+//    for dev
+    private val client = OkHttpClient.Builder().readTimeout(1, TimeUnit.HOURS).build()
+
+//    for prod
+//    private val client = OkHttpClient()
 
     override suspend fun login(credentials: Credentials): ApiResponse<AuthResponse> = withContext(Dispatchers.IO) {
         val request = Request.Builder()
