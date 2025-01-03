@@ -41,10 +41,30 @@ class DatabaseConfigurer private constructor(application: Application) :
         const val AMOUNT_COLUMN_NAME = "amount"
 
         private const val EVENTS_CREATE_TABLE = "CREATE TABLE $EVENTS_TABLE_NAME($ID_COLUMN_NAME INTEGER PRIMARY KEY AUTOINCREMENT, $MONTH_UID_COLUMN_NAME INTEGER NOT NULL, $BACKEND_ID_COLUMN_NAME INTEGER, $EVENT_DATE_COLUMN_NAME TEXT NOT NULL, $WORK_MINUTES_COLUMN_NAME INTEGER NOT NULL, $COMMENT_COLUMN_NAME TEXT)"
+        /*
+            CREATE TABLE events(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            month_uid_hash INTEGER NOT NULL,
+            backend_id INTEGER,
+            event_date TEXT NOT NULL,
+            work_minutes INTEGER NOT NULL,
+            comment TEXT
+            )
+        */
         private const val EVENTS_CREATE_INDEX = "CREATE INDEX $EVENTS_INDEX_NAME ON $EVENTS_TABLE_NAME($MONTH_UID_COLUMN_NAME)"
         private const val EVENTS_DROP_TABLE = "DROP TABLE IF EXISTS $EVENTS_TABLE_NAME"
 
         private const val FINES_CREATE_TABLE = "CREATE TABLE $FINES_TABLE_NAME($ID_COLUMN_NAME INTEGER PRIMARY KEY AUTOINCREMENT, $MONTH_UID_COLUMN_NAME INTEGER NOT NULL, $BACKEND_ID_COLUMN_NAME INTEGER, $RECEIPT_DATE_COLUMN_NAME TEXT NOT NULL, $DESCRIPTION_COLUMN_NAME TEXT NOT NULL, $AMOUNT_COLUMN_NAME INTEGER NOT NULL)"
+        /*
+            CREATE TABLE fines(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            month_uid_hash INTEGER NOT NULL,
+            backend_id INTEGER,
+            receipt_date TEXT NOT NULL,
+            description TEXT NOT NULL,
+            amount INTEGER NOT NULL
+            )
+        */
         private const val FINES_CREATE_INDEX = "CREATE INDEX $FINES_INDEX_NAME ON $FINES_TABLE_NAME($MONTH_UID_COLUMN_NAME)"
         private const val FINES_DROP_TABLE = "DROP TABLE IF EXISTS $FINES_TABLE_NAME"
     }

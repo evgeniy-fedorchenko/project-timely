@@ -49,7 +49,7 @@ object ToastHelper {
     fun invalidPositionOnReg(c: Context) =        doShow(INVALID_POSITION_ON_REG, c, LENGTH_LONG)
 
     fun workDurationTooShort(c: Context, minWorkDuration: Duration) {
-        return doShow(WORK_DURATION_TOO_SHORT_PATTERN.format(minWorkDuration), c, LENGTH_SHORT)
+        return doShow(WORK_DURATION_TOO_SHORT_PATTERN.format(minWorkDuration.toHours()), c, LENGTH_SHORT)
     }
 
     fun findNotSyncedObjects(c: Context, objsCount: Int) {
