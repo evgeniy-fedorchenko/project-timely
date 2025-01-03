@@ -1,13 +1,11 @@
 package com.efedorchenko.timely.fragment
 
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import com.efedorchenko.timely.databinding.DialogEventAddBinding
+import com.efedorchenko.timely.input.AddEventDialogFieldsWatcher
 import com.efedorchenko.timely.input.CommentInputFilter
 import com.efedorchenko.timely.input.HoursInputFilter
 import com.efedorchenko.timely.input.MinutesInputFilter
@@ -99,23 +97,6 @@ class AddEventDialog : BottomSheetDialogFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-}
-
-private class AddEventDialogFieldsWatcher(
-    private val requestNextAfterSymbols: Int,
-    private val nextField: EditText
-) : TextWatcher {
-
-    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { }
-
-    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) { }
-
-    override fun afterTextChanged(s: Editable?) {
-        if (s?.length == requestNextAfterSymbols) {
-            nextField.requestFocus()
-        }
     }
 
 }
