@@ -9,8 +9,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.EncProfileStorage
-import com.efedorchenko.timely.data.EncProfileStorageImpl
-import com.efedorchenko.timely.data.MainViewModel
 import com.efedorchenko.timely.databinding.FineItemIntoShowDialogBinding
 import com.efedorchenko.timely.model.Fine
 import org.threeten.bp.format.DateTimeFormatter
@@ -18,14 +16,12 @@ import java.text.DecimalFormat
 
 class FinesAdapter(
     private val fines: MutableList<Fine>?,
-    private val viewModel: MainViewModel
     private val viewModel: DataViewModel,
+    private val encProfileStorage: EncProfileStorage
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var _binding: FineItemIntoShowDialogBinding? = null
     private val binding get() = _binding!!
-
-    private val encProfileStorage: EncProfileStorage = EncProfileStorageImpl.requireInstance()
 
     companion object {
         private val DATE_FORMATTER = DateTimeFormatter.ofPattern("d.M")

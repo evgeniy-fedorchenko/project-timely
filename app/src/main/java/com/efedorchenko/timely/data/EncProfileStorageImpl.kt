@@ -8,25 +8,22 @@ import com.efedorchenko.timely.model.auth.RoleType
 import com.efedorchenko.timely.model.auth.SpaceKeys
 import okio.IOException
 
-// TODO: Возможно не стоит создавать DI-модули а помечать класс @Singleton,
-//  а контекст в конструкторе как @ApplicationContext
-class EncProfileStorageImpl private constructor(baseContext: Context) : EncProfileStorage {
+class EncProfileStorageImpl(context: Context) : EncProfileStorage {
 
     companion object {
+        /*
+                @Volatile
+                private var _instance: EncProfileStorageImpl? = null
 
-        // TODO: Не нужно ручное создание синглота, теперь этим занимается Hilt
-        @Volatile
-        private var _instance: EncProfileStorageImpl? = null
+                fun getInstance(context: Context): EncProfileStorageImpl =
+                    _instance ?: synchronized(this) {
+                        _instance ?: EncProfileStorageImpl(context.applicationContext).also { _instance = it }
+                    }
 
-        fun getInstance(context: Context): EncProfileStorageImpl =
-            _instance ?: synchronized(this) {
-                _instance ?: EncProfileStorageImpl(context.applicationContext).also { _instance = it }
-            }
-
-        fun requireInstance(): EncProfileStorage {
-            return _instance!!
-        }
-
+                fun requireInstance(): EncProfileStorage {
+                    return _instance!!
+                }
+        */
         private const val ESP_NAME = "encrypted_profile_storage"
 
         private const val ROLE_KEY = "user_role"
@@ -38,10 +35,10 @@ class EncProfileStorageImpl private constructor(baseContext: Context) : EncProfi
 
     private val encSharedPref by lazy {
         try {
-            create(baseContext)
+            create(context)
         } catch (ex: IOException) {
-            baseContext.getSharedPreferences(ESP_NAME, Context.MODE_PRIVATE).edit().clear().apply()
-            create(baseContext)
+            context.getSharedPreferences(ESP_NAME, Context.MODE_PRIVATE).edit().clear().apply()
+            create(context)
         }
     }
 

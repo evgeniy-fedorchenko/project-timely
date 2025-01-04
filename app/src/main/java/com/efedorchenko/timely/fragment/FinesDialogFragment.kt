@@ -7,12 +7,13 @@ import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.efedorchenko.timely.R
-import com.efedorchenko.timely.data.MainViewModel
 import com.efedorchenko.timely.data.DataViewModel
+import com.efedorchenko.timely.data.EncProfileStorageImpl
 import com.efedorchenko.timely.databinding.DialogFinesShowBinding
 import com.efedorchenko.timely.service.FinesAdapter
 import com.efedorchenko.timely.service.SpaceItemDecoration
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class FinesDialogFragment : DialogFragment() {
@@ -22,6 +23,9 @@ class FinesDialogFragment : DialogFragment() {
 
     @Inject
     lateinit var viewModel: DataViewModel
+
+    @Inject
+    lateinit var encProfileStorageImpl: EncProfileStorageImpl
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -37,7 +41,7 @@ class FinesDialogFragment : DialogFragment() {
 
         binding.finesRecyclerView.layoutManager = LinearLayoutManager(context)
         val fines = viewModel.fines.value
-        binding.finesRecyclerView.adapter = FinesAdapter(fines?.toMutableList(), viewModel)
+        binding.finesRecyclerView.adapter = FinesAdapter(fines?.toMutableList(), viewModel, encProfileStorageImpl)
 
         val spaceInPixels = resources.getDimensionPixelSize(R.dimen.item_spacing_horizontal)
         binding.finesRecyclerView.addItemDecoration(SpaceItemDecoration(spaceInPixels))
