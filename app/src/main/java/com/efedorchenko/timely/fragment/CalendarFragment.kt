@@ -88,8 +88,7 @@ class CalendarFragment : OnSaveEventListener() {
 
     override fun onSaveEvent(event: Event, processedCellIdx: Int?) {
         updateCell(event, processedCellIdx)
-        viewModel.addEvent(event)
-        // Отправить данные на бек
+        viewModel.addData(event)
     }
 
     private fun updateCell(event: Event?, processedCellIdx: Int?) {
