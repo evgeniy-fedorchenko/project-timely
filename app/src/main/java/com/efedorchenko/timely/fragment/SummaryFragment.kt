@@ -4,10 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.activityViewModels
 import com.efedorchenko.timely.R
+import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.EncProfileStorage
-import com.efedorchenko.timely.data.MainViewModel
 import com.efedorchenko.timely.databinding.FragmentSummaryCardBinding
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.Fine
@@ -21,7 +20,9 @@ class SummaryFragment : OnSaveFineListener() {
 
     private var _binding: FragmentSummaryCardBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: MainViewModel by activityViewModels()
+
+    @Inject
+    lateinit var viewModel: DataViewModel
 
     @Inject
     lateinit var encProfileStorage: EncProfileStorage

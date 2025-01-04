@@ -5,10 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.MainViewModel
+import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.databinding.DialogFinesShowBinding
 import com.efedorchenko.timely.service.FinesAdapter
 import com.efedorchenko.timely.service.SpaceItemDecoration
@@ -19,7 +19,9 @@ class FinesDialogFragment : DialogFragment() {
 
     private var _binding: DialogFinesShowBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: MainViewModel by activityViewModels()
+
+    @Inject
+    lateinit var viewModel: DataViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,

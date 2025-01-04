@@ -5,6 +5,9 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.efedorchenko.timely.model.AbstractData
+import com.efedorchenko.timely.model.DataType.EVENT
+import com.efedorchenko.timely.model.DataType.FINE
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.Fine
 import com.efedorchenko.timely.model.MonthUID
@@ -13,7 +16,6 @@ import com.efedorchenko.timely.model.toEventMap
 import com.efedorchenko.timely.service.ApiService
 import com.efedorchenko.timely.service.CalendarAdapter
 import com.efedorchenko.timely.service.ToastHelper
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -24,11 +26,12 @@ import javax.inject.Inject
 
 // TODO: Когда юзер логинится - просить все ивенты с бека и обновлять бд
 
-@HiltViewModel
-class MainViewModel @Inject constructor(
+//@HiltViewModel
+class DataViewModel @Inject constructor(
     application: Application,
     private val eventRepository: DataRepository<Event>,
     private val fineRepository: DataRepository<Fine>,
+    private val repositoryFactory: RepositoryFactory,
     private val apiService: ApiService
 ) : AndroidViewModel(application) {
 
@@ -53,60 +56,50 @@ class MainViewModel @Inject constructor(
         _events.value = eventRepository.findByMonth(monthUID, false)
         _fines.value = fineRepository.findByMonth(monthUID, true)
         _monthOffset.value = CalendarAdapter.INITIAL_MONTH_OFFSET
-        viewModelScope.launch { }   // Инициализация CoroutineContext
     }
 
-    fun addEvent(event: Event) {
+    fun addData(data: AbstractData) {
         viewModelScope.launch {
-            val localDdId = eventRepository.save(event)
-            event.appId = localDdId
-            _events.value = (_events.value ?: emptyList()) + event
-
-            sendEvent(event)
+            val repository = repositoryFactory.getRepository(data)
+            val appId = repository.save(data)
+            data.appId = appId
+            when (data.getType()) {
+                EVENT ->  _events.value = (_events.value ?: emptyList()) + data as Event
+                FINE -> _fines.value = (_fines.value ?: emptyList()) + data as Fine
+            }
+            if (!sendData(data)) {
+                emitError.invoke()
+            }
         }
     }
 
-    suspend fun sendEvent(event: Event) {
+    fun deleteData(data: AbstractData) {
+        // TODO: not implemented
+    }
+
+    fun changeData(data: AbstractData) {
+        // TODO: not implemented
+    }
+
+    suspend fun <T : AbstractData> sendData(data: T): Boolean {
+        var success = false
         try {
-            when (val eventFromServer = apiService.save(event)) {
-                is ApiResponse.Success -> eventFromServer.data?.let {
-                    it.appId = event.appId
-                    eventRepository.setBackendId(it)
-                } ?: run {
-                    emitError.invoke()
-                }
 
-                is ApiResponse.Error -> emitError.invoke()
+            when (val dataFromServer = apiService.save(data)) {
+                is ApiResponse.Success -> dataFromServer.data?.let {
+                    it.appId = data.appId
+                    val repository = repositoryFactory.getRepository(data)
+                    repository.setBackendId(it.toInheritor())
+                    success = true
+                } ?: run { success = false }
+
+                is ApiResponse.Error -> success = false
             }
+
         } catch (ex: IOException) {
-            emitError.invoke()
+            success = false
         }
-    }
-
-    fun deleteEvent(event: Event) {
-        // TODO: not implemented
-    }
-
-    fun changeEvent(event: Event) {
-        // TODO: not implemented
-    }
-
-    fun addFine(fine: Fine) {
-        viewModelScope.launch {
-            val id = fineRepository.save(fine)
-            if (id > 0) {
-                fine.id = id
-                _fines.value = (_fines.value ?: emptyList()) + fine
-            }
-        }
-    }
-
-    fun deleteFine(fine: Fine) {
-        // TODO: not implemented
-    }
-
-    fun changeFine(fine: Fine) {
-        // TODO: not implemented
+        return success
     }
 
     fun updateSummaryData(position: Int) {
@@ -119,6 +112,7 @@ class MainViewModel @Inject constructor(
             _fines.value = fineRepository.findByMonth(monthUID, true)
         }
     }
+
 
     fun getEventsAsync(monthOffset: Int) = viewModelScope.async {
         val monthUID = MonthUID.create(LocalDate.now().plusMonths(monthOffset.toLong()))
@@ -134,7 +128,7 @@ class MainViewModel @Inject constructor(
         val currentList = _fines.value?.toMutableList() ?: return
 
         _fines.value?.let {
-            val fineIdForDelete = it[position].id
+            val fineIdForDelete = it[position].appId
             if (fineRepository.deleteById(fineIdForDelete)) {
                 currentList.removeAt(position)
                 _fines.value = currentList
@@ -142,11 +136,11 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun getEventsOutOfSync(): List<Event> {
+    fun getNotSyncedEvents(): List<Event> {
         return eventRepository.findNullableBackendId()
     }
 
-    fun getFinesOutOfSync(): List<Fine> {
+    fun getNotSyncedFine(): List<Fine> {
         return fineRepository.findNullableBackendId()
     }
 }

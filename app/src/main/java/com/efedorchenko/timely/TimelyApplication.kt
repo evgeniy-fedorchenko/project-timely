@@ -1,11 +1,15 @@
 package com.efedorchenko.timely
 
 import android.app.Application
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
-class TimelyApplication : Application() {
+class TimelyApplication : Application(), ViewModelStoreOwner {
+
+    override val viewModelStore = ViewModelStore()
 
     override fun onCreate() {
         super.onCreate()

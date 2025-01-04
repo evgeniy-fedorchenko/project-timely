@@ -25,8 +25,8 @@ import androidx.fragment.app.commit
 import androidx.navigation.fragment.findNavController
 import androidx.viewpager2.widget.ViewPager2
 import com.efedorchenko.timely.R
+import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.EncProfileStorage
-import com.efedorchenko.timely.data.MainViewModel
 import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.databinding.DialogAccessKeysBinding
 import com.efedorchenko.timely.databinding.FragmentMainBinding
@@ -41,7 +41,9 @@ class MainFragment : Fragment() {
 
     private var _binding: FragmentMainBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: MainViewModel by activityViewModels()
+
+    @Inject
+    lateinit var viewModel: DataViewModel
 
     @Inject
     lateinit var encProfileStorage: EncProfileStorage

@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
 import com.efedorchenko.timely.R
+import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.data.EncProfileStorageImpl
 import com.efedorchenko.timely.data.MainViewModel
@@ -18,6 +19,7 @@ import java.text.DecimalFormat
 class FinesAdapter(
     private val fines: MutableList<Fine>?,
     private val viewModel: MainViewModel
+    private val viewModel: DataViewModel,
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var _binding: FineItemIntoShowDialogBinding? = null
