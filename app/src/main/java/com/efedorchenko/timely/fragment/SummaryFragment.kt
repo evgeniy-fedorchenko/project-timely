@@ -62,7 +62,7 @@ class SummaryFragment : OnSaveFineListener() {
     }
 
     override fun onSaveFine(newFine: Fine) {
-        viewModel.addFine(newFine)
+        viewModel.addData(newFine)
     }
 
     private fun updateEvents(events: List<Event>?) {

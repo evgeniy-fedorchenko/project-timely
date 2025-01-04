@@ -1,13 +1,13 @@
 package com.efedorchenko.timely.data
 
+import com.efedorchenko.timely.model.AbstractData
 import com.efedorchenko.timely.model.MonthUID
 
-interface DataRepository<T> {
+interface DataRepository<T : AbstractData> {
 
     fun save(data:  T): Long
 
-    // TODO: Проверить, может быть стоит возвращать immutableList
-    fun findByMonth(monthUID: MonthUID, withComment: Boolean): MutableList<T>
+    fun findByMonth(monthUID: MonthUID, withComment: Boolean): List<T>
 
     fun deleteById(id: Long?): Boolean
 

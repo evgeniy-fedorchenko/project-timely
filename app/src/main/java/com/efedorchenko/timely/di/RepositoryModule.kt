@@ -28,4 +28,13 @@ object RepositoryModule {
     fun provideFineRepository(application: Application): DataRepository<Fine> {
         return FineRepository(application);
     }
+
+    @Provides
+    @Singleton
+    fun provideRepositoryFactory(
+        eventRepository: DataRepository<Event>, fineRepository: DataRepository<Fine>
+    ): RepositoryFactory {
+
+        return RepositoryFactory(eventRepository, fineRepository)
+    }
 }
