@@ -46,9 +46,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun isUserAuthenticated(): Boolean {
-        return encProfileStorage.isAuthenticated()
-    }
+    private fun isUserAuthenticated(): Boolean = encProfileStorage.isAuthenticated()
 
     private fun setupInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.nav_host)) { v, insets ->

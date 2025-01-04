@@ -128,6 +128,7 @@ class MainFragment : Fragment() {
         }
 
         navigationView.setNavigationItemSelectedListener(
+            // TODO: может сделать экран синхронизации отдельный фрагментом? DialogFragment например
             MenuListener(drawerLayout, viewModel, this)
         )
     }

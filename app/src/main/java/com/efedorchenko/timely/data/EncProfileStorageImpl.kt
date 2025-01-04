@@ -6,24 +6,13 @@ import androidx.security.crypto.MasterKeys
 import com.efedorchenko.timely.model.auth.AuthData
 import com.efedorchenko.timely.model.auth.RoleType
 import com.efedorchenko.timely.model.auth.SpaceKeys
+import dagger.hilt.android.qualifiers.ApplicationContext
 import okio.IOException
+import javax.inject.Inject
 
-class EncProfileStorageImpl(context: Context) : EncProfileStorage {
+class EncProfileStorageImpl @Inject constructor(@ApplicationContext context: Context) : EncProfileStorage {
 
     companion object {
-        /*
-                @Volatile
-                private var _instance: EncProfileStorageImpl? = null
-
-                fun getInstance(context: Context): EncProfileStorageImpl =
-                    _instance ?: synchronized(this) {
-                        _instance ?: EncProfileStorageImpl(context.applicationContext).also { _instance = it }
-                    }
-
-                fun requireInstance(): EncProfileStorage {
-                    return _instance!!
-                }
-        */
         private const val ESP_NAME = "encrypted_profile_storage"
 
         private const val ROLE_KEY = "user_role"
@@ -42,10 +31,10 @@ class EncProfileStorageImpl(context: Context) : EncProfileStorage {
         }
     }
 
-    private fun create(baseContext: Context) = EncryptedSharedPreferences.create(
+    private fun create(context: Context) = EncryptedSharedPreferences.create(
         ESP_NAME,
         MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC),
-        baseContext,
+        context,
         EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )

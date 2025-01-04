@@ -6,8 +6,6 @@ import com.efedorchenko.timely.model.auth.SpaceKeys
 
 interface EncProfileStorage {
 
-    // TODO: Разобраться какие методы не нужны
-
     fun isAuthenticated(): Boolean
 
     fun isPrivileged(): Boolean

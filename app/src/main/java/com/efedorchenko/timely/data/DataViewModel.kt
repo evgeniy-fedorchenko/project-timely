@@ -26,7 +26,6 @@ import javax.inject.Inject
 
 // TODO: Когда юзер логинится - просить все ивенты с бека и обновлять бд
 
-//@HiltViewModel
 class DataViewModel @Inject constructor(
     application: Application,
     private val eventRepository: DataRepository<Event>,

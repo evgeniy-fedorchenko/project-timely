@@ -96,7 +96,7 @@ class EventRepository @Inject constructor(application: Application): DataReposit
 
     override fun setBackendId(data: Event) {
         val db = dbHelper.writableDatabase
-        val update = db.update(
+        db.update(
             EVENTS_TABLE_NAME,
             contentValuesOf(Pair(BACKEND_ID_COLUMN_NAME, data.backendId)),
             "$ID_COLUMN_NAME = ?",

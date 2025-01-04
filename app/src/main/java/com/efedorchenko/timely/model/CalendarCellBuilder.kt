@@ -1,9 +1,7 @@
 package com.efedorchenko.timely.model
 
 import android.content.Context
-import android.view.View
 import android.view.View.OnClickListener
-import androidx.fragment.app.FragmentManager
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.fragment.CalendarFragment
 import com.efedorchenko.timely.service.OnSaveEventListener
@@ -21,7 +19,6 @@ class CalendarCellBuilder(private val context: Context) {
     private var fragment: CalendarFragment? = null
     private var date: LocalDate = LocalDate.now()
     private var type: CellType = CellType.NOT_CURRENT_MONTH
-    private var useOnClickListenerWith: FragmentManager? = null
     private var event: Event? = null
 
     fun setDate(date: LocalDate) = apply {
@@ -66,7 +63,7 @@ class CalendarCellBuilder(private val context: Context) {
             }
         }
         if (fragment != null) {
-            onClickListener = View.OnClickListener {
+            onClickListener = OnClickListener {
                 when {
                     LocalDate.now().isAfter(date) -> ToastHelper.datePassed(context)
                     event != null -> ToastHelper.cannotEditPlaned(context)
