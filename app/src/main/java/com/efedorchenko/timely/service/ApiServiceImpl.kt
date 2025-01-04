@@ -2,8 +2,7 @@ package com.efedorchenko.timely.service
 
 import android.util.Log
 import com.efedorchenko.timely.data.EncProfileStorage
-import com.efedorchenko.timely.model.Event
-import com.efedorchenko.timely.model.Fine
+import com.efedorchenko.timely.model.AbstractData
 import com.efedorchenko.timely.model.api.ApiErrorCode
 import com.efedorchenko.timely.model.api.ApiResponse
 import com.efedorchenko.timely.model.auth.AuthResponse
@@ -39,7 +38,7 @@ class ApiServiceImpl @Inject constructor(
         private const val DATA_PATH = "$BASE_URL/data"
     }
 
-//    for dev
+    //    for dev
     private val client = OkHttpClient.Builder().readTimeout(1, TimeUnit.HOURS).build()
 
 //    for prod
@@ -66,27 +65,15 @@ class ApiServiceImpl @Inject constructor(
             return@withContext execute<AuthResponse>(request)
         }
 
-    override suspend fun save(event: Event): ApiResponse<Event> = withContext(Dispatchers.IO) {
+    override suspend fun save(data: AbstractData): ApiResponse<AbstractData> = withContext(Dispatchers.IO) {
         val request = Request.Builder()
             .url(DATA_PATH)
             .header(RQUID, UUID.randomUUID().toString())
             .header(AUTHORIZATION, getJwtToken())
-            .post(Json.encodeToString(event).toRequestBody(APPLICATION_JSON_MT))
+            .post(Json.encodeToString(data).toRequestBody(APPLICATION_JSON_MT))
             .build()
 
-        return@withContext execute<Event>(request)
-    }
-
-    // TODO: need testing
-    override suspend fun save(fine: Fine): ApiResponse<Fine> = withContext(Dispatchers.IO){
-        val request = Request.Builder()
-            .url(DATA_PATH)
-            .header(RQUID, UUID.randomUUID().toString())
-            .header(AUTHORIZATION, getJwtToken())
-            .post(Json.encodeToString(fine).toRequestBody(APPLICATION_JSON_MT))
-            .build()
-
-        return@withContext execute<Fine>(request)
+        return@withContext execute<AbstractData>(request)
     }
 
     private inline fun <reified T> execute(request: Request): ApiResponse<T> {
@@ -120,7 +107,7 @@ class ApiServiceImpl @Inject constructor(
         val error = if (body.isNullOrEmpty()) {
             ApiResponse.Error(ApiErrorCode.VALIDATION)
         } else {
-            ApiResponse.Error(
+            ApiResponse.Error( // FIXME: посмотреть как мапить ошибки ErrorResponse
                 apiErrorCode = ApiErrorCode.CLIENT,
                 errorData = Json.decodeFromString<T>(body)
             )

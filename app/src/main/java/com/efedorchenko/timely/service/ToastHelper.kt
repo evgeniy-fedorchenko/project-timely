@@ -18,7 +18,9 @@ object ToastHelper {
     const val INCORRECT_LOGIN_DATA =                    "Неверный логин или пароль"
     const val NOT_SYNCHRONIZED =                        "Проблемы с интернетом, синхронизируйте данные позже"
     const val ALL_SYNCED =                              "Все данные синхронизированы"
-    private const val FIND_NOT_SYNCED_OBJECTS_PATTERN = "Найдено %s несинхронизированных объектов"
+    private const val FILED_ALL_PATTERN =               "Не удалось отправить %d смен и %d штрафов"
+    private const val FILED_EVENTS_PATTERN =            "Не удалось отправить %s смен"
+    private const val FILED_FINES_PATTERN =             "Не удалось отправить %s штрафов"
 
     /* Регистрация */
     private const val INVALID_NAME_ON_REG =        "Неподходящее имя. Смотри подсказку справа"
@@ -52,8 +54,13 @@ object ToastHelper {
         return doShow(WORK_DURATION_TOO_SHORT_PATTERN.format(minWorkDuration.toHours()), c, LENGTH_SHORT)
     }
 
-    fun findNotSyncedObjects(c: Context, objsCount: Int) {
-        return doShow(FIND_NOT_SYNCED_OBJECTS_PATTERN.format(objsCount), c, LENGTH_SHORT)
+    fun syncFiled(eventsCount: Int, finesCount: Int, context: Context) {
+        val message = when {
+            (eventsCount != 0 && finesCount != 0) -> FILED_ALL_PATTERN.format(eventsCount, finesCount)
+            eventsCount != 0 -> FILED_EVENTS_PATTERN.format(eventsCount)
+            else -> FILED_FINES_PATTERN.format(finesCount)
+        }
+        doShow(message, context, LENGTH_LONG)
     }
 
     private fun doShow(toastText: String, c: Context, toastLength: Int) {

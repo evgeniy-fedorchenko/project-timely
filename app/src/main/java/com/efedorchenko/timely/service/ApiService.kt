@@ -1,7 +1,6 @@
 package com.efedorchenko.timely.service
 
-import com.efedorchenko.timely.model.Event
-import com.efedorchenko.timely.model.Fine
+import com.efedorchenko.timely.model.AbstractData
 import com.efedorchenko.timely.model.api.ApiResponse
 import com.efedorchenko.timely.model.auth.AuthResponse
 import com.efedorchenko.timely.model.auth.Credentials
@@ -13,7 +12,5 @@ interface ApiService {
 
     suspend fun register(registerRequest: RegisterRequest): ApiResponse<AuthResponse>
 
-    suspend fun save(event: Event): ApiResponse<Event>
-
-    suspend fun save(fine: Fine): ApiResponse<Fine>
+    suspend fun save(data: AbstractData): ApiResponse<AbstractData>
 }
