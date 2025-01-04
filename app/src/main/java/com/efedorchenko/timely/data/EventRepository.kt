@@ -38,7 +38,7 @@ class EventRepository @Inject constructor(application: Application): DataReposit
         return id
     }
 
-    override fun findByMonth(monthUID: MonthUID, withComment: Boolean): MutableList<Event> {
+    override fun findByMonth(monthUID: MonthUID, withComment: Boolean): List<Event> {
         val events = mutableListOf<Event>()
         val db = dbHelper.readableDatabase
         var cursor: Cursor? = null
@@ -62,10 +62,10 @@ class EventRepository @Inject constructor(application: Application): DataReposit
                     val eventDateIdx = cursor.getColumnIndex(EVENT_DATE_COLUMN_NAME)
                     val workMinutesIdx = cursor.getColumnIndex(WORK_MINUTES_COLUMN_NAME)
 
-                    val eventDate = cursor.getString(eventDateIdx)
-                    val workMinutes = cursor.getLong(workMinutesIdx)
                     val id = cursor.getLong(idIndex)
                     val backendId = cursor.getLong(backendIdIndex)
+                    val eventDate = cursor.getString(eventDateIdx)
+                    val workMinutes = cursor.getLong(workMinutesIdx)
                     var comment: String? = null
 
                     if (withComment) {
@@ -74,11 +74,11 @@ class EventRepository @Inject constructor(application: Application): DataReposit
                     }
 
                     val event = Event(
-                        id,
-                        backendId,
-                        LocalDate.parse(eventDate),
-                        Duration.ofMinutes(workMinutes),
-                        comment
+                        appId = id,
+                        backendId = backendId,
+                        date = LocalDate.parse(eventDate),
+                        workDuration = Duration.ofMinutes(workMinutes),
+                        comment = comment
                     )
                     events.add(event)
                 }
@@ -132,7 +132,12 @@ class EventRepository @Inject constructor(application: Application): DataReposit
                     val workMinutes = cursor.getLong(workMinutesIdx)
                     val comment = cursor.getString(commentIdx)
 
-                    val event = Event(id, null, LocalDate.parse(eventDate), Duration.ofMinutes(workMinutes), comment)
+                    val event = Event(
+                        appId = id,
+                        date = LocalDate.parse(eventDate),
+                        workDuration = Duration.ofMinutes(workMinutes),
+                        comment = comment
+                    )
                     events.add(event)
                 }
             }

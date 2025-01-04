@@ -38,7 +38,7 @@ class FinesAdapter(
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val fine = fines?.getOrNull(position) ?: return
 
-        binding.date.text = fine.receiptDate.format(DATE_FORMATTER)
+        binding.date.text = fine.date.format(DATE_FORMATTER)
         binding.description.text = fine.description
 
         val formatted = DECIMAL_FORMATTER.format(fine.amount)

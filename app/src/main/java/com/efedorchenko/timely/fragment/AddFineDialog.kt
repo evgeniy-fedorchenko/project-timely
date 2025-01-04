@@ -58,7 +58,11 @@ class AddFineDialog : BottomSheetDialogFragment() {
 
             } else {
                 val receiptDate = LocalDate.of(Year.now().value, targetMonth, selectedDayField.value)
-                val fine = Fine(null, receiptDate, fineCommentField.text.toString(), fineAmount)
+                val fine = Fine(
+                    date = receiptDate,
+                    description = fineCommentField.text.toString(),
+                    amount = fineAmount,
+                )
                 onSaveFineListener?.onSaveFine(fine)
                 dismiss()
             }

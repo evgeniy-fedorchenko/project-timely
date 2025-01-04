@@ -24,8 +24,8 @@ class FineRepository @Inject constructor(application: Application): DataReposito
     override fun save(data: Fine): Long {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
-            put(MONTH_UID_COLUMN_NAME, MonthUID.create(data.receiptDate).hashCode())
-            put(RECEIPT_DATE_COLUMN_NAME, data.receiptDate.toString())
+            put(MONTH_UID_COLUMN_NAME, MonthUID.create(data.date).hashCode())
+            put(RECEIPT_DATE_COLUMN_NAME, data.date.toString())
             put(DESCRIPTION_COLUMN_NAME, data.description)
             put(AMOUNT_COLUMN_NAME, data.amount)
         }
@@ -37,7 +37,7 @@ class FineRepository @Inject constructor(application: Application): DataReposito
         return id
     }
 
-    override fun findByMonth(monthUID: MonthUID, withComment: Boolean): MutableList<Fine> {
+    override fun findByMonth(monthUID: MonthUID, withComment: Boolean): List<Fine> {
         val fines = mutableListOf<Fine>()
         val db = dbHelper.readableDatabase
         var cursor: Cursor? = null
@@ -58,16 +58,24 @@ class FineRepository @Inject constructor(application: Application): DataReposito
                 while (cursor.moveToNext()) {
 
                     val idIdx = cursor.getColumnIndex(ID_COLUMN_NAME)
+                    val backendIdIndex = cursor.getColumnIndex(BACKEND_ID_COLUMN_NAME)
                     val receiptDateIdx = cursor.getColumnIndex(RECEIPT_DATE_COLUMN_NAME)
                     val descriptionIdx = cursor.getColumnIndex(DESCRIPTION_COLUMN_NAME)
                     val amountIdx = cursor.getColumnIndex(AMOUNT_COLUMN_NAME)
 
                     val id = cursor.getLong(idIdx)
+                    val backendId = cursor.getLong(backendIdIndex)
                     val receiptDate = cursor.getString(receiptDateIdx)
                     val description = cursor.getString(descriptionIdx)
                     val amount = cursor.getInt(amountIdx)
 
-                    val fine = Fine(id, LocalDate.parse(receiptDate), description, amount)
+                    val fine = Fine(
+                        appId = id,
+                        backendId = backendId,
+                        date = LocalDate.parse(receiptDate),
+                        description = description,
+                        amount = amount
+                    )
                     fines.add(fine)
                 }
             }
@@ -82,40 +90,53 @@ class FineRepository @Inject constructor(application: Application): DataReposito
         return fines
     }
 
-    // FIXME
-   /* fun getAllFines(): List<Fine> {
+    override fun findNullableBackendId(): List<Fine> {
         val db = dbHelper.readableDatabase
-        val cursor: Cursor = db.query(
-            FINES_TABLE_NAME,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null
-        )
-
         val fines = mutableListOf<Fine>()
-        with(cursor) {
-            while (moveToNext()) {
-                val idIdx = getColumnIndex(ID_COLUMN_NAME)
-                val receiptDateIdx = getColumnIndex(RECEIPT_DATE_COLUMN_NAME)
-                val descriptionIdx = getColumnIndex(DESCRIPTION_COLUMN_NAME)
-                val amountIdx = getColumnIndex(AMOUNT_COLUMN_NAME)
+        var cursor: Cursor? = null
+        db.beginTransaction()
 
-                val id = getLong(idIdx)
-                val receiptDate = getString(receiptDateIdx)
-                val description = getString(descriptionIdx)
-                val amount = getInt(amountIdx)
+        try {
+            cursor = db.query(
+                FINES_TABLE_NAME,
+                null,
+                "$BACKEND_ID_COLUMN_NAME IS NULL",
+                null,
+                null,
+                null,
+                null
+            )
+            cursor?.let {
+                while (cursor.moveToNext()) {
+                    val idIndex = cursor.getColumnIndex(ID_COLUMN_NAME)
+                    val receiptDateIdx = cursor.getColumnIndex(RECEIPT_DATE_COLUMN_NAME)
+                    val descriptionIdx = cursor.getColumnIndex(DESCRIPTION_COLUMN_NAME)
+                    val amountIdx = cursor.getColumnIndex(AMOUNT_COLUMN_NAME)
 
-                val fine = Fine(id, LocalDate.parse(receiptDate), description, amount)
-                fines.add(fine)
+                    val id = cursor.getLong(idIndex)
+                    val receiptDate = cursor.getString(receiptDateIdx)
+                    val description = cursor.getString(descriptionIdx)
+                    val amount = cursor.getInt(amountIdx)
+
+                    val fine = Fine(
+                        appId = id,
+                        date = LocalDate.parse(receiptDate),
+                        description = description,
+                        amount = amount
+                    )
+                    fines.add(fine)
+                }
             }
+            db.setTransactionSuccessful()
+        } catch (ex: Exception) {
+            Log.e(TAG, "Error when extracting fines with nullable backendId. Cause: :${ex.message}")
+        } finally {
+            cursor?.close()
+            db.endTransaction()
         }
-        cursor.close()
         return fines
     }
-*/
+
     override fun deleteById(id: Long?): Boolean {
         val db = dbHelper.writableDatabase
 
