@@ -26,6 +26,7 @@ import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.data.ProfileStorageImpl
 import com.efedorchenko.timely.databinding.DialogAccessKeysBinding
 import com.efedorchenko.timely.databinding.DialogSyncingDataBinding
+import com.efedorchenko.timely.fragment.dialog.SpaceDialogFragment
 import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
@@ -47,9 +48,11 @@ class MenuListener(
 
             R.id.do_sync -> doSync(context)
 
-            R.id.my_team -> {}
+            // TODO: переименовать team в space
+            R.id.my_team -> SpaceDialogFragment().show(parentFragment.childFragmentManager, "SpaceDialog")
 
             R.id.exit -> {
+                // TODO: очищать DataRepository
                 profileStorage.deleteUserData()
                 encProfileStorage.deleteAuthData()
                 parentFragment.findNavController().navigate(R.id.authFragment)
