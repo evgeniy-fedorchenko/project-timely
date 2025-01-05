@@ -21,6 +21,7 @@ import com.efedorchenko.timely.R
 import com.efedorchenko.timely.model.api.Resource
 import com.efedorchenko.timely.model.auth.RegisterRequest
 import com.efedorchenko.timely.service.AuthService
+import com.efedorchenko.timely.service.SpaceService
 import com.efedorchenko.timely.service.ToastHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -31,6 +32,9 @@ abstract class AbstractRegisterFragment : Fragment() {
 
     @Inject
     lateinit var authService: AuthService
+
+    @Inject
+    lateinit var spaceService: SpaceService
 
     abstract fun setTextChangedListeners()
 
@@ -101,7 +105,10 @@ abstract class AbstractRegisterFragment : Fragment() {
             showLoading(loadingProgressBar)
             try {
                 when (val result = authService.tryRegister(registerRequest)) {
-                    is Resource.Success -> findNavController().navigate(R.id.mainFragment)
+                    is Resource.Success -> {
+                        findNavController().navigate(R.id.mainFragment)
+                        spaceService.initMembers()
+                    }
                     is Resource.Error -> ToastHelper.message(result.message, context)
                 }
 

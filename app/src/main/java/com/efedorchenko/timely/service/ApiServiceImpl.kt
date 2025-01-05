@@ -3,6 +3,7 @@ package com.efedorchenko.timely.service
 import android.util.Log
 import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.model.AbstractData
+import com.efedorchenko.timely.model.SpaceMember
 import com.efedorchenko.timely.model.api.ApiErrorCode
 import com.efedorchenko.timely.model.api.ApiResponse
 import com.efedorchenko.timely.model.auth.AuthResponse
@@ -36,6 +37,7 @@ class ApiServiceImpl @Inject constructor(
         private const val REG_PATH = "$BASE_URL/auth/reg"
         private const val LOGIN_PATH = "$BASE_URL/auth/login"
         private const val DATA_PATH = "$BASE_URL/data"
+        private const val MEMBERS_PATH = "$BASE_URL/members"
     }
 
     //    for dev
@@ -74,6 +76,17 @@ class ApiServiceImpl @Inject constructor(
             .build()
 
         return@withContext execute<AbstractData>(request)
+    }
+
+    override suspend fun getMembers(): ApiResponse<List<SpaceMember>> = withContext(Dispatchers.IO) {
+        val request = Request.Builder()
+            .url(MEMBERS_PATH)
+            .header(RQUID, UUID.randomUUID().toString())
+            .header(AUTHORIZATION, getJwtToken())
+            .get()
+            .build()
+
+        return@withContext execute<List<SpaceMember>>(request)
     }
 
     private inline fun <reified T> execute(request: Request): ApiResponse<T> {
