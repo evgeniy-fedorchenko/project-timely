@@ -4,6 +4,7 @@ import android.app.Application
 import com.efedorchenko.timely.data.DataRepository
 import com.efedorchenko.timely.data.EventRepository
 import com.efedorchenko.timely.data.FineRepository
+import com.efedorchenko.timely.data.MemberRepository
 import com.efedorchenko.timely.data.RepositoryFactory
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.Fine
@@ -34,7 +35,12 @@ object RepositoryModule {
     fun provideRepositoryFactory(
         eventRepository: DataRepository<Event>, fineRepository: DataRepository<Fine>
     ): RepositoryFactory {
-
         return RepositoryFactory(eventRepository, fineRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideMemberRepository(application: Application): MemberRepository {
+        return MemberRepository(application)
     }
 }

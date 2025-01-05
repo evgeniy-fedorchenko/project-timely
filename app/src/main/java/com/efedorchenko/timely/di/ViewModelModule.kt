@@ -3,6 +3,7 @@ package com.efedorchenko.timely.di
 import android.app.Application
 import com.efedorchenko.timely.data.DataRepository
 import com.efedorchenko.timely.data.DataViewModel
+import com.efedorchenko.timely.data.MemberRepository
 import com.efedorchenko.timely.data.RepositoryFactory
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.Fine
@@ -24,9 +25,17 @@ object ViewModelModule {
         eventRepository: DataRepository<Event>,
         fineRepository: DataRepository<Fine>,
         repositoryFactory: RepositoryFactory,
+        memberRepository: MemberRepository,
         apiService: ApiService
     ): DataViewModel {
 
-        return DataViewModel(application, eventRepository, fineRepository, repositoryFactory, apiService)
+        return DataViewModel(
+            application,
+            eventRepository,
+            fineRepository,
+            repositoryFactory,
+            memberRepository,
+            apiService
+        )
     }
 }

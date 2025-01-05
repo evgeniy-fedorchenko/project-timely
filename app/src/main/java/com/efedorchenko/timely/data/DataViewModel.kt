@@ -11,6 +11,7 @@ import com.efedorchenko.timely.model.DataType.FINE
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.Fine
 import com.efedorchenko.timely.model.MonthUID
+import com.efedorchenko.timely.model.SpaceMember
 import com.efedorchenko.timely.model.api.ApiResponse
 import com.efedorchenko.timely.model.toEventMap
 import com.efedorchenko.timely.service.ApiService
@@ -31,6 +32,7 @@ class DataViewModel @Inject constructor(
     private val eventRepository: DataRepository<Event>,
     private val fineRepository: DataRepository<Fine>,
     private val repositoryFactory: RepositoryFactory,
+    private val memberRepository: MemberRepository,
     private val apiService: ApiService
 ) : AndroidViewModel(application) {
 
@@ -42,6 +44,9 @@ class DataViewModel @Inject constructor(
 
     private val _monthOffset = MutableLiveData<Int>()
     val monthOffset: LiveData<Int> get() = _monthOffset
+
+    private val _members = MutableLiveData<List<SpaceMember>>()
+    val members: LiveData<List<SpaceMember>> get() = _members
 
     private val _alert = MutableSharedFlow<String>()
     val alert = _alert.asSharedFlow()
@@ -55,6 +60,7 @@ class DataViewModel @Inject constructor(
         _events.value = eventRepository.findByMonth(monthUID, false)
         _fines.value = fineRepository.findByMonth(monthUID, true)
         _monthOffset.value = CalendarAdapter.INITIAL_MONTH_OFFSET
+        _members.value = memberRepository.getMembersList()
     }
 
     fun addData(data: AbstractData) {
@@ -123,6 +129,7 @@ class DataViewModel @Inject constructor(
         _monthOffset.value = monthOffset
     }
 
+    // FIXME: заменить на deleteData(data: AbstractData)
     fun delete(position: Int) {
         val currentList = _fines.value?.toMutableList() ?: return
 
