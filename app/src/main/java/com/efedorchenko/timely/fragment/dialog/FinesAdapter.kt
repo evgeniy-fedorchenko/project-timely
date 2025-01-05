@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.service
+package com.efedorchenko.timely.fragment.dialog
 
 import android.view.Gravity.CENTER
 import android.view.LayoutInflater
@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.EncProfileStorage
-import com.efedorchenko.timely.databinding.FineItemIntoShowDialogBinding
+import com.efedorchenko.timely.databinding.DialogFinesShowItemBinding
 import com.efedorchenko.timely.model.Fine
 import org.threeten.bp.format.DateTimeFormatter
 import java.text.DecimalFormat
@@ -18,30 +18,29 @@ class FinesAdapter(
     private val fines: MutableList<Fine>?,
     private val viewModel: DataViewModel,
     private val encProfileStorage: EncProfileStorage
-) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-
-    private var _binding: FineItemIntoShowDialogBinding? = null
-    private val binding get() = _binding!!
+) : RecyclerView.Adapter<FinesAdapter.FineViewHolder>() {
 
     companion object {
         private val DATE_FORMATTER = DateTimeFormatter.ofPattern("d.M")
         private val DECIMAL_FORMATTER = DecimalFormat("#,###")
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        _binding = FineItemIntoShowDialogBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return object : RecyclerView.ViewHolder(binding.root) {}
+    inner class FineViewHolder(val binding: DialogFinesShowItemBinding) : RecyclerView.ViewHolder(binding.root)
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FineViewHolder {
+        val binding = DialogFinesShowItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return FineViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: FineViewHolder, position: Int) {
         val fine = fines?.getOrNull(position) ?: return
 
-        binding.date.text = fine.date.format(DATE_FORMATTER)
-        binding.description.text = fine.description
+        holder.binding.date.text = fine.date.format(DATE_FORMATTER)
+        holder.binding.description.text = fine.description
 
         val formatted = DECIMAL_FORMATTER.format(fine.amount)
         val formattedFineAmount = "$formatted руб"
-        binding.amount.text = formattedFineAmount
+        holder.binding.amount.text = formattedFineAmount
 
         if (encProfileStorage.isPrivileged()) {
             holder.itemView.setOnLongClickListener { view ->
@@ -51,9 +50,7 @@ class FinesAdapter(
         }
     }
 
-    override fun getItemCount(): Int {
-        return fines?.size ?: 0
-    }
+    override fun getItemCount(): Int = fines?.size ?: 0
 
     private fun showDeletePopup(view: View, position: Int) {
         PopupMenu(view.context, view, CENTER, 0, R.style.DeleteFinePopup).apply {

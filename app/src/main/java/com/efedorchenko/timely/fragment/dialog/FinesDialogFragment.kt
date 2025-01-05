@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.fragment
+package com.efedorchenko.timely.fragment.dialog
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,8 +10,6 @@ import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.EncProfileStorageImpl
 import com.efedorchenko.timely.databinding.DialogFinesShowBinding
-import com.efedorchenko.timely.service.FinesAdapter
-import com.efedorchenko.timely.service.SpaceItemDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.service
+package com.efedorchenko.timely.fragment.dialog
 
 import android.graphics.Rect
 import android.view.View
