@@ -4,17 +4,12 @@ import android.content.Context
 import android.view.View.OnClickListener
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.fragment.CalendarFragment
-import com.efedorchenko.timely.service.OnSaveEventListener
 import com.efedorchenko.timely.service.ToastHelper
 import org.threeten.bp.DayOfWeek.SATURDAY
 import org.threeten.bp.DayOfWeek.SUNDAY
 import org.threeten.bp.LocalDate
 
 class CalendarCellBuilder(private val context: Context) {
-
-    companion object {
-        private const val ADD_EVENT_DIALOG_TAG = "add_event_dialog"
-    }
 
     private var fragment: CalendarFragment? = null
     private var date: LocalDate = LocalDate.now()
@@ -41,7 +36,6 @@ class CalendarCellBuilder(private val context: Context) {
         val text = date.dayOfMonth.toString()
         val textStyle: Int
         val parentBackground: Int
-        var onClickListener: OnClickListener? = null
 
         when (type) {
             CellType.NOT_CURRENT_MONTH -> {
@@ -62,13 +56,12 @@ class CalendarCellBuilder(private val context: Context) {
                 }
             }
         }
-        if (fragment != null) {
-            onClickListener = OnClickListener {
+        val onClickListener = OnClickListener {
+            if (fragment != null) {
                 when {
                     LocalDate.now().isAfter(date) -> ToastHelper.datePassed(context)
                     event != null -> ToastHelper.cannotEditPlaned(context)
-                    else -> OnSaveEventListener.eventDialog(date, fragment!!)
-                        .show(fragment!!.parentFragmentManager, ADD_EVENT_DIALOG_TAG)
+                    else -> fragment!!.showAddEventDialog(date)
                 }
             }
         }

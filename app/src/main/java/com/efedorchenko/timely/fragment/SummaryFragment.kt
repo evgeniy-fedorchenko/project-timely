@@ -4,20 +4,27 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.databinding.FragmentSummaryCardBinding
 import com.efedorchenko.timely.fragment.dialog.FinesDialogFragment
+import com.efedorchenko.timely.fragment.support.AddFineListener
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.Fine
-import com.efedorchenko.timely.service.OnSaveFineListener
 import dagger.hilt.android.AndroidEntryPoint
 import org.threeten.bp.LocalDate
+import org.threeten.bp.Month
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class SummaryFragment : OnSaveFineListener() {
+class SummaryFragment : Fragment(), AddFineListener {
+
+    companion object {
+        private const val ADD_FINE_DIALOG_TAG = "add_fine_dialog"
+        private const val SHOW_FINES_DIALOG_TAG = "fines_dialog_tag"
+    }
 
     private var _binding: FragmentSummaryCardBinding? = null
     private val binding get() = _binding!!
@@ -28,38 +35,32 @@ class SummaryFragment : OnSaveFineListener() {
     @Inject
     lateinit var encProfileStorage: EncProfileStorage
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentSummaryCardBinding.inflate(inflater, container, false)
-        val view = binding.root
-
-        binding.showFinesButton.setOnClickListener {
-            FinesDialogFragment().show(childFragmentManager, "FinesDialog")
-        }
-
-        if (!encProfileStorage.isPrivileged()) {
-            return view
-        }
-
-        val addFineButton = binding.addFineButton
-        addFineButton.visibility = View.VISIBLE
-        addFineButton.setOnClickListener {
-            val monthOffset = viewModel.monthOffset.value?.toLong() ?: 0
-            val targetDate = LocalDate.now().plusMonths(monthOffset)
-            val targetMonth = targetDate.month
-            fineDialog(targetMonth, this).show(parentFragmentManager, ADD_FINE_DIALOG_TAG)
-        }
-
-        return view
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        binding.showFinesButton.setOnClickListener {
+            FinesDialogFragment().show(childFragmentManager, SHOW_FINES_DIALOG_TAG)
+        }
+        if (encProfileStorage.isPrivileged()) {
+            val addFineButton = binding.addFineButton
+            addFineButton.visibility = View.VISIBLE
+            addFineButton.setOnClickListener {
+                val monthOffset = viewModel.monthOffset.value?.toLong() ?: 0
+                showAddFineDialog(LocalDate.now().plusMonths(monthOffset).month)
+            }
+        }
         viewModel.events.observe(viewLifecycleOwner) { updateEvents(it) }
         viewModel.fines.observe(viewLifecycleOwner) { updateFines(it) }
+    }
+
+    override fun showAddFineDialog(targetMonth: Month) {
+        AddFineDialog.newInstance(this, targetMonth)
+            .show(parentFragmentManager, ADD_FINE_DIALOG_TAG)
     }
 
     override fun onSaveFine(newFine: Fine) {

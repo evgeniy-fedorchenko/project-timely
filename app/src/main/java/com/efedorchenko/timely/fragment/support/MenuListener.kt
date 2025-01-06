@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.service
+package com.efedorchenko.timely.fragment.support
 
 import android.animation.ValueAnimator
 import android.app.AlertDialog
@@ -27,6 +27,7 @@ import com.efedorchenko.timely.data.ProfileStorageImpl
 import com.efedorchenko.timely.databinding.DialogAccessKeysBinding
 import com.efedorchenko.timely.databinding.DialogSyncingDataBinding
 import com.efedorchenko.timely.fragment.dialog.SpaceDialogFragment
+import com.efedorchenko.timely.service.ToastHelper
 import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive

@@ -11,15 +11,16 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.WRAP_CONTENT
 import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.databinding.CalendarGridLayoutBinding
+import com.efedorchenko.timely.fragment.support.AddEventListener
 import com.efedorchenko.timely.model.CalendarCellBuilder
 import com.efedorchenko.timely.model.CalendarCellBuilder.CellType
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.applyTo
-import com.efedorchenko.timely.service.OnSaveEventListener
 import com.efedorchenko.timely.service.ToastHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Deferred
@@ -33,10 +34,13 @@ import java.util.Locale
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class CalendarFragment : OnSaveEventListener() {
+class CalendarFragment : Fragment(), AddEventListener {
 
     companion object {
         private const val MONTH_OFFSET_ARG = "month_offset"
+        private const val SELECTED_DATE_KEY = "selected_date"
+        private const val ADD_EVENT_DIALOG_TAG = "add_event_dialog"
+
         private val DATE_FORMATTER = SimpleDateFormat("LLLL yyyy", Locale("ru"))
 
         fun newInstance(monthOffset: Int): CalendarFragment {
@@ -94,6 +98,15 @@ class CalendarFragment : OnSaveEventListener() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun showAddEventDialog(targetDate: LocalDate) {
+        val bundle = Bundle()
+        bundle.putString(SELECTED_DATE_KEY, targetDate.toString())
+
+        val addEventDialog = AddEventDialog.newInstance(this)
+        addEventDialog.arguments = bundle
+        addEventDialog.show(parentFragmentManager, ADD_EVENT_DIALOG_TAG)
     }
 
     override fun onSaveEvent(event: Event) {

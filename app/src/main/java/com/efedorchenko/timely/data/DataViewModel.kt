@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.efedorchenko.timely.fragment.support.CalendarAdapter
 import com.efedorchenko.timely.model.AbstractData
 import com.efedorchenko.timely.model.DataType
 import com.efedorchenko.timely.model.DataType.EVENT
@@ -16,7 +17,6 @@ import com.efedorchenko.timely.model.SpaceMember
 import com.efedorchenko.timely.model.api.ApiResponse
 import com.efedorchenko.timely.model.toEventMap
 import com.efedorchenko.timely.service.ApiService
-import com.efedorchenko.timely.service.CalendarAdapter
 import com.efedorchenko.timely.service.ToastHelper
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow

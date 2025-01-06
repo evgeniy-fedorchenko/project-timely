@@ -5,10 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.efedorchenko.timely.databinding.DialogFineAddBinding
+import com.efedorchenko.timely.fragment.support.AddFineListener
 import com.efedorchenko.timely.input.CommentInputFilter
 import com.efedorchenko.timely.input.FineAmountFilter
 import com.efedorchenko.timely.model.Fine
-import com.efedorchenko.timely.service.OnSaveFineListener
 import com.efedorchenko.timely.service.ToastHelper
 import com.google.android.material.R.id.design_bottom_sheet
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -29,11 +29,11 @@ class AddFineDialog : BottomSheetDialogFragment() {
     private val binding get() = _binding!!
 
     private var targetMonth: Month? = null
-    private var onSaveFineListener: OnSaveFineListener? = null
+    private var addFineListener: AddFineListener? = null
 
     private fun setContext(listener: SummaryFragment, targetMonth: Month) {
         this.targetMonth = targetMonth
-        this.onSaveFineListener = listener
+        this.addFineListener = listener
     }
 
     override fun onCreateView(
@@ -63,7 +63,7 @@ class AddFineDialog : BottomSheetDialogFragment() {
                     description = fineCommentField.text.toString(),
                     amount = fineAmount,
                 )
-                onSaveFineListener?.onSaveFine(fine)
+                addFineListener?.onSaveFine(fine)
                 dismiss()
             }
         }

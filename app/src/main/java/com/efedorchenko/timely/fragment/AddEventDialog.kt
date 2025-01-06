@@ -5,12 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.efedorchenko.timely.databinding.DialogEventAddBinding
+import com.efedorchenko.timely.fragment.support.AddEventListener
 import com.efedorchenko.timely.input.AddEventDialogFieldsWatcher
 import com.efedorchenko.timely.input.CommentInputFilter
 import com.efedorchenko.timely.input.HoursInputFilter
 import com.efedorchenko.timely.input.MinutesInputFilter
 import com.efedorchenko.timely.model.Event
-import com.efedorchenko.timely.service.OnSaveEventListener
 import com.efedorchenko.timely.service.ToastHelper
 import com.google.android.material.R.id.design_bottom_sheet
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -25,8 +25,9 @@ class AddEventDialog : BottomSheetDialogFragment() {
 
     companion object {
         private val MIN_WORK_DURATION = Duration.ofHours(8)
+        const val SELECTED_DATE_KEY = "selected_date"
 
-        fun newInstance(listener: OnSaveEventListener): AddEventDialog {
+        fun newInstance(listener: AddEventListener): AddEventDialog {
             return AddEventDialog().apply { setListener(listener) }
         }
     }
@@ -34,11 +35,10 @@ class AddEventDialog : BottomSheetDialogFragment() {
     private var _binding: DialogEventAddBinding? = null
     private val binding get() = _binding!!
 
-    private var onSaveEventListener: OnSaveEventListener? = null
+    private var addEventListener: AddEventListener? = null
 
-    private fun setListener(listener: OnSaveEventListener) {
-        this.onSaveEventListener = listener
-
+    private fun setListener(listener: AddEventListener) {
+        this.addEventListener = listener
     }
 
     override fun onCreateView(
@@ -47,7 +47,7 @@ class AddEventDialog : BottomSheetDialogFragment() {
 
         _binding = DialogEventAddBinding.inflate(inflater, container, false)
 
-        val targetDate = LocalDate.parse(arguments?.getString(OnSaveEventListener.SELECTED_DATE_KEY))
+        val targetDate = LocalDate.parse(arguments?.getString(SELECTED_DATE_KEY))
         val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale("ru"))
         binding.textViewSelectedDate.text = targetDate.format(formatter)
 
@@ -78,7 +78,7 @@ class AddEventDialog : BottomSheetDialogFragment() {
                     workDuration = workDuration,
                     comment = comment
                 )
-                onSaveEventListener?.onSaveEvent(event)
+                addEventListener?.onSaveEvent(event)
                 dismiss()
             }
         }

@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.service
+package com.efedorchenko.timely.fragment.support
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
