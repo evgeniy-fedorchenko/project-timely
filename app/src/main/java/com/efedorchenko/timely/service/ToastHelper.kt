@@ -22,7 +22,13 @@ object ToastHelper {
     private const val FILED_EVENTS_PATTERN =            "Не удалось отправить %s смен"
     private const val FILED_FINES_PATTERN =             "Не удалось отправить %s штрафов"
 
-    /* Регистрация */
+    /* Download data */
+    const val ERROR_ENC_PROFILE =                  "Не найдены данные профиля, необходимо заново авторизоваться"
+    const val ERROR_DOWNLOAD_DATA =                "Не удалось данные смен и штрафов, обновите данные при подключении к сети Интернет"
+    const val ERROR_DOWNLOAD_FINES =               "Не удалось данные штрафов, обновите данные при подключении к сети Интернет"
+    private const val ERROR_DOWNLOAD_MEMBERS =     "Не удалось загрузить участников компании, обновите данные при подключении к сети Интернет"
+
+    /* Registration */
     private const val INVALID_NAME_ON_REG =        "Неподходящее имя. Смотри подсказку справа"
     private const val INVALID_EMAIL_ON_REG =       "Неподходящий email. Смотри подсказку справа"
     private const val INVALID_PASSWORD_ON_REG =    "Неподходящий пароль. Смотри подсказку справа"
@@ -41,7 +47,10 @@ object ToastHelper {
     fun fineAmountTooSmall(c: Context) =          doShow(FINE_AMOUNT_TOO_SMALL, c, LENGTH_SHORT)
     fun incorrectLoginData(c: Context) =          doShow(INCORRECT_LOGIN_DATA, c, LENGTH_LONG)
 
-    /* Регистрация */
+    /* Download data */
+    fun failDownloadMembers(c: Context) =         doShow(ERROR_DOWNLOAD_MEMBERS, c, LENGTH_SHORT)
+
+    /* Registration */
     fun invalidNameOnReg(c: Context) =            doShow(INVALID_NAME_ON_REG, c, LENGTH_LONG)
     fun invalidEmailOnReg(c: Context) =           doShow(INVALID_EMAIL_ON_REG, c, LENGTH_LONG)
     fun invalidPasswordOnReg(c: Context) =        doShow(INVALID_PASSWORD_ON_REG, c, LENGTH_LONG)

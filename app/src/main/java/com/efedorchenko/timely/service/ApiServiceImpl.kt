@@ -3,6 +3,8 @@ package com.efedorchenko.timely.service
 import android.util.Log
 import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.model.AbstractData
+import com.efedorchenko.timely.model.DataRangeRequest
+import com.efedorchenko.timely.model.DataType
 import com.efedorchenko.timely.model.SpaceMember
 import com.efedorchenko.timely.model.api.ApiErrorCode
 import com.efedorchenko.timely.model.api.ApiResponse
@@ -38,6 +40,7 @@ class ApiServiceImpl @Inject constructor(
         private const val LOGIN_PATH = "$BASE_URL/auth/login"
         private const val DATA_PATH = "$BASE_URL/data"
         private const val MEMBERS_PATH = "$BASE_URL/members"
+        private const val RANGE_PATH_PATTERN = "$BASE_URL/data/"
     }
 
     //    for dev
@@ -87,6 +90,20 @@ class ApiServiceImpl @Inject constructor(
             .build()
 
         return@withContext execute<List<SpaceMember>>(request)
+    }
+
+
+    override suspend fun getDataRange(
+        dataRangeRequest: DataRangeRequest, dataType: DataType
+    ): ApiResponse<List<AbstractData>> = withContext(Dispatchers.IO) {
+        val request = Request.Builder()
+            .url(RANGE_PATH_PATTERN + dataType)
+            .header(RQUID, UUID.randomUUID().toString())
+            .header(AUTHORIZATION, getJwtToken())
+            .post(Json.encodeToString(dataRangeRequest).toRequestBody(APPLICATION_JSON_MT))
+            .build()
+
+        return@withContext execute<List<AbstractData>>(request)
     }
 
     private inline fun <reified T> execute(request: Request): ApiResponse<T> {

@@ -12,6 +12,11 @@ class MonthUID private constructor(val value: Int) {
             return MonthUID(uid)
         }
 
+        fun create(yearMonth: YearMonth): MonthUID {
+            val uid = yearMonth.year * 100 + yearMonth.monthValue
+            return MonthUID(uid)
+        }
+
         fun create(): MonthUID {
             val now = YearMonth.now()
             val uid = now.year * 100 + now.monthValue

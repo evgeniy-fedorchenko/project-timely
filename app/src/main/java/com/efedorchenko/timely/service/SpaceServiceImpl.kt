@@ -1,33 +1,94 @@
 package com.efedorchenko.timely.service
 
 import android.util.Log
+import com.efedorchenko.timely.data.DataViewModel
+import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.data.MemberRepository
+import com.efedorchenko.timely.data.RepositoryFactory
+import com.efedorchenko.timely.model.DataRangeRequest
+import com.efedorchenko.timely.model.DataType
 import com.efedorchenko.timely.model.SpaceMember
 import com.efedorchenko.timely.model.api.ApiResponse
+import org.threeten.bp.YearMonth
 import javax.inject.Inject
 
 class SpaceServiceImpl @Inject constructor(
     private val apiService: ApiService,
-    private val memberRepository: MemberRepository
+    private val memberRepository: MemberRepository,
+    private val repositoryFactory: RepositoryFactory,
+    private val encProfileStorage: EncProfileStorage,
+    private val viewModel: DataViewModel
 ) : SpaceService {
 
-    override suspend fun initMembers() {
+    override suspend fun initMembers(): Boolean {
         when (val response = apiService.getMembers()) {
             is ApiResponse.Success -> {
-                response.data?.let { memberRepository.save(it) }
+                response.data?.let {
+                    memberRepository.save(it)
+                    return true
+                }
+                return false
             }
-            is ApiResponse.Error -> { // FIXME мб просто показывать тоаст что не удалось загрузить команду
+            is ApiResponse.Error -> {
                 Log.e("Network error", "Cannot get members from server." +
                         "ApiErrorCode: ${response.apiErrorCode}, " +
                         "error message: ${response.errorMessage}, " +
                         "error data: ${response.errorData}"
                 )
+                return false
             }
         }
     }
 
     override fun downloadMember(member: SpaceMember) {
         TODO("Not yet implemented")
+    }
+
+    override suspend fun initData(): InitResult {
+        val userUuid = encProfileStorage.getUserUuid() ?: return InitResult.ENC_PROFILE_NULL
+
+        val startInclusive = YearMonth.now().minusMonths(2L)
+        val endInclusive = YearMonth.now().plusMonths(1L)
+
+        val dataRangeRequest = DataRangeRequest(startInclusive, endInclusive, userUuid)
+        if (!doInit(dataRangeRequest, DataType.EVENT)) {
+            return InitResult.FILED
+        }
+        if (!doInit(dataRangeRequest, DataType.FINE)) {
+            return InitResult.FINES_FILED
+        }
+        return InitResult.SUCCESS
+    }
+
+    private suspend fun doInit(dataRequest: DataRangeRequest, dataType: DataType): Boolean {
+        when (val response = apiService.getDataRange(dataRequest, dataType)) {
+            is ApiResponse.Success -> {
+                response.data?.let {
+                    if (it.isNotEmpty()) {
+                        val repository = repositoryFactory.getRepository(it[0])
+                        repository.saveBatch(it)
+                    }
+                    return true
+                }
+            }
+            is ApiResponse.Error -> {
+                Log.e("Network error", "Cannot init $dataType." +
+                        "ApiErrorCode: ${response.apiErrorCode}, " +
+                        "error message: ${response.errorMessage}, " +
+                        "error data: ${response.errorData}"
+                )
+                return false
+            }
+        }
+        return false
+    }
+
+    enum class InitResult(val failMess: String) {
+
+        SUCCESS(""),                            // Успех
+        ENC_PROFILE_NULL(ToastHelper.ERROR_ENC_PROFILE), // Не удалось получить данные профиля для запроса
+        FILED(ToastHelper.ERROR_DOWNLOAD_DATA),          // Event не получилось инициализировать, поэтому Fine даже не пытались
+        FINES_FILED(ToastHelper.ERROR_DOWNLOAD_FINES)    // Event инициализрованы, Fine не удалось
     }
 }
 

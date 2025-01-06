@@ -1,6 +1,8 @@
 package com.efedorchenko.timely.service
 
 import com.efedorchenko.timely.model.AbstractData
+import com.efedorchenko.timely.model.DataRangeRequest
+import com.efedorchenko.timely.model.DataType
 import com.efedorchenko.timely.model.SpaceMember
 import com.efedorchenko.timely.model.api.ApiResponse
 import com.efedorchenko.timely.model.auth.AuthResponse
@@ -16,4 +18,6 @@ interface ApiService {
     suspend fun save(data: AbstractData): ApiResponse<AbstractData>
 
     suspend fun getMembers(): ApiResponse<List<SpaceMember>>
+
+    suspend fun getDataRange(dataRangeRequest: DataRangeRequest, dataType: DataType): ApiResponse<List<AbstractData>>
 }
