@@ -18,11 +18,17 @@
         android:textSize="16sp"
         android:textStyle="bold" />
 
+    <View
+        android:id="@+id/divider"
+        android:layout_width="wrap_content"
+        android:layout_height="1dp"
+        android:layout_marginVertical="8dp"
+        android:background="@color/medium_gray" />
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:paddingTop="8dp"
         android:text="Пожалуйста, введите ваш электронный адрес. Он будет использован для верификации последующих попыток входа"
         android:textColor="@color/light_gray"
         android:textSize="16sp" />

@@ -16,11 +16,17 @@
         android:textSize="16sp"
         android:textStyle="bold" />
 
+    <View
+        android:id="@+id/divider"
+        android:layout_width="wrap_content"
+        android:layout_height="1dp"
+        android:layout_marginVertical="8dp"
+        android:background="@color/medium_gray" />
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="start"
-        android:paddingTop="5dp"
         android:text="Чтобы начать следить за своим рабочим временем, вам необходимо зарегистрировать аккаунт и выбрать свою роль, которую вы занимаете в компании"
         android:textColor="@color/light_gray"
         android:textSize="16sp" />
@@ -35,11 +41,17 @@
         android:textSize="16sp"
         android:textStyle="bold" />
 
+    <View
+        android:id="@+id/second_divider"
+        android:layout_width="wrap_content"
+        android:layout_height="1dp"
+        android:layout_marginVertical="8dp"
+        android:background="@color/medium_gray" />
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="start"
-        android:paddingTop="5dp"
         android:text="Выбирайте роль, изходя из действительно занимаемой вами должности в компаии, например:"
         android:textColor="@color/light_gray"
         android:textSize="16sp" />

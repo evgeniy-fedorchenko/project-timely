@@ -4,9 +4,10 @@
     <color name="white">#FFFFFFFF</color>
 
     <color name="light_gray">#cdcdcd</color>
+    <color name="medium_gray">#7a7a7a</color>
+    <color name="dark_gray">#383838</color>
     <color name="weekday_gray">#b5b5b5</color>
     <color name="weekend_gray">#9c9c9c</color>
-    <color name="dark_gray">#383838</color>
     <color name="orange">#ea7f13</color>
     <color name="base_background">#202020</color>
     <color name="red">#b20000</color>
