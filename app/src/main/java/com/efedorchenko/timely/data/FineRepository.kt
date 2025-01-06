@@ -209,4 +209,10 @@ class FineRepository @Inject constructor(application: Application) : DataReposit
     override fun setBackendId(data: Fine) {
         TODO("Not yet implemented")
     }
+
+
+    override fun clean() {
+        val db = dbHelper.writableDatabase
+        db.delete(FINES_TABLE_NAME, null, null)
+    }
 }

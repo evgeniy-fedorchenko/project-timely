@@ -85,4 +85,10 @@ class MemberRepository @Inject constructor(application: Application) {
 
         return members
     }
+
+
+    fun clean() {
+        val db = dbHelper.writableDatabase
+        db.delete(MEMBERS_TABLE_NAME, null, null)
+    }
 }

@@ -55,6 +55,7 @@ class MenuListener(
                 // TODO: очищать DataRepository
                 profileStorage.deleteUserData()
                 encProfileStorage.deleteAuthData()
+                viewModel.cleanAll()
                 parentFragment.findNavController().navigate(R.id.authFragment)
             }
 

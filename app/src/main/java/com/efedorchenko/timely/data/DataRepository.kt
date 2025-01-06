@@ -30,4 +30,6 @@ interface DataRepository<T : AbstractData> {
     fun setBackendId(data: T)
 
     fun findNullableBackendId(): List<T>
+
+    fun clean()
 }

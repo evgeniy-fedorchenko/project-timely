@@ -219,4 +219,9 @@ class EventRepository @Inject constructor(application: Application) : DataReposi
             return false
         }
     }
+
+    override fun clean() {
+        val db = dbHelper.writableDatabase
+        db.delete(EVENTS_TABLE_NAME, null, null)
+    }
 }
