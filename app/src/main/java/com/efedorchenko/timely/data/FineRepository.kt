@@ -3,6 +3,7 @@ package com.efedorchenko.timely.data
 import android.app.Application
 import android.content.ContentValues
 import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.AMOUNT_COLUMN_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.BACKEND_ID_COLUMN_NAME
@@ -17,7 +18,7 @@ import com.efedorchenko.timely.model.MonthUID
 import org.threeten.bp.LocalDate
 import javax.inject.Inject
 
-class FineRepository @Inject constructor(application: Application): DataRepository<Fine> {
+class FineRepository @Inject constructor(application: Application) : DataRepository<Fine> {
 
     private val dbHelper = DatabaseConfigurer.getInstance(application)
 
@@ -32,9 +33,60 @@ class FineRepository @Inject constructor(application: Application): DataReposito
 
         val id = db.insert(FINES_TABLE_NAME, null, values)
         if (id == -1L) {
-            Log.e(TAG, "Error when insert fine $data")
+            Log.e(TAG, "Error when insert fine [$data]")
         }
         return id
+    }
+
+    override fun saveBatch(dataBatch: List<Fine>) {
+        val db = dbHelper.writableDatabase
+
+        db.beginTransaction()
+        try {
+            dataBatch.forEach { data ->
+                val values = ContentValues().apply {
+                    put(BACKEND_ID_COLUMN_NAME, data.backendId)
+                    put(MONTH_UID_COLUMN_NAME, MonthUID.create(data.date).value)
+                    put(RECEIPT_DATE_COLUMN_NAME, data.date.toString())
+                    put(DESCRIPTION_COLUMN_NAME, data.description)
+                    put(AMOUNT_COLUMN_NAME, data.amount)
+                }
+
+                val id = db.insert(FINES_TABLE_NAME, null, values)
+                if (id == -1L) {
+                    Log.e(TAG, "Error when insert fine from batch: $data")
+                }
+            }
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+    }
+
+    override fun upsert(data: Fine): Long {
+        val db = dbHelper.writableDatabase
+
+        val values = ContentValues().apply {
+            put(ID_COLUMN_NAME, data.appId)
+            put(MONTH_UID_COLUMN_NAME, MonthUID.create(data.date).value)
+            put(RECEIPT_DATE_COLUMN_NAME, data.date.toString())
+            put(DESCRIPTION_COLUMN_NAME, data.description)
+            put(AMOUNT_COLUMN_NAME, data.amount)
+            data.backendId?.let {
+                put(BACKEND_ID_COLUMN_NAME, it)
+            }
+        }
+
+        return db.insertWithOnConflict(
+            FINES_TABLE_NAME,
+            null,
+            values,
+            SQLiteDatabase.CONFLICT_REPLACE
+        ).also { id ->
+            if (id == -1L) {
+                Log.e(TAG, "Error when saving event [$data]")
+            }
+        }
     }
 
     override fun findByMonth(monthUID: MonthUID, withComment: Boolean): List<Fine> {

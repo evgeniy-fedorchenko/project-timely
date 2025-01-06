@@ -81,7 +81,7 @@ class MainFragment : Fragment() {
 
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
-                viewModel.updateSummaryData(position)
+                viewModel.updateLiveData(position)
                 viewModel.updateMonthOffset(position)
             }
         })

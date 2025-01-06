@@ -29,30 +29,30 @@ class DatabaseConfigurer private constructor(application: Application) :
         const val FINES_TABLE_NAME = "fines"
         const val MEMBERS_TABLE_NAME = "members"
 
-        const val ID_COLUMN_NAME = "id"
-        const val MONTH_UID_COLUMN_NAME = "month_uid_hash"
-        const val BACKEND_ID_COLUMN_NAME = "backend_id"
+        const val ID_COLUMN_NAME = "id"                     // Integer primary key autoincrement
+        const val MONTH_UID_COLUMN_NAME = "month_uid_hash"  // Integer not null
+        const val BACKEND_ID_COLUMN_NAME = "backend_id"     // Integer unique
 
         /* Event */
-        const val EVENT_DATE_COLUMN_NAME = "event_date"
-        const val WORK_MINUTES_COLUMN_NAME = "work_minutes"
-        const val COMMENT_COLUMN_NAME = "comment"
+        const val EVENT_DATE_COLUMN_NAME = "event_date"     // Text not null
+        const val WORK_MINUTES_COLUMN_NAME = "work_minutes" // Integer not null
+        const val COMMENT_COLUMN_NAME = "comment"           // Text
 
         /* Fine */
-        const val RECEIPT_DATE_COLUMN_NAME = "receipt_date"
-        const val DESCRIPTION_COLUMN_NAME = "description"
-        const val AMOUNT_COLUMN_NAME = "amount"
+        const val RECEIPT_DATE_COLUMN_NAME = "receipt_date" // Text not null
+        const val DESCRIPTION_COLUMN_NAME = "description"   // Text not null
+        const val AMOUNT_COLUMN_NAME = "amount"             // Integer not null
 
         /* Member */
-        const val NAME_COLUMN_NAME = "member_name"
-        const val POSITION_COLUMN_NAME = "position"
-        const val USER_UUID_COLUMN_NAME = "user_uuid"
+        const val NAME_COLUMN_NAME = "member_name"          // Text not null
+        const val POSITION_COLUMN_NAME = "position"         // Text not null
+        const val USER_UUID_COLUMN_NAME = "user_uuid"       // Text not null unique
 
-        private const val EVENTS_CREATE_TABLE = "CREATE TABLE $EVENTS_TABLE_NAME($ID_COLUMN_NAME INTEGER PRIMARY KEY AUTOINCREMENT, $MONTH_UID_COLUMN_NAME INTEGER NOT NULL, $BACKEND_ID_COLUMN_NAME INTEGER, $EVENT_DATE_COLUMN_NAME TEXT NOT NULL, $WORK_MINUTES_COLUMN_NAME INTEGER NOT NULL, $COMMENT_COLUMN_NAME TEXT)"
+        private const val EVENTS_CREATE_TABLE = "CREATE TABLE $EVENTS_TABLE_NAME($ID_COLUMN_NAME INTEGER PRIMARY KEY AUTOINCREMENT, $MONTH_UID_COLUMN_NAME INTEGER NOT NULL, $BACKEND_ID_COLUMN_NAME INTEGER UNIQUE, $EVENT_DATE_COLUMN_NAME TEXT NOT NULL, $WORK_MINUTES_COLUMN_NAME INTEGER NOT NULL, $COMMENT_COLUMN_NAME TEXT)"
         private const val EVENTS_CREATE_INDEX = "CREATE INDEX $EVENTS_INDEX_NAME ON $EVENTS_TABLE_NAME($MONTH_UID_COLUMN_NAME)"
         private const val EVENTS_DROP_TABLE = "DROP TABLE IF EXISTS $EVENTS_TABLE_NAME"
 
-        private const val FINES_CREATE_TABLE = "CREATE TABLE $FINES_TABLE_NAME($ID_COLUMN_NAME INTEGER PRIMARY KEY AUTOINCREMENT, $MONTH_UID_COLUMN_NAME INTEGER NOT NULL, $BACKEND_ID_COLUMN_NAME INTEGER, $RECEIPT_DATE_COLUMN_NAME TEXT NOT NULL, $DESCRIPTION_COLUMN_NAME TEXT NOT NULL, $AMOUNT_COLUMN_NAME INTEGER NOT NULL)"
+        private const val FINES_CREATE_TABLE = "CREATE TABLE $FINES_TABLE_NAME($ID_COLUMN_NAME INTEGER PRIMARY KEY AUTOINCREMENT, $MONTH_UID_COLUMN_NAME INTEGER NOT NULL, $BACKEND_ID_COLUMN_NAME INTEGER UNIQUE, $RECEIPT_DATE_COLUMN_NAME TEXT NOT NULL, $DESCRIPTION_COLUMN_NAME TEXT NOT NULL, $AMOUNT_COLUMN_NAME INTEGER NOT NULL)"
         private const val FINES_CREATE_INDEX = "CREATE INDEX $FINES_INDEX_NAME ON $FINES_TABLE_NAME($MONTH_UID_COLUMN_NAME)"
         private const val FINES_DROP_TABLE = "DROP TABLE IF EXISTS $FINES_TABLE_NAME"
 

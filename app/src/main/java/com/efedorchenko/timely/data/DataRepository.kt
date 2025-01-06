@@ -17,6 +17,12 @@ interface DataRepository<T : AbstractData> {
      */
     fun saveBatch(dataBatch: List<T>)
 
+    /**
+     * Сохранить новое событие через `insertWithOnConflict (CONFLICT_REPLACE)` (защита от перезаписи).
+     * Должен выполняться после синхронизации с сервером
+     */
+    fun upsert(data: T): Long
+
     fun findByMonth(monthUID: MonthUID, withComment: Boolean): List<T>
 
     fun deleteById(id: Long?): Boolean

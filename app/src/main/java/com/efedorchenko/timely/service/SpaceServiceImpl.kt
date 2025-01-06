@@ -9,6 +9,7 @@ import com.efedorchenko.timely.model.DataRangeRequest
 import com.efedorchenko.timely.model.DataType
 import com.efedorchenko.timely.model.SpaceMember
 import com.efedorchenko.timely.model.api.ApiResponse
+import org.threeten.bp.LocalDate
 import org.threeten.bp.YearMonth
 import javax.inject.Inject
 
@@ -67,6 +68,8 @@ class SpaceServiceImpl @Inject constructor(
                     if (it.isNotEmpty()) {
                         val repository = repositoryFactory.getRepository(it[0])
                         repository.saveBatch(it)
+                        viewModel.updateLiveData(dataType, LocalDate.now())
+                        viewModel.emitNeedInitUpdate()
                     }
                     return true
                 }

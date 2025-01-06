@@ -11,6 +11,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.WRAP_CONTENT
 import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
+import androidx.lifecycle.lifecycleScope
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.databinding.CalendarGridLayoutBinding
@@ -22,6 +23,7 @@ import com.efedorchenko.timely.service.OnSaveEventListener
 import com.efedorchenko.timely.service.ToastHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import org.threeten.bp.LocalDate
@@ -69,16 +71,24 @@ class CalendarFragment : OnSaveEventListener() {
         savedInstanceState: Bundle?
     ): View {
         _binding = CalendarGridLayoutBinding.inflate(inflater, container, false)
-        val view = binding.root
-
         calendarGrid = binding.calendarGrid
-        viewModel.monthOffset.observe(viewLifecycleOwner) { updateMonthTextView(it) }
-        return view
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         updateCalendar()
+
+        viewModel.monthOffset.observe(viewLifecycleOwner) { updateMonthTextView(it) }
+        lifecycleScope.launch {
+            viewModel.needInitUpdate.collect { needsUpdate ->
+                if (needsUpdate) {
+                    viewModel.events.value?.forEach {
+                        updateCell(it)
+                    }
+                }
+            }
+        }
     }
 
     override fun onDestroyView() {

@@ -11,8 +11,10 @@ class RepositoryFactory @Inject constructor(
     private val fineRepository: DataRepository<Fine>
 ) {
 
+    fun <T : AbstractData> getRepository(data: T): DataRepository<T> = getRepository(data.getType())
+
     @Suppress("unchecked_cast")
-    fun <T : AbstractData> getRepository(data: T): DataRepository<T> = when (data.getType()) {
+    fun <T : AbstractData> getRepository(dataType: DataType): DataRepository<T> = when (dataType) {
         DataType.EVENT -> eventRepository as DataRepository<T>
         DataType.FINE -> fineRepository as DataRepository<T>
     }

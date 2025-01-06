@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.efedorchenko.timely.model.AbstractData
+import com.efedorchenko.timely.model.DataType
 import com.efedorchenko.timely.model.DataType.EVENT
 import com.efedorchenko.timely.model.DataType.FINE
 import com.efedorchenko.timely.model.Event
@@ -28,7 +29,7 @@ import javax.inject.Inject
 // TODO: Когда юзер логинится - просить все ивенты с бека и обновлять бд
 
 class DataViewModel @Inject constructor(
-    application: Application,
+    private val application: Application,
     private val eventRepository: DataRepository<Event>,
     private val fineRepository: DataRepository<Fine>,
     private val repositoryFactory: RepositoryFactory,
@@ -42,7 +43,7 @@ class DataViewModel @Inject constructor(
     private val _fines = MutableLiveData<List<Fine>>()
     val fines: LiveData<List<Fine>> get() = _fines
 
-    private val _monthOffset = MutableLiveData<Int>()
+    private val _monthOffset = MutableLiveData(CalendarAdapter.INITIAL_MONTH_OFFSET)
     val monthOffset: LiveData<Int> get() = _monthOffset
 
     private val _members = MutableLiveData<List<SpaceMember>>()
@@ -51,15 +52,21 @@ class DataViewModel @Inject constructor(
     private val _alert = MutableSharedFlow<String>()
     val alert = _alert.asSharedFlow()
 
-    private val emitError: suspend () -> Unit = {
+    private val emitNotSynced: suspend () -> Unit = {
         _alert.emit(ToastHelper.NOT_SYNCHRONIZED)
+    }
+
+    private val _needInitUpdate = MutableSharedFlow<Boolean>(replay = 0)
+    val needInitUpdate = _needInitUpdate.asSharedFlow()
+
+    suspend fun emitNeedInitUpdate() {
+        _needInitUpdate.emit(true)
     }
 
     init {
         val monthUID = MonthUID.create()
         _events.value = eventRepository.findByMonth(monthUID, false)
         _fines.value = fineRepository.findByMonth(monthUID, true)
-        _monthOffset.value = CalendarAdapter.INITIAL_MONTH_OFFSET
         _members.value = memberRepository.getMembersList()
     }
 
@@ -73,7 +80,7 @@ class DataViewModel @Inject constructor(
                 FINE -> _fines.value = (_fines.value ?: emptyList()) + data as Fine
             }
             if (!sendData(data)) {
-                emitError.invoke()
+                emitNotSynced.invoke()
             }
         }
     }
@@ -89,12 +96,15 @@ class DataViewModel @Inject constructor(
     suspend fun <T : AbstractData> sendData(data: T): Boolean {
         var success = false
         try {
+        /* При конфликте (на ту же дату отправили другие данные) сервер вернет старые данные ->
+           локально перезапиываем данные, чтобы юзер не перезаписал сохраненные данные */
+            // TODO: если данные с сервера другие - надо обновлять UI
 
-            when (val dataFromServer = apiService.save(data)) {
-                is ApiResponse.Success -> dataFromServer.data?.let {
+            when (val response = apiService.save(data)) {
+                is ApiResponse.Success -> response.data?.let {
                     it.appId = data.appId
                     val repository = repositoryFactory.getRepository(data)
-                    repository.setBackendId(it.toInheritor())
+                    repository.upsert(it.toInheritor())
                     success = true
                 } ?: run { success = false }
 
@@ -106,18 +116,6 @@ class DataViewModel @Inject constructor(
         }
         return success
     }
-
-    fun updateSummaryData(position: Int) {
-        val monthOffset = CalendarAdapter.calculateMonthOffset(position)
-        val monthUID = MonthUID.create(LocalDate.now().plusMonths(monthOffset.toLong()))
-        viewModelScope.launch {
-            _events.value = eventRepository.findByMonth(monthUID, false)
-        }
-        viewModelScope.launch {
-            _fines.value = fineRepository.findByMonth(monthUID, true)
-        }
-    }
-
 
     fun getEventsAsync(monthOffset: Int) = viewModelScope.async {
         val monthUID = MonthUID.create(LocalDate.now().plusMonths(monthOffset.toLong()))
@@ -149,4 +147,44 @@ class DataViewModel @Inject constructor(
     fun getNotSyncedFine(): List<Fine> {
         return fineRepository.findNullableBackendId()
     }
+
+    fun updateLiveData(position: Int) {
+        val monthOffset = CalendarAdapter.calculateMonthOffset(position)
+        val monthUID = MonthUID.create(LocalDate.now().plusMonths(monthOffset.toLong()))
+        doUpdateEventsLiveData(monthUID)
+        doUpdateFinesLiveData(monthUID)
+    }
+
+    fun updateLiveData(dataType: DataType, date: LocalDate) {
+        val monthUID = MonthUID.create(date)
+        when (dataType) {
+            EVENT -> doUpdateEventsLiveData(monthUID)
+            FINE -> doUpdateFinesLiveData(monthUID)
+        }
+    }
+
+    private fun doUpdateFinesLiveData(monthUID: MonthUID) {
+        viewModelScope.launch {
+            _fines.value = fineRepository.findByMonth(monthUID, true)
+        }
+    }
+
+    private fun doUpdateEventsLiveData(monthUID: MonthUID) {
+        viewModelScope.launch {
+            _events.value = eventRepository.findByMonth(monthUID, false)
+        }
+    }
+
+    fun cleanAll() {
+        _events.value = emptyList()
+        _fines.value = emptyList()
+        _members.value = emptyList()
+
+        eventRepository.clean()
+        fineRepository.clean()
+        memberRepository.clean()
+
+        _monthOffset.value = 0
+    }
+
 }

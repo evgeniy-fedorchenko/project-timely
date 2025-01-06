@@ -3,6 +3,7 @@ package com.efedorchenko.timely.data
 import android.app.Application
 import android.content.ContentValues
 import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 import androidx.core.content.contentValuesOf
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.BACKEND_ID_COLUMN_NAME
@@ -19,7 +20,7 @@ import org.threeten.bp.Duration
 import org.threeten.bp.LocalDate
 import javax.inject.Inject
 
-class EventRepository @Inject constructor(application: Application): DataRepository<Event> {
+class EventRepository @Inject constructor(application: Application) : DataRepository<Event> {
 
     private val dbHelper = DatabaseConfigurer.getInstance(application)
 
@@ -33,9 +34,60 @@ class EventRepository @Inject constructor(application: Application): DataReposit
         }
         val id = db.insert(EVENTS_TABLE_NAME, null, values)
         if (id == -1L) {
-            Log.e(TAG, "Error when insert event $data")
+            Log.e(TAG, "Error when insert event [$data]")
         }
         return id
+    }
+
+    override fun saveBatch(dataBatch: List<Event>) {
+        val db = dbHelper.writableDatabase
+
+        db.beginTransaction()
+        try {
+            dataBatch.forEach { data ->
+                val values = ContentValues().apply {
+                    put(BACKEND_ID_COLUMN_NAME, data.backendId)
+                    put(MONTH_UID_COLUMN_NAME, MonthUID.create(data.date).value)
+                    put(EVENT_DATE_COLUMN_NAME, data.date.toString())
+                    put(WORK_MINUTES_COLUMN_NAME, data.workDuration.toMinutes().toInt())
+                    put(COMMENT_COLUMN_NAME, data.comment)
+                }
+
+                val id = db.insert(EVENTS_TABLE_NAME, null, values)
+                if (id == -1L) {
+                    Log.e(TAG, "Error when insert event from batch: $data")
+                }
+            }
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+    }
+
+    override fun upsert(data: Event): Long {
+        val db = dbHelper.writableDatabase
+
+        val values = ContentValues().apply {
+            put(ID_COLUMN_NAME, data.appId)
+            put(MONTH_UID_COLUMN_NAME, MonthUID.create(data.date).value)
+            put(EVENT_DATE_COLUMN_NAME, data.date.toString())
+            put(WORK_MINUTES_COLUMN_NAME, data.workDuration.toMinutes().toInt())
+            put(COMMENT_COLUMN_NAME, data.comment)
+            data.backendId?.let {
+                put(BACKEND_ID_COLUMN_NAME, it)
+            }
+        }
+
+        return db.insertWithOnConflict(
+            EVENTS_TABLE_NAME,
+            null,
+            values,
+            SQLiteDatabase.CONFLICT_REPLACE
+        ).also { id ->
+            if (id == -1L) {
+                Log.e(TAG, "Error when upsetting event [$data]")
+            }
+        }
     }
 
     override fun findByMonth(monthUID: MonthUID, withComment: Boolean): List<Event> {
