@@ -9,7 +9,7 @@ interface DataRepository<T : AbstractData> {
      * Сохранить новое событие через `insert`, (без `backend_id`).
      * Сгенерировать новый `id (pk)`
      */
-    fun save(data:  T): Long
+    fun save(data: T): Long
 
     /**
      * Сохранить пачку новых событий через `insert` в одной транзакции (с `backend_id`).
