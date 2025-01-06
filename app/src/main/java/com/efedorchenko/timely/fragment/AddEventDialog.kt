@@ -26,20 +26,18 @@ class AddEventDialog : BottomSheetDialogFragment() {
     companion object {
         private val MIN_WORK_DURATION = Duration.ofHours(8)
 
-        fun newInstance(listener: OnSaveEventListener, processedCellIdx: Int): AddEventDialog {
-            return AddEventDialog().apply { setContext(listener, processedCellIdx) }
+        fun newInstance(listener: OnSaveEventListener): AddEventDialog {
+            return AddEventDialog().apply { setListener(listener) }
         }
     }
 
     private var _binding: DialogEventAddBinding? = null
     private val binding get() = _binding!!
 
-    private var processedCellIdx: Int? = null
     private var onSaveEventListener: OnSaveEventListener? = null
 
-    private fun setContext(listener: OnSaveEventListener, processedCellIdx: Int) {
+    private fun setListener(listener: OnSaveEventListener) {
         this.onSaveEventListener = listener
-        this.processedCellIdx = processedCellIdx
 
     }
 
@@ -80,7 +78,7 @@ class AddEventDialog : BottomSheetDialogFragment() {
                     workDuration = workDuration,
                     comment = comment
                 )
-                onSaveEventListener?.onSaveEvent(event, processedCellIdx)
+                onSaveEventListener?.onSaveEvent(event)
                 dismiss()
             }
         }

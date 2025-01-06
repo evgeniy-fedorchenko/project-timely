@@ -96,15 +96,15 @@ class CalendarFragment : OnSaveEventListener() {
         _binding = null
     }
 
-    override fun onSaveEvent(event: Event, processedCellIdx: Int?) {
-        updateCell(event, processedCellIdx)
+    override fun onSaveEvent(event: Event) {
+        updateCell(event)
         viewModel.addData(event)
     }
 
-    private fun updateCell(event: Event?, processedCellIdx: Int?) {
-
-        if (event != null && processedCellIdx != null) {
-            val targetCell = calendarGrid.getChildAt(processedCellIdx) as? ConstraintLayout
+    private fun updateCell(event: Event?) {
+        if (event != null) {
+            val cellIdx = event.date.dayOfMonth + ((event.date.withDayOfMonth(1).dayOfWeek.value + 6) % 7) - 1
+            val targetCell = calendarGrid.getChildAt(cellIdx) as? ConstraintLayout
             targetCell?.let {
                 it.setOnClickListener { ToastHelper.cannotEditPlaned(requireContext()) }
                 event.applyTo(targetCell)
@@ -129,8 +129,8 @@ class CalendarFragment : OnSaveEventListener() {
             val cellBuilder = CalendarCellBuilder(context)
             when {
                 dayOfMonth < 1 -> cellBuilder.setDate(
-                        pastMonth.withDayOfMonth(dayOfMonth + pastMonth.lengthOfMonth())
-                    )
+                    pastMonth.withDayOfMonth(dayOfMonth + pastMonth.lengthOfMonth())
+                )
 
                 dayOfMonth in 1..currentMonth.lengthOfMonth() -> {
                     val processDate = currentMonth.withDayOfMonth(dayOfMonth)
@@ -168,8 +168,8 @@ class CalendarFragment : OnSaveEventListener() {
             calendar.add(Calendar.MONTH, monthOffset)
 
             var monthName = DATE_FORMATTER.format(calendar.time)
-                monthName = monthName.substring(0, 1)
-                    .uppercase(Locale.getDefault()) + monthName.substring(1)
+            monthName = monthName.substring(0, 1)
+                .uppercase(Locale.getDefault()) + monthName.substring(1)
 
             it.text = monthName
         }

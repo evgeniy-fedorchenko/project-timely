@@ -17,13 +17,11 @@ abstract class OnSaveEventListener : Fragment() {
             val bundle = Bundle()
             bundle.putString(SELECTED_DATE_KEY, date.toString())
 
-            val cellIdx = date.dayOfMonth + ((date.withDayOfMonth(1).dayOfWeek.value + 6) % 7) - 1
-            val addEventDialog = AddEventDialog.newInstance(fragment, cellIdx)
+            val addEventDialog = AddEventDialog.newInstance(fragment)
             addEventDialog.arguments = bundle
             return addEventDialog
         }
     }
 
-    abstract fun onSaveEvent(event: Event, processedCellIdx: Int?)
-
+    abstract fun onSaveEvent(event: Event)
 }
