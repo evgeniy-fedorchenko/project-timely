@@ -2,6 +2,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/dialog_background_base"
     android:orientation="vertical"
     android:padding="16dp"
     app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
@@ -9,20 +10,21 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="16dp"
-        android:paddingTop="8dp"
         android:gravity="center"
+        android:paddingTop="8dp"
+        android:paddingBottom="16dp"
         android:text="Новый штраф"
         android:textAlignment="center"
+        android:textColor="@color/light_gray"
         android:textSize="20sp"
         android:textStyle="bold" />
 
     <TextView
-        android:id="@+id/fined_worker"
+        android:id="@+id/fined_worker_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingBottom="8dp"
-        android:text="Иванов Иван Иванович"
+        android:textColor="@color/light_gray"
         android:textSize="16sp"
         android:textStyle="bold" />
 
@@ -37,18 +39,22 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:paddingBottom="12dp"
             android:hint="Сумма в рублях"
-            android:inputType="number" />
+            android:backgroundTint="@color/light_gray"
+            android:inputType="number"
+            android:paddingBottom="12dp"
+            android:textColorHint="@color/medium_gray" />
 
         <EditText
             android:id="@+id/fine_comment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:paddingBottom="12dp"
+            android:hint="Комментарий"
             android:inputType="textMultiLine"
-            android:hint="Комментарий" />
+            android:paddingBottom="12dp"
+            android:backgroundTint="@color/light_gray"
+            android:textColorHint="@color/medium_gray" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -64,7 +70,9 @@
                 android:layout_height="match_parent"
                 android:layout_weight="2"
                 android:gravity="center"
+                android:paddingTop="2dp"
                 android:text="Число"
+                android:textColor="@color/light_gray"
                 android:textSize="16sp" />
 
             <com.shawnlin.numberpicker.NumberPicker
