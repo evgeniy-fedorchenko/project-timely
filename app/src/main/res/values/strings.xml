@@ -9,8 +9,8 @@
     <string name="fines_amount_text">Сумма: %s руб.</string>
 
     <!-- Синхронизация данных с сервером -->
-    <string name="found_not_synced_fines">Найдено несохраненных штрафов: %1$d</string>
-    <string name="found_not_synced_events">Найдено несохраненных смен: %1$d</string>
+    <string name="found_not_synced_fines">Найдено несохраненных штрафов: %d</string>
+    <string name="found_not_synced_events">Найдено несохраненных смен: %d</string>
     <string name="sync_button_sync">Обновить</string>   <!-- Текст кнопки перед началом синхронизации -->
     <string name="sync_button_stop">Остановить</string> <!-- Текст кнопки во время синхронизации -->
 

@@ -54,15 +54,10 @@ class NavigationMenuListener(
         val context = parentFragment.requireContext()
         when (item.itemId) {
             R.id.fill_period -> {}
-
-//            R.id.do_sync -> doSync(context)
             R.id.do_sync -> SyncDialogFragment().show(parentFragment.childFragmentManager, SYNC_DIALOG_TAG)
-
-            // TODO: переименовать team в space
             R.id.my_team -> SpaceDialogFragment().show(parentFragment.childFragmentManager, SPACE_DIALOG_TAG)
 
             R.id.exit -> {
-                // TODO: очищать DataRepository
                 profileStorage.deleteUserData()
                 encProfileStorage.deleteAuthData()
                 viewModel.cleanAll()

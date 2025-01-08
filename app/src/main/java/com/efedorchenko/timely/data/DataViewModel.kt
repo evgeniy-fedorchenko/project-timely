@@ -76,13 +76,13 @@ class DataViewModel @Inject constructor(
         _members.value = memberRepository.getMembersList()
     }
 
-    fun addData(data: AbstractData) {
+    fun addNewData(data: AbstractData) {
         viewModelScope.launch {
             val repository = repositoryFactory.getRepository(data)
             val appId = repository.save(data)
             data.appId = appId
             when (data.getType()) {
-                EVENT ->  _events.value = (_events.value ?: emptyList()) + data as Event
+                EVENT -> _events.value = (_events.value ?: emptyList()) + data as Event
                 FINE -> _fines.value = (_fines.value ?: emptyList()) + data as Fine
             }
             if (!sendData(data)) {
@@ -99,13 +99,14 @@ class DataViewModel @Inject constructor(
         // TODO: not implemented
     }
 
+    /**
+     * При конфликте (на ту же дату отправили другие данные) сервер вернет старые данные -> локальные данные
+     * перезапишуться, чтобы юзер не создал данные, которые конфликтуют с теми, что уже сохранены на сервре
+     */
     suspend fun <T : AbstractData> sendData(data: T): Boolean {
         var success = false
         try {
-        /* При конфликте (на ту же дату отправили другие данные) сервер вернет старые данные ->
-           локально перезапиываем данные, чтобы юзер не перезаписал сохраненные данные */
             // TODO: если данные с сервера другие - надо обновлять UI
-
             when (val response = apiService.save(data)) {
                 is ApiResponse.Success -> response.data?.let {
                     it.appId = data.appId

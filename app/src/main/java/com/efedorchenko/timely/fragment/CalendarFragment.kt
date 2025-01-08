@@ -111,7 +111,7 @@ class CalendarFragment : Fragment(), AddEventListener {
 
     override fun onSaveEvent(event: Event) {
         updateCell(event)
-        viewModel.addData(event)
+        viewModel.addNewData(event)
     }
 
     private fun updateCell(event: Event?) {
