@@ -9,6 +9,7 @@ import com.efedorchenko.timely.databinding.DialogSyncingDataBinding
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.Fine
 import com.efedorchenko.timely.service.ToastHelper
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -35,7 +36,10 @@ class DoSyncButtonListener(
         syncJob = parent.lifecycleScope.launch {
             try {
 
-                val uploadResult = doSyncLocalData(eventsOutOfSync, finesOutOfSync)
+                doSyncLocalData(eventsOutOfSync, finesOutOfSync, this)?.let {
+                    eventsNotSyncSize = it.first
+                    finesNotSyncSize = it.second
+                }
                 val downloadResult = downloadNewData()
 
             } finally {
@@ -70,8 +74,27 @@ class DoSyncButtonListener(
      * После получения успеха данные будут помечены как отправленные (устнаовиться `backend_id` в БД).
      * Если отправляемые данные неконсистентны с БД сервера - за истину принимаются данные сервера
      */
-    private suspend fun doSyncLocalData(events: List<Event>, fines: List<Fine>): Pair<Int, Int> {
-        return Pair(0, 0)
+    private suspend fun doSyncLocalData(
+        events: List<Event>, fines: List<Fine>, coroutineScope: CoroutineScope
+    ): Pair<Int, Int>? {
+
+        var eventsCount = events.size
+        var finesCount = fines.size
+        val notSyncedEventsPattern = parent.getString(R.string.found_not_synced_events)
+        events.forEach {
+            if (!coroutineScope.isActive) return@doSyncLocalData null
+            if (viewModel.sendData(it)) {
+                parentBinding.eventsCount.text = String.format(notSyncedEventsPattern, --eventsCount)
+            }
+        }
+        val notSyncedFinesPattern = parent.getString(R.string.found_not_synced_fines)
+        fines.forEach {
+            if (!coroutineScope.isActive) return@doSyncLocalData null
+            if (viewModel.sendData(it)) {
+                parentBinding.finesCount.text = String.format(notSyncedFinesPattern, --finesCount)
+            }
+        }
+        return Pair(eventsCount, finesCount)
     }
 
     /**
@@ -82,6 +105,6 @@ class DoSyncButtonListener(
      * По очереди для каждого типа данных: `Event`, `Fine`, `SpaceMember`
      */
     private suspend fun downloadNewData(): Boolean {
-        TODO("Not yet implemented")
+        return true   // stub
     }
 }
