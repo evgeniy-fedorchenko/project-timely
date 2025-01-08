@@ -33,7 +33,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-class MenuListener(
+class NavigationMenuListener(
     private val drawerLayout: DrawerLayout,
     private val viewModel: DataViewModel,
     private val parentFragment: Fragment
@@ -50,7 +50,7 @@ class MenuListener(
             R.id.do_sync -> doSync(context)
 
             // TODO: переименовать team в space
-            R.id.my_team -> SpaceDialogFragment().show(parentFragment.childFragmentManager, "SpaceDialog")
+            R.id.my_team -> SpaceDialogFragment().show(parentFragment.childFragmentManager, SPACE_DIALOG_TAG)
 
             R.id.exit -> {
                 // TODO: очищать DataRepository
@@ -156,10 +156,10 @@ class MenuListener(
         binding.workerKey.text = keys?.workerKey
         binding.bossKey.text = keys?.bossKey
 
-        setupButtonAnimationAndClick(binding.key1CopyButton, context) {
+        setupButtonAnimationAndClick(binding.workerKeyCopyButton, context) {
             copyToClipboard(context, "worker_key", binding.workerKey.text.toString())
         }
-        setupButtonAnimationAndClick(binding.key2CopyButton, context) {
+        setupButtonAnimationAndClick(binding.bossKeyCopyButton, context) {
             copyToClipboard(context, "boss_key", binding.bossKey.text.toString())
         }
 

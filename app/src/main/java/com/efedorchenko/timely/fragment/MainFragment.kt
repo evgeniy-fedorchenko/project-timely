@@ -20,7 +20,7 @@ import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.databinding.FragmentMainBinding
 import com.efedorchenko.timely.fragment.support.CalendarAdapter
-import com.efedorchenko.timely.fragment.support.MenuListener
+import com.efedorchenko.timely.fragment.support.NavigationMenuListener
 import com.efedorchenko.timely.service.ToastHelper
 import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
@@ -129,7 +129,7 @@ class MainFragment : Fragment() {
 
         navigationView.setNavigationItemSelectedListener(
             // TODO: может сделать экран синхронизации отдельный фрагментом? DialogFragment например
-            MenuListener(drawerLayout, viewModel, this)
+            NavigationMenuListener(drawerLayout, viewModel, this)
         )
     }
 
