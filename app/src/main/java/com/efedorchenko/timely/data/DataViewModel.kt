@@ -49,6 +49,7 @@ class DataViewModel @Inject constructor(
     private val _members = MutableLiveData<List<SpaceMember>>()
     val members: LiveData<List<SpaceMember>> get() = _members
 
+    /* Эмит ошибки синзронизации */
     private val _alert = MutableSharedFlow<String>()
     val alert = _alert.asSharedFlow()
 
@@ -56,11 +57,16 @@ class DataViewModel @Inject constructor(
         _alert.emit(ToastHelper.NOT_SYNCHRONIZED)
     }
 
-    private val _needInitUpdate = MutableSharedFlow<Boolean>(replay = 0)
-    val needInitUpdate = _needInitUpdate.asSharedFlow()
+    /* Эмит необходимости разово обновить данные data */
+    private val _needUpdateData = MutableSharedFlow<Boolean>(replay = 0)
+    val needUpdateData = _needUpdateData.asSharedFlow()
 
-    suspend fun emitNeedInitUpdate() {
-        _needInitUpdate.emit(true)
+    suspend fun emitNeedUpdateData() {
+        _needUpdateData.emit(true)
+    }
+
+    fun updateMembers() {
+        _members.value = memberRepository.getMembersList()
     }
 
     init {

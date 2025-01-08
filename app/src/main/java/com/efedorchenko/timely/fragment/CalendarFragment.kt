@@ -85,7 +85,7 @@ class CalendarFragment : Fragment(), AddEventListener {
 
         viewModel.monthOffset.observe(viewLifecycleOwner) { updateMonthTextView(it) }
         lifecycleScope.launch {
-            viewModel.needInitUpdate.collect { needsUpdate ->
+            viewModel.needUpdateData.collect { needsUpdate ->
                 if (needsUpdate) {
                     viewModel.events.value?.forEach {
                         updateCell(it)

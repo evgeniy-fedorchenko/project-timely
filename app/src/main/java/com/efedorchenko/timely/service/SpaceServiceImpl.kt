@@ -26,6 +26,7 @@ class SpaceServiceImpl @Inject constructor(
             is ApiResponse.Success -> {
                 response.data?.let {
                     memberRepository.save(it)
+                    viewModel.updateMembers()
                     return true
                 }
                 return false
@@ -69,7 +70,7 @@ class SpaceServiceImpl @Inject constructor(
                         val repository = repositoryFactory.getRepository(it[0])
                         repository.saveBatch(it)
                         viewModel.updateLiveData(dataType, LocalDate.now())
-                        viewModel.emitNeedInitUpdate()
+                        viewModel.emitNeedUpdateData()
                     }
                     return true
                 }
