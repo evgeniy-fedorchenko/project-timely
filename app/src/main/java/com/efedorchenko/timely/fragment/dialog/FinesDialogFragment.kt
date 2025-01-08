@@ -1,5 +1,7 @@
 package com.efedorchenko.timely.fragment.dialog
 
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,12 +11,18 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.EncProfileStorageImpl
+import com.efedorchenko.timely.data.ProfileStorageImpl
 import com.efedorchenko.timely.databinding.DialogFinesShowBinding
 import dagger.hilt.android.AndroidEntryPoint
+import org.threeten.bp.LocalDate
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class FinesDialogFragment : DialogFragment() {
+
+    companion object {
+        private val MONTH_NAMES = arrayOf("январь", "февраль", "март", "апрель", "май", "июнь", "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь")
+    }
 
     private var _binding: DialogFinesShowBinding? = null
     private val binding get() = _binding!!
@@ -24,6 +32,9 @@ class FinesDialogFragment : DialogFragment() {
 
     @Inject
     lateinit var encProfileStorageImpl: EncProfileStorageImpl
+
+    @Inject
+    lateinit var profileStorageImpl: ProfileStorageImpl
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,10 +47,25 @@ class FinesDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         binding.finesRecyclerView.layoutManager = LinearLayoutManager(context)
-        val fines = viewModel.fines.value
-        binding.finesRecyclerView.adapter = FinesAdapter(fines?.toMutableList(), viewModel, encProfileStorageImpl)
+
+        profileStorageImpl.getName()?.let {
+            binding.headerUserName.text = it
+        }
+
+        viewModel.monthOffset.value?.let {
+            val targetDate = LocalDate.now().plusMonths(it.toLong())
+            val monthName = MONTH_NAMES[targetDate.monthValue - 1]
+            val headerDateText = "Штрафы за $monthName ${targetDate.year}"
+            binding.headerDate.text = headerDateText
+        }
+
+        if (viewModel.fines.value.isNullOrEmpty()) {
+            binding.emptyFinesText.visibility = View.VISIBLE
+            binding.finesRecyclerView.visibility = View.GONE
+        } else {
+            binding.finesRecyclerView.adapter = FinesAdapter(viewModel, encProfileStorageImpl.isPrivileged())
+        }
 
         val spaceInPixels = resources.getDimensionPixelSize(R.dimen.item_spacing_horizontal)
         binding.finesRecyclerView.addItemDecoration(SpaceItemDecoration(spaceInPixels))
@@ -51,7 +77,7 @@ class FinesDialogFragment : DialogFragment() {
     override fun onStart() {
         super.onStart()
         dialog?.window?.apply {
-            setBackgroundDrawableResource(R.drawable.dialog_background)
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             val width = (resources.displayMetrics.widthPixels * 0.9).toInt()
             val height = (resources.displayMetrics.heightPixels * 0.9).toInt()
             setLayout(width, height)

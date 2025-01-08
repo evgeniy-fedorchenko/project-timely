@@ -7,7 +7,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/summary_card_background">
+    android:background="@drawable/dialog_background_base">
 
     <LinearLayout
         android:id="@+id/headerLayout"
@@ -25,12 +25,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@drawable/dialog_background"
             android:gravity="center"
-            android:text="Компания: Чусовская лесопилка"
-            android:textColor="@color/weekday_gray"
+            android:text="Компания: такая-то"
+            android:textColor="@color/light_gray"
             android:textSize="20sp"
-            android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -39,10 +37,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@drawable/dialog_background"
             android:gravity="center"
             android:text="Выберете участника для просмотра"
-            android:textColor="@color/weekday_gray"
+            android:textColor="@color/light_gray"
             android:paddingTop="10dp"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -54,7 +51,8 @@
         android:id="@+id/divider"
         android:layout_width="0dp"
         android:layout_height="1dp"
-        android:background="@android:color/darker_gray"
+        android:background="@color/medium_gray"
+        android:layout_marginHorizontal="14dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/headerLayout" />
@@ -64,9 +62,9 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipToPadding="false"
-        android:paddingTop="6dp"
-        android:paddingStart="6dp"
-        android:paddingEnd="6dp"
+        android:paddingTop="8dp"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
         app:layout_constraintBottom_toTopOf="@id/closeButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

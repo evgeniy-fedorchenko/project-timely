@@ -3,11 +3,12 @@
     <item android:state_pressed="true">
         <shape android:shape="rectangle">
             <solid android:color="@color/dark_gray" /> <!-- Цвет при нажатии -->
+
         </shape>
     </item>
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="@android:color/transparent" /> <!-- Стандартный цвет -->
+            <solid android:color="@color/dark_medium_gray" /> <!-- Стандартный цвет -->
         </shape>
     </item>
 </selector>

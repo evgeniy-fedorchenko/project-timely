@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/summary_card_background">
+    android:background="@drawable/dialog_background_base">
 
     <!-- Шапка таблицы -->
     <LinearLayout
@@ -11,69 +11,77 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:paddingVertical="10dp"
-        android:paddingHorizontal="20dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:layout_width="0dp"
+            android:id="@+id/header_user_name"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@drawable/dialog_background"
             android:gravity="center"
-            android:text="Дата"
-            android:textColor="@color/weekday_gray"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:text="Иванов Иван Иванович"
+            android:textColor="@color/light_gray"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:background="@drawable/dialog_background"
-            android:gravity="center"
-            android:text="Описание"
-            android:textColor="@color/weekday_gray"
-            android:textSize="24sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="0dp"
+            android:id="@+id/header_date"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@drawable/dialog_background"
             android:gravity="center"
-            android:text="Сумма"
-            android:textColor="@color/weekday_gray"
-            android:textSize="24sp"
-            android:textStyle="bold" />
-
+            android:text="header_date"
+            android:textColor="@color/light_gray"
+            android:paddingTop="10dp"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
     </LinearLayout>
 
     <View
         android:id="@+id/divider"
         android:layout_width="0dp"
         android:layout_height="1dp"
-        android:background="@android:color/darker_gray"
+        android:background="@color/medium_gray"
+        android:layout_marginHorizontal="14dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/headerLayout" />
 
+    <TextView
+        android:id="@+id/empty_fines_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="У вас нет штрафов за указанный период"
+        android:textColor="@color/light_gray"
+        android:textSize="16sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/closeButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/divider" />
+
     <!-- Таблица -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/finesRecyclerView"
+        android:id="@+id/fines_recycler_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipToPadding="false"
+        android:paddingTop="8dp"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
         app:layout_constraintBottom_toTopOf="@id/closeButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/headerLayout" />
+        app:layout_constraintTop_toBottomOf="@id/divider" />
 
     <Button
         android:id="@+id/closeButton"
@@ -83,7 +91,7 @@
         android:background="@android:color/transparent"
         android:text="Закрыть"
         android:textColor="@color/orange"
-        android:textSize="13dp"
+        android:textSize="13sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

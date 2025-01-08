@@ -30,7 +30,7 @@
         <item name="android:textStyle">bold</item>
     </style>
 
-    <!-- Стиль для неактивного дня -->
+    <!-- Стиль для количества работчего времени, отображаемого в ячейке календаря -->
     <style name="work_duration">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">0dp</item>
@@ -40,7 +40,8 @@
         <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="DeleteFinePopup" parent="Widget.AppCompat.PopupMenu">
+    <!-- Маленький попап удаления штрафа -->
+    <style name="delete_fine_popup" parent="Widget.AppCompat.PopupMenu">
         <item name="android:popupBackground">@drawable/popup_background</item>
     </style>
 </resources>

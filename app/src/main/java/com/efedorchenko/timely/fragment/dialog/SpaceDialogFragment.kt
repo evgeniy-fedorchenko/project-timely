@@ -1,6 +1,12 @@
 package com.efedorchenko.timely.fragment.dialog
 
+import android.graphics.Color
+import android.graphics.Typeface
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.StyleSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
+import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.databinding.DialogSpaceShowBinding
 import com.efedorchenko.timely.service.SpaceService
 import dagger.hilt.android.AndroidEntryPoint
@@ -32,6 +39,9 @@ class SpaceDialogFragment : DialogFragment() {
     @Inject
     lateinit var spaceService: SpaceService
 
+    @Inject
+    lateinit var profileStorage: ProfileStorage
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = DialogSpaceShowBinding.inflate(inflater, container, false)
         return binding.root
@@ -39,6 +49,16 @@ class SpaceDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        profileStorage.getSpaceName().let {
+            val spaceRawText = getString(R.string.nav_menu_header_space, it)
+            val spannablePositionText = SpannableString(spaceRawText)
+            spannablePositionText.setSpan(
+                StyleSpan(Typeface.BOLD), 10,
+                spaceRawText.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            binding.spaceName.text = spannablePositionText
+        }
 
         binding.membersRecyclerView.layoutManager = LinearLayoutManager(context)
         val members = viewModel.members.value
@@ -54,7 +74,7 @@ class SpaceDialogFragment : DialogFragment() {
     override fun onStart() {
         super.onStart()
         dialog?.window?.apply {
-            setBackgroundDrawableResource(R.drawable.dialog_background)
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             val width = (resources.displayMetrics.widthPixels * 0.9).toInt()
             val height = (resources.displayMetrics.heightPixels * 0.9).toInt()
             setLayout(width, height)

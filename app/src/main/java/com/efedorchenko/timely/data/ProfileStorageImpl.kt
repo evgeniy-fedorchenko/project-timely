@@ -2,8 +2,10 @@ package com.efedorchenko.timely.data
 
 import android.content.Context
 import com.efedorchenko.timely.model.auth.UserData
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 
-class ProfileStorageImpl(context: Context) : ProfileStorage {
+class ProfileStorageImpl @Inject constructor(@ApplicationContext context: Context) : ProfileStorage {
 
     companion object {
         private const val PSP_NAME = "profile_storage"
@@ -105,4 +107,6 @@ class ProfileStorageImpl(context: Context) : ProfileStorage {
             return null
         }
     }
+
+    override fun getSpaceName(): String? = sharedPref.getString(SPACE_NAME_KEY, null)
 }
