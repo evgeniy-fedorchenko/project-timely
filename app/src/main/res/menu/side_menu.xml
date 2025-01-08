@@ -7,7 +7,7 @@
             android:title="Моя команда" />
         <item
             android:id="@+id/do_sync"
-            android:title="Синхронизировать данные" />
+            android:title="Обновить данные" />
         <item
             android:id="@+id/access_keys"
             android:title="Ключи доступа"

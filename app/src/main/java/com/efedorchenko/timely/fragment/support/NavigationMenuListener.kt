@@ -6,6 +6,8 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.res.ColorStateList
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.view.LayoutInflater.from
 import android.view.MenuItem
 import android.view.View
@@ -27,6 +29,7 @@ import com.efedorchenko.timely.data.ProfileStorageImpl
 import com.efedorchenko.timely.databinding.DialogAccessKeysBinding
 import com.efedorchenko.timely.databinding.DialogSyncingDataBinding
 import com.efedorchenko.timely.fragment.dialog.SpaceDialogFragment
+import com.efedorchenko.timely.fragment.dialog.SyncDialogFragment
 import com.efedorchenko.timely.service.ToastHelper
 import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.Job
@@ -39,6 +42,11 @@ class NavigationMenuListener(
     private val parentFragment: Fragment
 ) : NavigationView.OnNavigationItemSelectedListener {
 
+    companion object {
+        private const val SPACE_DIALOG_TAG = "space_dialog"
+        private const val SYNC_DIALOG_TAG = "space_dialog"
+    }
+
     private val profileStorage: ProfileStorage = ProfileStorageImpl(parentFragment.requireContext())
     private val encProfileStorage: EncProfileStorage = EncProfileStorageImpl(parentFragment.requireContext())
 
@@ -47,7 +55,8 @@ class NavigationMenuListener(
         when (item.itemId) {
             R.id.fill_period -> {}
 
-            R.id.do_sync -> doSync(context)
+//            R.id.do_sync -> doSync(context)
+            R.id.do_sync -> SyncDialogFragment().show(parentFragment.childFragmentManager, SYNC_DIALOG_TAG)
 
             // TODO: переименовать team в space
             R.id.my_team -> SpaceDialogFragment().show(parentFragment.childFragmentManager, SPACE_DIALOG_TAG)
@@ -70,6 +79,7 @@ class NavigationMenuListener(
         return true
     }
 
+    @Deprecated(message = "Заменен на SyncDialogFragment")
     private fun doSync(context: Context) {
         var eventsOutOfSync = viewModel.getNotSyncedEvents()
         var finesOutOfSync = viewModel.getNotSyncedFine()
@@ -150,7 +160,7 @@ class NavigationMenuListener(
     private fun showAccessKeysDialog(context: Context) {
         val binding = DialogAccessKeysBinding.inflate(from(context))
         val dialog = AlertDialog.Builder(context).setView(binding.root).create()
-        dialog.window?.setBackgroundDrawableResource(R.drawable.dialog_background)
+        dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
         val keys = encProfileStorage.getSpaceKeys()
         binding.workerKey.text = keys?.workerKey
@@ -197,8 +207,7 @@ class NavigationMenuListener(
 
     private fun showSyncingDialog(viewBinding: ViewBinding, context: Context): AlertDialog? {
         val dialog = AlertDialog.Builder(context).setView(viewBinding.root).create()
-        val window = dialog.window
-        window?.setBackgroundDrawableResource(R.drawable.dialog_background)
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         dialog.show()
         return dialog
     }

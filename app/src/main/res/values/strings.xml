@@ -1,12 +1,20 @@
 <resources>
     <string name="app_name">project-timely</string>
     <string name="menu_desc">Menu</string>
+
+    <!-- Строки в summary_card внизу главного экрана -->
     <string name="days_worked_text">Отработано дней: %s</string>
     <string name="hours_worked_text">Отработано часов: %s</string>
     <string name="fines_count_text">Всего: %s</string>
     <string name="fines_amount_text">Сумма: %s руб.</string>
-    <string name="found_not_synced_fines">Найдено неотправленных штрафов: %1$d</string>
-    <string name="found_not_synced_events">Найдено неотправленных смен: %1$d</string>
+
+    <!-- Синхронизация данных с сервером -->
+    <string name="found_not_synced_fines">Найдено несохраненных штрафов: %1$d</string>
+    <string name="found_not_synced_events">Найдено несохраненных смен: %1$d</string>
+    <string name="sync_button_sync">Обновить</string>   <!-- Текст кнопки перед началом синхронизации -->
+    <string name="sync_button_stop">Остановить</string> <!-- Текст кнопки во время синхронизации -->
+
+    <!-- Навигационное меню -->
     <string name="nav_menu_header_position">Должность: %1$s</string>
     <string name="nav_menu_header_space">Компания: %1$s</string>
     <string name="nav_menu_header_rate">Ставка: %1$d руб./ч.</string>
