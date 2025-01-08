@@ -2,12 +2,13 @@ package com.efedorchenko.timely.fragment
 
 import android.app.AlertDialog
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.LayoutInflater.from
 import android.view.View
 import android.view.ViewGroup
-import com.efedorchenko.timely.R
 import com.efedorchenko.timely.databinding.DialogHelpCreatorBinding
 import com.efedorchenko.timely.databinding.DialogRegisterEmailHelpBinding
 import com.efedorchenko.timely.databinding.DialogRegisterNameHelpBinding
@@ -42,7 +43,7 @@ class RegisterCreatorFragment : AbstractRegisterFragment() {
 
         this.setupImeInsets(binding)
         setTextChangedListeners()
-        setHelpButtonListeners(context)
+        setHelpButtonListeners(context)   // Подсказки у полей ввода
 
         val windowToken = binding.root.windowToken
         this.setHideKeyboardListener(binding.containerLayout, windowToken)
@@ -50,7 +51,7 @@ class RegisterCreatorFragment : AbstractRegisterFragment() {
         this.setRegisterButtonListener(binding.registerButton, context, binding.loadingProgressBar, windowToken)
 
         binding.helpButton.setOnClickListener {
-            showHelpDialog(context)
+            showHelpDialog(context)   // Кнопка помощи внизу экрана
         }
     }
 
@@ -153,13 +154,16 @@ class RegisterCreatorFragment : AbstractRegisterFragment() {
     private fun showHelpDialog(context: Context) {
         val binding = DialogHelpCreatorBinding.inflate(from(context))
         val dialog = AlertDialog.Builder(context).setView(binding.root).create()
-        dialog.window?.setBackgroundDrawableResource(R.drawable.dialog_background)
+
+        dialog.window?.apply {
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            setLayout(
+                (resources.displayMetrics.widthPixels * HELP_DIALOG_WIDTH_RATIO).toInt(),
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
         dialog.show()
 
-        dialog.window?.setLayout(
-            (resources.displayMetrics.widthPixels * 0.85).toInt(),
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
         binding.closeButton.setOnClickListener {
             dialog.cancel()
         }

@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/summary_card_background"
+    android:background="@drawable/dialog_background_base"
     android:gravity="center"
     android:orientation="vertical"
     android:paddingHorizontal="16dp"
@@ -40,6 +40,7 @@
         android:text="Эти данные будут отображены на вашей странице. Их увидят все в вашей компании. Пример:"
         android:textColor="@color/light_gray"
         android:textSize="16sp" />
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -47,8 +48,8 @@
         android:paddingTop="12dp"
         android:text="Иванов Иван Иванович"
         android:textColor="@color/light_gray"
-        android:textStyle="bold"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+        android:textStyle="bold" />
 
     <TextView
         android:layout_width="match_parent"

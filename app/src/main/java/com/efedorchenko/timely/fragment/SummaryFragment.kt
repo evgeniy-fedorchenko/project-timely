@@ -23,7 +23,7 @@ class SummaryFragment : Fragment(), AddFineListener {
 
     companion object {
         private const val ADD_FINE_DIALOG_TAG = "add_fine_dialog"
-        private const val SHOW_FINES_DIALOG_TAG = "fines_dialog_tag"
+        private const val SHOW_FINES_DIALOG_TAG = "show_fines_dialog"
     }
 
     private var _binding: FragmentSummaryCardBinding? = null

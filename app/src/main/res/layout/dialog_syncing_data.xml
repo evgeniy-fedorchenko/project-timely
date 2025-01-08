@@ -3,53 +3,65 @@
     android:id="@+id/dialog_syncing_data"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/summary_card_background"
-    android:padding="16dp">
+    android:background="@drawable/dialog_background_base"
+    android:padding="14dp">
 
-    <!-- Блок "Время на работе" -->
+    <!-- Для скргуления углов фона под рамкой в коде нужно применить
+         drawable/common_dialog_background отдельно, а лучше применить R.style.common_dialog -->
+
+    <!--
+    Стандартный фон диалога common_dialog_background, допом нужно применять R.style.common_dialog
+    непосредственно в коде, чтобы скруглить углы фона
+
+    todo цвет текста привести к одному и тому же
+    todo цвет фона привести к одному и тому же
+    -->
     <TextView
-        android:id="@+id/workTimeLabel"
+        android:id="@+id/label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingBottom="8dp"
-        android:text="Несинхронизированные события"
+        android:text="Обновить информацию"
         android:textSize="18sp"
         android:textStyle="bold"
+        android:textColor="@color/light_gray"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/days_worked"
+        android:id="@+id/download_description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Это события, которые не были отправлены в облако. О них не знает никто из вашей команды, включая руководителей"
+        android:text="Вы получите актуальную информацию, добавленную руководителями, если таковая имеется"
         android:textSize="16sp"
+        android:textColor="@color/light_gray"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/workTimeLabel" />
+        app:layout_constraintTop_toBottomOf="@id/label" />
 
     <TextView
-        android:id="@+id/hours_worked"
+        android:id="@+id/upload_description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingTop="5dp"
-        android:text="Рекомендуется синхронизировать эти события при первой возможности"
+        android:textColor="@color/light_gray"
+        android:text="Найдены несохраненные данные. Они не видны никому из вашей команды. Рекомендуется сохранить их при первой возможности"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/days_worked" />
+        app:layout_constraintTop_toBottomOf="@id/download_description"
+        android:visibility="gone"/>
 
     <View
         android:id="@+id/divider"
         android:layout_width="0dp"
         android:layout_height="1dp"
         android:layout_marginVertical="8dp"
-        android:background="@android:color/darker_gray"
+        android:background="@color/medium_gray"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/hours_worked" />
+        app:layout_constraintTop_toBottomOf="@id/upload_description" />
 
-    <!-- Блок "Штрафы" -->
     <TextView
-        android:id="@+id/finesLabel"
+        android:id="@+id/data_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingTop="8dp"
@@ -57,24 +69,30 @@
         android:text="События"
         android:textSize="18sp"
         android:textStyle="bold"
+        android:textColor="@color/light_gray"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/divider" />
+        app:layout_constraintTop_toBottomOf="@id/divider"
+        android:visibility="gone"/>
 
     <TextView
         android:id="@+id/events_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="16sp"
+        android:textColor="@color/light_gray"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/finesLabel" />
+        app:layout_constraintTop_toBottomOf="@id/data_label"
+        android:visibility="gone"/>
 
     <TextView
         android:id="@+id/fines_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="16sp"
+        android:textColor="@color/light_gray"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/events_count" />
+        app:layout_constraintTop_toBottomOf="@id/events_count"
+        android:visibility="gone" />
 
     <Button
         android:id="@+id/do_sync_button"
@@ -84,7 +102,7 @@
         android:layout_marginEnd="8dp"
         android:backgroundTint="@color/orange"
         android:maxLines="1"
-        android:text="Синхронизировать"
+        android:text="Обновить"
         app:layout_constraintEnd_toStartOf="@+id/guideline"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/fines_count" />

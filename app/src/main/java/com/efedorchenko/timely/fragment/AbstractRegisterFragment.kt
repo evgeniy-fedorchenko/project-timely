@@ -2,6 +2,8 @@ package com.efedorchenko.timely.fragment
 
 import android.app.AlertDialog
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.IBinder
 import android.view.View
 import android.view.ViewGroup
@@ -29,6 +31,11 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 abstract class AbstractRegisterFragment : Fragment() {
+
+    companion object {
+        const val INPUT_HINT_WIDTH_RATIO = 0.8   // Маленькая подсказка справа от поля ввода
+        const val HELP_DIALOG_WIDTH_RATIO = 0.85   // Кнопка помощи внизу экрана
+    }
 
     @Inject
     lateinit var authService: AuthService
@@ -72,14 +79,14 @@ abstract class AbstractRegisterFragment : Fragment() {
 
     protected fun showHint(viewBinding: ViewBinding, context: Context) {
         val dialog = AlertDialog.Builder(context).setView(viewBinding.root).create()
-        val window = dialog.window
-        window?.setBackgroundDrawableResource(R.drawable.dialog_background)
+        dialog.window?.apply {
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            setLayout(
+                (resources.displayMetrics.widthPixels * INPUT_HINT_WIDTH_RATIO).toInt(),
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
         dialog.show()
-
-        window?.setLayout(
-            (resources.displayMetrics.widthPixels * 0.70).toInt(),
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
     }
 
     private fun hideKeyboard(windowToken: IBinder) {
@@ -111,6 +118,7 @@ abstract class AbstractRegisterFragment : Fragment() {
                             ToastHelper.failDownloadMembers(context)
                         }
                     }
+
                     is Resource.Error -> ToastHelper.message(result.message, context)
                 }
 
