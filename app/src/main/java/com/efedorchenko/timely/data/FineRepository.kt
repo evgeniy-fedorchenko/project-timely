@@ -3,58 +3,68 @@ package com.efedorchenko.timely.data
 import android.app.Application
 import android.content.ContentValues
 import android.database.Cursor
+import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
+import androidx.core.content.contentValuesOf
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.AMOUNT_COLUMN_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.BACKEND_ID_COLUMN_NAME
+import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.CHANGED_AT_COLUMN_NAME
+import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.COMMENT_COLUMN_NAME
+import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.DATE_COLUMN_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.DESCRIPTION_COLUMN_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.FINES_TABLE_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.ID_COLUMN_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.MONTH_UID_COLUMN_NAME
-import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.RECEIPT_DATE_COLUMN_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.TAG
 import com.efedorchenko.timely.model.Fine
 import com.efedorchenko.timely.model.MonthUID
+import org.threeten.bp.Instant
 import org.threeten.bp.LocalDate
 import javax.inject.Inject
 
 class FineRepository @Inject constructor(application: Application) : DataRepository<Fine> {
 
+    companion object {
+        private const val SELECT_FINES_BY_MONTH_UID =         "SELECT * FROM $FINES_TABLE_NAME WHERE $MONTH_UID_COLUMN_NAME = ?"
+        private const val SELECT_FINES_WITH_NULL_BACKEND_ID = "SELECT * FROM $FINES_TABLE_NAME WHERE $BACKEND_ID_COLUMN_NAME IS NULL"
+        private const val SELECT_MAX_CHANGED_AT =             "SELECT MAX($CHANGED_AT_COLUMN_NAME) FROM $FINES_TABLE_NAME"
+    }
+
     private val dbHelper = DatabaseConfigurer.getInstance(application)
 
-    override fun save(data: Fine): Long {
-        val db = dbHelper.writableDatabase
-        val values = ContentValues().apply {
-            put(MONTH_UID_COLUMN_NAME, MonthUID.create(data.date).hashCode())
-            put(RECEIPT_DATE_COLUMN_NAME, data.date.toString())
-            put(DESCRIPTION_COLUMN_NAME, data.description)
-            put(AMOUNT_COLUMN_NAME, data.amount)
-        }
+    override fun save(data: Fine): Long = saveOne(dbHelper.writableDatabase, data, SQLiteDatabase.CONFLICT_NONE)
 
-        val id = db.insert(FINES_TABLE_NAME, null, values)
-        if (id == -1L) {
-            Log.e(TAG, "Error when insert fine [$data]")
+    override fun upsert(data: Fine): Long {
+        return if (data.deletedAt != null) {
+            if (data.appId?.let { deleteById(it) } == true) {
+                data.appId ?: -1
+            } else -1
+        } else {
+            saveOne(dbHelper.writableDatabase, data, SQLiteDatabase.CONFLICT_NONE)
         }
-        return id
     }
 
     override fun saveBatch(dataBatch: List<Fine>) {
         val db = dbHelper.writableDatabase
-
         db.beginTransaction()
         try {
-            dataBatch.forEach { data ->
-                val values = ContentValues().apply {
-                    put(BACKEND_ID_COLUMN_NAME, data.backendId)
-                    put(MONTH_UID_COLUMN_NAME, MonthUID.create(data.date).value)
-                    put(RECEIPT_DATE_COLUMN_NAME, data.date.toString())
-                    put(DESCRIPTION_COLUMN_NAME, data.description)
-                    put(AMOUNT_COLUMN_NAME, data.amount)
-                }
+            dataBatch.forEach { saveOne(db, it, SQLiteDatabase.CONFLICT_NONE) }
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+    }
 
-                val id = db.insert(FINES_TABLE_NAME, null, values)
-                if (id == -1L) {
-                    Log.e(TAG, "Error when insert fine from batch: $data")
+    override fun upsertBatch(dataBatch: List<Fine>) {
+        val db = dbHelper.writableDatabase
+        db.beginTransaction()
+        try {
+            dataBatch.forEach {
+                if (it.deletedAt != null) {
+                    it.appId?.let { it1 -> deleteById(it1) }
+                } else {
+                    saveOne(db, it, SQLiteDatabase.CONFLICT_REPLACE)
                 }
             }
             db.setTransactionSuccessful()
@@ -63,83 +73,54 @@ class FineRepository @Inject constructor(application: Application) : DataReposit
         }
     }
 
-    override fun upsert(data: Fine): Long {
-        val db = dbHelper.writableDatabase
-
-        val values = ContentValues().apply {
-            put(ID_COLUMN_NAME, data.appId)
-            put(MONTH_UID_COLUMN_NAME, MonthUID.create(data.date).value)
-            put(RECEIPT_DATE_COLUMN_NAME, data.date.toString())
-            put(DESCRIPTION_COLUMN_NAME, data.description)
-            put(AMOUNT_COLUMN_NAME, data.amount)
-            data.backendId?.let {
-                put(BACKEND_ID_COLUMN_NAME, it)
-            }
-        }
-
-        return db.insertWithOnConflict(
-            FINES_TABLE_NAME,
-            null,
-            values,
-            SQLiteDatabase.CONFLICT_REPLACE
-        ).also { id ->
-            if (id == -1L) {
-                Log.e(TAG, "Error when saving event [$data]")
-            }
-        }
-    }
-
+    /**
+     * Возвращается без `backend_id` и `changed_at`
+     * @param withComment - игнорироуется, объекты всегда возвращаются с описанием
+     */
     override fun findByMonth(monthUID: MonthUID, withComment: Boolean): List<Fine> {
-        val fines = mutableListOf<Fine>()
         val db = dbHelper.readableDatabase
+        val fines = mutableListOf<Fine>()
         var cursor: Cursor? = null
-
         db.beginTransaction()
+
         try {
-            cursor = db.query(
-                FINES_TABLE_NAME,
-                null,
-                "$MONTH_UID_COLUMN_NAME = ?",
-                arrayOf(monthUID.hashCode().toString()),
-                null,
-                null,
-                null
-            )
+            cursor = db.rawQuery(SELECT_FINES_BY_MONTH_UID, arrayOf(monthUID.hashCode().toString()))
+                ?.run {
+                    while (moveToNext()) {
+                        val id = columnAs(ID_COLUMN_NAME) { idx -> getLong(idx) }
+                        val date = columnAs(DATE_COLUMN_NAME) { idx -> getString(idx) }
+                        val amount = columnAs(AMOUNT_COLUMN_NAME) { idx -> getInt(idx) }
+                        val description = columnAs(COMMENT_COLUMN_NAME) { idx -> getString(idx) }
 
-            cursor?.let {
-                while (cursor.moveToNext()) {
-
-                    val idIdx = cursor.getColumnIndex(ID_COLUMN_NAME)
-                    val backendIdIndex = cursor.getColumnIndex(BACKEND_ID_COLUMN_NAME)
-                    val receiptDateIdx = cursor.getColumnIndex(RECEIPT_DATE_COLUMN_NAME)
-                    val descriptionIdx = cursor.getColumnIndex(DESCRIPTION_COLUMN_NAME)
-                    val amountIdx = cursor.getColumnIndex(AMOUNT_COLUMN_NAME)
-
-                    val id = cursor.getLong(idIdx)
-                    val backendId = cursor.getLong(backendIdIndex)
-                    val receiptDate = cursor.getString(receiptDateIdx)
-                    val description = cursor.getString(descriptionIdx)
-                    val amount = cursor.getInt(amountIdx)
-
-                    val fine = Fine(
-                        appId = id,
-                        backendId = backendId,
-                        date = LocalDate.parse(receiptDate),
-                        description = description,
-                        amount = amount
-                    )
-                    fines.add(fine)
+                        if (amount != null && description != null) {
+                            val fine = Fine(
+                                appId = id,
+                                date = LocalDate.parse(date),
+                                amount = amount,
+                                description = description
+                            )
+                            fines.add(fine)
+                        }
+                    }
+                    this
                 }
-            }
             db.setTransactionSuccessful()
         } catch (ex: Exception) {
-            Log.e(TAG, "Error when extracting events. Cause: :${ex.message}")
+            Log.e(TAG, "Error when finding fines by month uid. Ex: :$ex")
         } finally {
             cursor?.close()
             db.endTransaction()
         }
-
         return fines
+    }
+
+    override fun setBackendProperties(data: Fine) {
+        dbHelper.writableDatabase.update(
+            FINES_TABLE_NAME,
+            contentValuesOf(Pair(CHANGED_AT_COLUMN_NAME, data.changedAt), Pair(BACKEND_ID_COLUMN_NAME, data.backendId)),
+            "$ID_COLUMN_NAME = ?",
+            arrayOf(data.appId.toString())
+        )
     }
 
     override fun findNullableBackendId(): List<Fine> {
@@ -149,39 +130,29 @@ class FineRepository @Inject constructor(application: Application) : DataReposit
         db.beginTransaction()
 
         try {
-            cursor = db.query(
-                FINES_TABLE_NAME,
-                null,
-                "$BACKEND_ID_COLUMN_NAME IS NULL",
-                null,
-                null,
-                null,
-                null
-            )
-            cursor?.let {
-                while (cursor.moveToNext()) {
-                    val idIndex = cursor.getColumnIndex(ID_COLUMN_NAME)
-                    val receiptDateIdx = cursor.getColumnIndex(RECEIPT_DATE_COLUMN_NAME)
-                    val descriptionIdx = cursor.getColumnIndex(DESCRIPTION_COLUMN_NAME)
-                    val amountIdx = cursor.getColumnIndex(AMOUNT_COLUMN_NAME)
+            cursor = db.rawQuery(SELECT_FINES_WITH_NULL_BACKEND_ID, null)
+                ?.run {
+                    while (moveToNext()) {
+                        val id = columnAs(ID_COLUMN_NAME) { idx -> getLong(idx) }
+                        val date = columnAs(DATE_COLUMN_NAME) { idx -> getString(idx) }
+                        val amount = columnAs(AMOUNT_COLUMN_NAME) { idx -> getInt(idx) }
+                        val description = columnAs(COMMENT_COLUMN_NAME) { idx -> getString(idx) }
 
-                    val id = cursor.getLong(idIndex)
-                    val receiptDate = cursor.getString(receiptDateIdx)
-                    val description = cursor.getString(descriptionIdx)
-                    val amount = cursor.getInt(amountIdx)
-
-                    val fine = Fine(
-                        appId = id,
-                        date = LocalDate.parse(receiptDate),
-                        description = description,
-                        amount = amount
-                    )
-                    fines.add(fine)
+                        if (amount != null && description != null) {
+                            val fine = Fine(
+                                appId = id,
+                                date = LocalDate.parse(date),
+                                amount = amount,
+                                description = description
+                            )
+                            fines.add(fine)
+                        }
+                    }
+                    this
                 }
-            }
             db.setTransactionSuccessful()
         } catch (ex: Exception) {
-            Log.e(TAG, "Error when extracting fines with nullable backendId. Cause: :${ex.message}")
+            Log.e(TAG, "Error when extracting fines with nullable backendId. Ex :$ex")
         } finally {
             cursor?.close()
             db.endTransaction()
@@ -189,30 +160,54 @@ class FineRepository @Inject constructor(application: Application) : DataReposit
         return fines
     }
 
-    override fun deleteById(id: Long?): Boolean {
+    override fun getMaxChangedAt(): Instant? {
+        return dbHelper.readableDatabase.rawQuery(SELECT_MAX_CHANGED_AT, null)
+            .use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val maxTime = cursor.getLong(0)
+                    if (maxTime > 0) {
+                        Instant.ofEpochMilli(maxTime)
+                    } else null
+                } else null
+            }
+    }
+
+    override fun deleteById(id: Long): Boolean {
         val db = dbHelper.writableDatabase
+        val deletedRows = db.delete(FINES_TABLE_NAME, "$ID_COLUMN_NAME = ?", arrayOf(id.toString()))
 
-        val deletedRows = db.delete(
-            FINES_TABLE_NAME,
-            "$ID_COLUMN_NAME = ?",
-            arrayOf(id.toString())
-        )
-
-        if (deletedRows > 0) {
+        if (deletedRows == 0) {
             return true
         } else {
-            Log.e(TAG, "No fine was deleted with id: $id")
+            Log.e(TAG, "No event was deleted with id: $id. Ex: ")
             return false
         }
     }
 
-    override fun setBackendId(data: Fine) {
-        TODO("Not yet implemented")
+    override fun clean() {
+        dbHelper.writableDatabase.delete(FINES_TABLE_NAME, null, null)
     }
 
+    private fun saveOne(writableDb: SQLiteDatabase, fine: Fine, conflictAlgorithm: Int): Long {
+        try {
+            val values = extractContentValues(fine)
+            return writableDb.insertWithOnConflict(FINES_TABLE_NAME, null, values, conflictAlgorithm)
+        } catch (ex: SQLException) {
+            Log.e(TAG, "Error when insert fine with conflict algorithm [$conflictAlgorithm] fine: $fine. Ex: $ex")
+            return -1
+        }
+    }
 
-    override fun clean() {
-        val db = dbHelper.writableDatabase
-        db.delete(FINES_TABLE_NAME, null, null)
+    private fun extractContentValues(fine: Fine): ContentValues {
+        return ContentValues().apply {
+            fine.appId?.let { put(ID_COLUMN_NAME, fine.appId) }
+            fine.backendId?.let { put(BACKEND_ID_COLUMN_NAME, it) }
+            put(DATE_COLUMN_NAME, fine.date.toString())
+            put(MONTH_UID_COLUMN_NAME, MonthUID.create(fine.date).value)
+            fine.changedAt?.let { put(CHANGED_AT_COLUMN_NAME, it.toEpochMilli()) }
+
+            put(DESCRIPTION_COLUMN_NAME, fine.description)
+            put(AMOUNT_COLUMN_NAME, fine.amount)
+        }
     }
 }
