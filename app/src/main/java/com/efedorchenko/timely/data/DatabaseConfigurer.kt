@@ -21,7 +21,7 @@ class DatabaseConfigurer private constructor(application: Application) :
 
         const val TAG = "DatabaseError"
         private const val DATABASE_NAME = "timely.db"
-        private const val DATABASE_VERSION = 5
+        private const val DATABASE_VERSION = 6
 
         const val EVENTS_TABLE_NAME = "events"
         const val FINES_TABLE_NAME = "fines"
@@ -60,7 +60,7 @@ class DatabaseConfigurer private constructor(application: Application) :
         private const val FINES_CREATE_CHANGED_AT_INDEX = "CREATE INDEX $FINES_CHANGED_AT_INDEX_NAME ON $FINES_TABLE_NAME($CHANGED_AT_COLUMN_NAME DESC)"
         private const val FINES_DROP_TABLE =              "DROP TABLE IF EXISTS $FINES_TABLE_NAME"
 
-        private const val MEMBERS_CREATE_TABLE = "CREATE TABLE $MEMBERS_TABLE_NAME($ID_COLUMN_NAME INTEGER PRIMARY KEY AUTOINCREMENT, $NAME_COLUMN_NAME TEXT NOT NULL, $POSITION_COLUMN_NAME TEXT NOT NULL, $USER_UUID_COLUMN_NAME TEXT NOT NULL UNIQUE)"
+        private const val MEMBERS_CREATE_TABLE = "CREATE TABLE $MEMBERS_TABLE_NAME($ID_COLUMN_NAME INTEGER PRIMARY KEY AUTOINCREMENT, $NAME_COLUMN_NAME TEXT NOT NULL, $POSITION_COLUMN_NAME TEXT NOT NULL, $USER_UUID_COLUMN_NAME TEXT NOT NULL UNIQUE, $CHANGED_AT_COLUMN_NAME INTEGER)"
         private const val MEMBERS_DROP_TABLE =   "DROP TABLE IF EXISTS $MEMBERS_TABLE_NAME"
     }
 

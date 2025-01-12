@@ -140,7 +140,7 @@ class DataViewModel @Inject constructor(
 
         _fines.value?.let {
             val fineIdForDelete = it[position].appId
-            if (fineRepository.deleteById(fineIdForDelete)) {
+            if (fineIdForDelete?.let { it1 -> fineRepository.deleteById(it1) } == true) {
                 currentList.removeAt(position)
                 _fines.value = currentList
             }

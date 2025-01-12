@@ -10,7 +10,6 @@ import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.CHANGED_AT_COLU
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.COMMENT_COLUMN_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.DATE_COLUMN_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.DESCRIPTION_COLUMN_NAME
-import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.EVENTS_TABLE_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.FINES_TABLE_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.ID_COLUMN_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.MONTH_UID_COLUMN_NAME

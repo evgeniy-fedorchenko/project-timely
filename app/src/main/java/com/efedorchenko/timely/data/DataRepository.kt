@@ -102,7 +102,7 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
     }
 
     fun getMaxChangedAt(): Instant? {
-        val sql = "SELECT * FROM ${getTableName()} WHERE $MONTH_UID_COLUMN_NAME = ?"
+        val sql = "SELECT MAX($CHANGED_AT_COLUMN_NAME) FROM ${getTableName()}"
         return dbHelper.readableDatabase.rawQuery(sql, null)
             .use { cursor ->
                 if (cursor.moveToFirst()) {
