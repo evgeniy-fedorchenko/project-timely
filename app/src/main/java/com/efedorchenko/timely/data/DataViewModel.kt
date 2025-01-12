@@ -194,4 +194,9 @@ class DataViewModel @Inject constructor(
         _monthOffset.value = 0
     }
 
+    fun deleteMembers() {
+        _members.value = emptyList()
+        memberRepository.clean()
+    }
+
 }

@@ -5,12 +5,14 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
+import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.CHANGED_AT_COLUMN_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.MEMBERS_TABLE_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.NAME_COLUMN_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.POSITION_COLUMN_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.TAG
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.USER_UUID_COLUMN_NAME
 import com.efedorchenko.timely.model.SpaceMember
+import org.threeten.bp.Instant
 import javax.inject.Inject
 
 class MemberRepository @Inject constructor(application: Application) {
@@ -90,5 +92,16 @@ class MemberRepository @Inject constructor(application: Application) {
     fun clean() {
         val db = dbHelper.writableDatabase
         db.delete(MEMBERS_TABLE_NAME, null, null)
+    }
+
+    fun getMaxChangedAt(): Instant? {
+        val sql = "SELECT MAX($CHANGED_AT_COLUMN_NAME) FROM $MEMBERS_TABLE_NAME" // Добавить эту колонку
+        return dbHelper.readableDatabase.rawQuery(sql, null)
+            .use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val maxTime = cursor.getLong(0)
+                    if (maxTime > 0) Instant.ofEpochMilli(maxTime) else null
+                } else null
+            }
     }
 }

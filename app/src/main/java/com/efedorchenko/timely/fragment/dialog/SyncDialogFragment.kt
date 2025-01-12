@@ -29,6 +29,9 @@ class SyncDialogFragment : DialogFragment() {
     @Inject
     lateinit var encProfileStorage: EncProfileStorage
 
+    @Inject
+    lateinit var spaceService: SpaceService
+
     private var _binding: DialogSyncingDataBinding? = null
     private val binding get() = _binding!!
 
@@ -42,19 +45,21 @@ class SyncDialogFragment : DialogFragment() {
     * ✓ Отправляются неотправленные СМЕНЫ (если есть)
     * ✓ Отправляются неотправленные ШТРАФЫ (если есть)
     *
-    * x Получение неизвестных СМЕН (по дельте по backend_id или timestamp создания)
-    * x Получение неизвестных ШТРАФОВ (по дельте по backend_id или timestamp создания)
+    * ✓ Получение неизвестных СМЕН (по дельте по backend_id или timestamp создания)
+    * ✓ Получение неизвестных ШТРАФОВ (по дельте по backend_id или timestamp создания)
     *
-    * x Получение новых участников компании
-    * x Получение измененных штрафов и смен
-    * x Получение удаленных штрафов и смен
+    * ✓ Получение новых участников компании
+    * ✓ Получение измененных штрафов и смен
+    * ✓ Получение удаленных штрафов и смен
+    * ✓ Получение инфы об удалении из пространства
     *
     * - */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        var eventsOutOfSync = viewModel.getNotSyncedEvents()
-        var finesOutOfSync = viewModel.getNotSyncedFine()
+        // TODO: Просто получать количество
+        val eventsOutOfSync = viewModel.getNotSyncedEvents()
+        val finesOutOfSync = viewModel.getNotSyncedFine()
 
         with(binding) {
             if ((eventsOutOfSync.size + finesOutOfSync.size) > 0) {
@@ -72,7 +77,9 @@ class SyncDialogFragment : DialogFragment() {
                 }
             }
         }
-        binding.doSyncButton.setOnClickListener(DoSyncButtonListener(this, binding, viewModel))
+        binding.doSyncButton.setOnClickListener(
+            DoSyncButtonListener(this, spaceService, binding, viewModel, profileStorage)
+        )
     }
 
     override fun onStart() {

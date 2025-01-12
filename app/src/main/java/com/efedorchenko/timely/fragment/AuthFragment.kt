@@ -97,7 +97,7 @@ class AuthFragment : Fragment() {
                         if (initResult != SUCCESS) {
                             ToastHelper.message(initResult.failMess, context)
                         }
-                        if (!spaceService.initMembers()) {   // Все равно пытаемся, хотя бы чтобы показать тост
+                        if (result.spacePresent && !spaceService.initMembers()) {   // Все равно пытаемся, хотя бы чтобы показать тост
                             ToastHelper.failDownloadMembers(context)
                         }
                     }

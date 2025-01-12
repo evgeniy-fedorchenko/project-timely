@@ -29,4 +29,8 @@ interface ProfileStorage {
     fun getUserData(): UserData?
 
     fun getSpaceName(): String?
+
+    fun spaceExists(): Boolean
+
+    fun deleteSpace()
 }

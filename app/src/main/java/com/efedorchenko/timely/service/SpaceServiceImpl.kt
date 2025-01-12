@@ -5,8 +5,10 @@ import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.data.MemberRepository
 import com.efedorchenko.timely.data.RepositoryFactory
+import com.efedorchenko.timely.model.AbstractData
 import com.efedorchenko.timely.model.DataRangeRequest
 import com.efedorchenko.timely.model.DataType
+import com.efedorchenko.timely.model.MembersResult
 import com.efedorchenko.timely.model.SpaceMember
 import com.efedorchenko.timely.model.api.ApiResponse
 import org.threeten.bp.LocalDate
@@ -22,24 +24,7 @@ class SpaceServiceImpl @Inject constructor(
 ) : SpaceService {
 
     override suspend fun initMembers(): Boolean {
-        when (val response = apiService.getMembers()) {
-            is ApiResponse.Success -> {
-                response.data?.let {
-                    memberRepository.save(it)
-                    viewModel.updateMembers()
-                    return true
-                }
-                return false
-            }
-            is ApiResponse.Error -> {
-                Log.e("Network error", "Cannot get members from server." +
-                        "ApiErrorCode: ${response.apiErrorCode}, " +
-                        "error message: ${response.errorMessage}, " +
-                        "error data: ${response.errorData}"
-                )
-                return false
-            }
-        }
+        return doUpdateMembers { apiService.getMembers() } == UpdateResult.SUCCESS
     }
 
     override fun downloadMember(member: SpaceMember) {
@@ -51,32 +36,54 @@ class SpaceServiceImpl @Inject constructor(
 
         val startInclusive = YearMonth.now().minusMonths(2L)
         val endInclusive = YearMonth.now().plusMonths(1L)
+        val requestBody = DataRangeRequest(startInclusive, endInclusive, userUuid)
 
-        val dataRangeRequest = DataRangeRequest(startInclusive, endInclusive, userUuid)
-        if (!doInit(dataRangeRequest, DataType.EVENT)) {
+        if (!doUpdateData(DataType.EVENT) { apiService.getRange(requestBody, DataType.EVENT) }) {
             return InitResult.FILED
         }
-        if (!doInit(dataRangeRequest, DataType.FINE)) {
+        if (!doUpdateData(DataType.FINE) { apiService.getRange(requestBody, DataType.FINE) }) {
             return InitResult.FINES_FILED
         }
         return InitResult.SUCCESS
     }
 
-    private suspend fun doInit(dataRequest: DataRangeRequest, dataType: DataType): Boolean {
-        when (val response = apiService.getDataRange(dataRequest, dataType)) {
+    /**
+     * Запросить новые данные с сервера
+     *
+     * Отправляется наивысший `changed_at`, в ответе приходят все события после него - все они новые.
+     * Полученные данные сохраняются и обновляются их `LiveData`.
+     * По очереди для каждого типа данных: `Event`, `Fine`, `SpaceMember`
+     */
+    override suspend fun updateData(userId: String?, withMembers: Boolean): UpdateResult {
+        DataType.entries.forEach { dataType ->
+            val repository = repositoryFactory.getRepository<AbstractData>(dataType)
+            val since = repository.getMaxChangedAt()
+            if (!doUpdateData(dataType) { apiService.getUpdates(userId, DataType.EVENT, since) }) {
+                return@updateData UpdateResult.FAIL
+            }
+        }
+        if (!withMembers) {
+            return UpdateResult.SUCCESS
+        }
+        return doUpdateMembers { apiService.getMembers(memberRepository.getMaxChangedAt()) }
+    }
+
+    private suspend fun doUpdateData(type: DataType, func: suspend () -> ApiResponse<List<AbstractData>>): Boolean {
+        when (val response = func.invoke()) {
             is ApiResponse.Success -> {
                 response.data?.let {
                     if (it.isNotEmpty()) {
                         val repository = repositoryFactory.getRepository(it[0])
                         repository.saveBatch(it)
-                        viewModel.updateLiveData(dataType, LocalDate.now())
+                        viewModel.updateLiveData(type, LocalDate.now())
                         viewModel.emitNeedUpdateData()
                     }
                     return true
                 }
+                return false
             }
             is ApiResponse.Error -> {
-                Log.e("Network error", "Cannot init $dataType." +
+                Log.e("Network error", "Cannot request data of $type." +
                         "ApiErrorCode: ${response.apiErrorCode}, " +
                         "error message: ${response.errorMessage}, " +
                         "error data: ${response.errorData}"
@@ -84,15 +91,43 @@ class SpaceServiceImpl @Inject constructor(
                 return false
             }
         }
-        return false
+    }
+
+    private suspend fun doUpdateMembers(requestFunc: suspend () -> ApiResponse<MembersResult>): UpdateResult {
+        when (val response = requestFunc.invoke()) {
+            is ApiResponse.Success -> {
+                response.data?.let {
+                    if (!it.consistInSpace) {
+                        return UpdateResult.NOT_CONSIST_IN_SPACE
+                    }
+                    if (it.members.isNotEmpty()) {
+                        memberRepository.save(it.members)
+                        viewModel.updateMembers()
+                    }
+                    return UpdateResult.SUCCESS
+                }
+                return UpdateResult.FAIL
+            }
+            is ApiResponse.Error -> {
+                Log.e("Network error", "Cannot get members from server." +
+                        "ApiErrorCode: ${response.apiErrorCode}, " +
+                        "error message: ${response.errorMessage}, " +
+                        "error data: ${response.errorData}"
+                )
+                return UpdateResult.FAIL
+            }
+        }
     }
 
     enum class InitResult(val failMess: String) {
-
         SUCCESS(""),                            // Успех
         ENC_PROFILE_NULL(ToastHelper.ERROR_ENC_PROFILE), // Не удалось получить данные профиля для запроса
         FILED(ToastHelper.ERROR_DOWNLOAD_DATA),          // Event не получилось инициализировать, поэтому Fine даже не пытались
         FINES_FILED(ToastHelper.ERROR_DOWNLOAD_FINES)    // Event инициализрованы, Fine не удалось
+    }
+
+    enum class UpdateResult {
+        SUCCESS, FAIL, NOT_CONSIST_IN_SPACE
     }
 }
 

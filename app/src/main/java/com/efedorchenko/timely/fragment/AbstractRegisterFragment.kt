@@ -114,7 +114,7 @@ abstract class AbstractRegisterFragment : Fragment() {
                 when (val result = authService.tryRegister(registerRequest)) {
                     is Resource.Success -> {
                         findNavController().navigate(R.id.mainFragment)
-                        if (!spaceService.initMembers()) {   // Все равно пытаемся, хотя бы чтобы показать тост
+                        if (result.spacePresent && !spaceService.initMembers()) {   // Все равно пытаемся, хотя бы чтобы показать тост
                             ToastHelper.failDownloadMembers(context)
                         }
                     }

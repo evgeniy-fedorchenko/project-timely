@@ -69,16 +69,21 @@ class ProfileStorageImpl @Inject constructor(@ApplicationContext context: Contex
         }
     }
 
+    override fun deleteSpace() {
+        with(sharedPref.edit()) {
+            remove(SPACE_NAME_KEY)
+            apply()
+        }
+    }
+
     override fun getPosition(): String? = sharedPref.getString(POSITION_KEY, null)
 
     override fun saveUserData(userData: UserData) {
         with(sharedPref.edit()) {
             putString(NAME_KEY, userData.name)
             putString(POSITION_KEY, userData.position)
-            putString(SPACE_NAME_KEY, userData.spaceName)
-            userData.rate?.let {
-                putInt(RATE_KEY, it)
-            }
+            userData.spaceName?.let { putString(SPACE_NAME_KEY, userData.spaceName) }
+            userData.rate?.let { putInt(RATE_KEY, it) }
             apply()
         }
     }
@@ -88,6 +93,7 @@ class ProfileStorageImpl @Inject constructor(@ApplicationContext context: Contex
             remove(NAME_KEY)
             remove(POSITION_KEY)
             remove(RATE_KEY)
+            remove(SPACE_NAME_KEY)
             apply()
         }
     }
@@ -108,4 +114,6 @@ class ProfileStorageImpl @Inject constructor(@ApplicationContext context: Contex
     }
 
     override fun getSpaceName(): String? = sharedPref.getString(SPACE_NAME_KEY, null)
+
+    override fun spaceExists() = sharedPref.contains(SPACE_NAME_KEY)
 }

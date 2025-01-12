@@ -27,7 +27,7 @@ class AuthServiceImpl @Inject constructor(
                     } else {
                         profileStorage.saveUserData(it.userData)
                         encProfileStorage.saveAuthData(it.authData)
-                        Resource.Success()
+                        Resource.Success(it.userData.spaceName != null)
                     }
                 } ?: Resource.Error("Network error")
             }
@@ -53,7 +53,7 @@ class AuthServiceImpl @Inject constructor(
                     } else {
                         profileStorage.saveUserData(it.userData)
                         encProfileStorage.saveAuthData(it.authData)
-                        Resource.Success()
+                        Resource.Success(it.userData.spaceName != null)
                     }
                 } ?: Resource.Error("Network error")
             }

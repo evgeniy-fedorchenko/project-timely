@@ -5,6 +5,7 @@ import android.view.Gravity
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import android.widget.Toast.LENGTH_SHORT
+import com.efedorchenko.timely.service.SpaceServiceImpl.UpdateResult
 import org.threeten.bp.Duration
 
 object ToastHelper {
@@ -21,6 +22,7 @@ object ToastHelper {
     private const val FILED_ALL_PATTERN =               "Не удалось отправить %d смен и %d штрафов"
     private const val FILED_EVENTS_PATTERN =            "Не удалось отправить %s смен"
     private const val FILED_FINES_PATTERN =             "Не удалось отправить %s штрафов"
+    private const val FILED_DOWNLOAD_NEW =              "Не удалось загрузить новые данные"
 
     /* Download data */
     const val ERROR_ENC_PROFILE =                  "Не найдены данные профиля, необходимо заново авторизоваться"
@@ -63,19 +65,30 @@ object ToastHelper {
         return doShow(WORK_DURATION_TOO_SHORT_PATTERN.format(minWorkDuration.toHours()), c, LENGTH_SHORT)
     }
 
-    fun syncFiled(eventsCount: Int, finesCount: Int, context: Context) {
+    fun syncFiled(eventsCount: Int, finesCount: Int, downloadResult: UpdateResult?, context: Context) {
         val message = when {
             (eventsCount != 0 && finesCount != 0) -> FILED_ALL_PATTERN.format(eventsCount, finesCount)
             eventsCount != 0 -> FILED_EVENTS_PATTERN.format(eventsCount)
-            else -> FILED_FINES_PATTERN.format(finesCount)
-        }
+            finesCount != 0 -> FILED_FINES_PATTERN.format(finesCount)
+            else -> {
+                if (downloadResult != null) {
+                    when (downloadResult) {
+                        UpdateResult.SUCCESS -> null
+                        UpdateResult.FAIL -> FILED_DOWNLOAD_NEW
+                        UpdateResult.NOT_CONSIST_IN_SPACE -> null   // Будет обработано выше с помощью диалога
+                    }
+                } else FILED_DOWNLOAD_NEW
+
+            }}
         doShow(message, context, LENGTH_LONG)
     }
 
-    private fun doShow(toastText: String, c: Context, toastLength: Int) {
-        val toast = Toast.makeText(c, toastText, toastLength)
-        toast.setGravity(Gravity.CENTER, 0, 0)
-        toast.show()
+    private fun doShow(toastText: String?, c: Context, toastLength: Int) {
+        toastText?.let {
+            val toast = Toast.makeText(c, toastText, toastLength)
+            toast.setGravity(Gravity.CENTER, 0, 0)
+            toast.show()
+        }
     }
 }
 

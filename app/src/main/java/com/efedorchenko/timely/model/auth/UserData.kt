@@ -8,5 +8,5 @@ data class UserData(
     val name: String,
     val position: String,
     val rate: Int? = null,
-    val spaceName: String
+    val spaceName: String?
 )
