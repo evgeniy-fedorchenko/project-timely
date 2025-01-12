@@ -18,7 +18,6 @@ class ProfileStorageImpl @Inject constructor(@ApplicationContext context: Contex
 
     private val sharedPref by lazy {
         context.getSharedPreferences(PSP_NAME, Context.MODE_PRIVATE)
-
     }
 
     override fun saveName(name: String) {

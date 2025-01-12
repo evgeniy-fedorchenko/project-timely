@@ -10,16 +10,13 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.view.LayoutInflater.from
 import android.view.MenuItem
-import android.view.View
 import android.widget.ImageButton
 import androidx.core.animation.doOnEnd
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import androidx.viewbinding.ViewBinding
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.EncProfileStorage
@@ -27,14 +24,10 @@ import com.efedorchenko.timely.data.EncProfileStorageImpl
 import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.data.ProfileStorageImpl
 import com.efedorchenko.timely.databinding.DialogAccessKeysBinding
-import com.efedorchenko.timely.databinding.DialogSyncingDataBinding
 import com.efedorchenko.timely.fragment.dialog.SpaceDialogFragment
 import com.efedorchenko.timely.fragment.dialog.SyncDialogFragment
 import com.efedorchenko.timely.service.ToastHelper
 import com.google.android.material.navigation.NavigationView
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 
 class NavigationMenuListener(
     private val drawerLayout: DrawerLayout,
@@ -72,84 +65,6 @@ class NavigationMenuListener(
         }
         drawerLayout.closeDrawer(GravityCompat.START)
         return true
-    }
-
-    @Deprecated(message = "Заменен на SyncDialogFragment")
-    private fun doSync(context: Context) {
-        var eventsOutOfSync = viewModel.getNotSyncedEvents()
-        var finesOutOfSync = viewModel.getNotSyncedFine()
-
-        if ((eventsOutOfSync.size + finesOutOfSync.size) < 1) {
-            ToastHelper.message(ToastHelper.ALL_SYNCED, context)
-            return
-        }
-        // TODO: когда работает начальник и ставит смены работникам - если он переключается на другого работника и при этом есть неотправленные смены говорить ему чтобы отправил иначе они потеряются, потому что бд очистится
-
-        val dialogBinding = DialogSyncingDataBinding.inflate(from(context))
-        if (eventsOutOfSync.isNotEmpty()) {
-            dialogBinding.eventsCount.text =
-                parentFragment.getString(R.string.found_not_synced_events, eventsOutOfSync.size)
-        }
-        if (finesOutOfSync.isNotEmpty()) {
-            dialogBinding.finesCount.text =
-                parentFragment.getString(R.string.found_not_synced_fines, finesOutOfSync.size)
-        }
-        val syncingDialog = showSyncingDialog(dialogBinding, context)
-
-        var syncJob: Job? = null
-        dialogBinding.doSyncButton.setOnClickListener {
-
-            if (syncJob?.isActive == true) {
-                syncJob?.cancel()
-                dialogBinding.doSyncButton.text = "Синхронизировать"
-                dialogBinding.loadingProgressBar.visibility = View.INVISIBLE
-                return@setOnClickListener
-            }
-            dialogBinding.doSyncButton.text = "Остановить"
-            dialogBinding.loadingProgressBar.visibility = View.VISIBLE
-
-            eventsOutOfSync = viewModel.getNotSyncedEvents()
-            finesOutOfSync = viewModel.getNotSyncedFine()
-            var eventsNotSyncSize = eventsOutOfSync.size
-            var finesNotSyncSize = finesOutOfSync.size
-            if ((eventsNotSyncSize + finesNotSyncSize) < 1) {
-                ToastHelper.message(ToastHelper.ALL_SYNCED, context)
-                dialogBinding.doSyncButton.text = "Синхронизировать"
-                dialogBinding.loadingProgressBar.visibility = View.INVISIBLE
-                syncingDialog?.cancel()
-                return@setOnClickListener
-            }
-
-            syncJob = parentFragment.lifecycleScope.launch {
-                try {
-                    eventsOutOfSync.forEach {
-                        if (!isActive) return@launch
-                        if (viewModel.sendData(it)) {
-                            dialogBinding.eventsCount.text =
-                                parentFragment.getString(R.string.found_not_synced_events, --eventsNotSyncSize)
-                        }
-                    }
-                    finesOutOfSync.forEach {
-                        if (!isActive) return@launch
-                        if (viewModel.sendData(it)) {
-                            dialogBinding.finesCount.text =
-                                parentFragment.getString(R.string.found_not_synced_fines, --finesNotSyncSize)
-                        }
-                    }
-                } finally {
-                    dialogBinding.loadingProgressBar.visibility = View.INVISIBLE
-                    dialogBinding.doSyncButton.text = "Синхронизировать"
-                    if (eventsNotSyncSize == 0 && finesNotSyncSize == 0) {
-                        ToastHelper.message(ToastHelper.ALL_SYNCED, context)
-                        syncingDialog?.cancel()
-                    } else {
-                        if (isActive) {
-                            ToastHelper.syncFiled(eventsNotSyncSize, finesNotSyncSize, context)
-                        }
-                    }
-                }
-            }
-        }
     }
 
     private fun showAccessKeysDialog(context: Context) {
@@ -198,12 +113,5 @@ class NavigationMenuListener(
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText(label, text)
         clipboard.setPrimaryClip(clip)
-    }
-
-    private fun showSyncingDialog(viewBinding: ViewBinding, context: Context): AlertDialog? {
-        val dialog = AlertDialog.Builder(context).setView(viewBinding.root).create()
-        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        dialog.show()
-        return dialog
     }
 }
