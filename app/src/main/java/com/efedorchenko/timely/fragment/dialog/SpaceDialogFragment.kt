@@ -17,6 +17,8 @@ import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.databinding.DialogSpaceShowBinding
+import com.efedorchenko.timely.fragment.support.SpaceAdapter
+import com.efedorchenko.timely.fragment.support.SpaceItemDecoration
 import com.efedorchenko.timely.service.SpaceService
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers

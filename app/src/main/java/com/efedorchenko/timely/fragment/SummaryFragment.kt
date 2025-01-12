@@ -9,6 +9,7 @@ import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.databinding.FragmentSummaryCardBinding
+import com.efedorchenko.timely.fragment.dialog.AddFineDialog
 import com.efedorchenko.timely.fragment.dialog.FinesDialogFragment
 import com.efedorchenko.timely.fragment.support.AddFineListener
 import com.efedorchenko.timely.model.Event

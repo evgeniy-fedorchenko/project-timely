@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.databinding.CalendarGridLayoutBinding
+import com.efedorchenko.timely.fragment.dialog.AddEventDialog
 import com.efedorchenko.timely.fragment.support.AddEventListener
 import com.efedorchenko.timely.model.CalendarCellBuilder
 import com.efedorchenko.timely.model.CalendarCellBuilder.CellType

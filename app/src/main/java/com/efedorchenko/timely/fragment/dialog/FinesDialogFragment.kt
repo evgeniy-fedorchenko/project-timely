@@ -13,6 +13,8 @@ import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.EncProfileStorageImpl
 import com.efedorchenko.timely.data.ProfileStorageImpl
 import com.efedorchenko.timely.databinding.DialogFinesShowBinding
+import com.efedorchenko.timely.fragment.support.FinesAdapter
+import com.efedorchenko.timely.fragment.support.SpaceItemDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import org.threeten.bp.LocalDate
 import javax.inject.Inject

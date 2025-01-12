@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.fragment
+package com.efedorchenko.timely.fragment.dialog
 
 import android.os.Bundle
 import android.view.LayoutInflater

@@ -12,6 +12,8 @@ import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.databinding.DialogSyncingDataBinding
+import com.efedorchenko.timely.fragment.support.DoSyncButtonListener
+import com.efedorchenko.timely.service.SpaceService
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

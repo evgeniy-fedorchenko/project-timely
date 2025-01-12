@@ -9,7 +9,6 @@ import androidx.core.content.contentValuesOf
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.BACKEND_ID_COLUMN_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.CHANGED_AT_COLUMN_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.ID_COLUMN_NAME
-import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.MONTH_UID_COLUMN_NAME
 import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.TAG
 import com.efedorchenko.timely.model.AbstractData
 import com.efedorchenko.timely.model.MonthUID

@@ -1,10 +1,11 @@
-package com.efedorchenko.timely.fragment
+package com.efedorchenko.timely.fragment.dialog
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.efedorchenko.timely.databinding.DialogFineAddBinding
+import com.efedorchenko.timely.fragment.SummaryFragment
 import com.efedorchenko.timely.fragment.support.AddFineListener
 import com.efedorchenko.timely.input.CommentInputFilter
 import com.efedorchenko.timely.input.FineAmountFilter

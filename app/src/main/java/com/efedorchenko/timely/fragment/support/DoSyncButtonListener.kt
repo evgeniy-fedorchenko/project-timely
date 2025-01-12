@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.fragment.dialog
+package com.efedorchenko.timely.fragment.support
 
 import android.view.View
 import androidx.fragment.app.DialogFragment

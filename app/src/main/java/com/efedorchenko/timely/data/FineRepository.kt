@@ -107,7 +107,7 @@ class FineRepository @Inject constructor(application: Application) : DataReposit
         return fines
     }
 
-    override fun getTableName() = EVENTS_TABLE_NAME
+    override fun getTableName() = FINES_TABLE_NAME
 
     override fun extractContentValues(data: Fine): ContentValues {
         return ContentValues().apply {

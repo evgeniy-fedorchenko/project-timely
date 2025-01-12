@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.fragment.dialog
+package com.efedorchenko.timely.fragment.support
 
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
