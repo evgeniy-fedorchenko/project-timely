@@ -5,7 +5,7 @@ import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.model.AbstractData
 import com.efedorchenko.timely.model.DataRangeRequest
 import com.efedorchenko.timely.model.DataType
-import com.efedorchenko.timely.model.SpaceMember
+import com.efedorchenko.timely.model.MembersResult
 import com.efedorchenko.timely.model.api.ApiErrorCode
 import com.efedorchenko.timely.model.api.ApiResponse
 import com.efedorchenko.timely.model.auth.AuthResponse
@@ -15,10 +15,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.threeten.bp.Instant
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -40,7 +43,11 @@ class ApiServiceImpl @Inject constructor(
         private const val LOGIN_PATH = "$BASE_URL/auth/login"
         private const val DATA_PATH = "$BASE_URL/data"
         private const val MEMBERS_PATH = "$BASE_URL/members"
-        private const val RANGE_PATH_PATTERN = "$BASE_URL/data/"
+        private const val DATA_PATTERN = "$BASE_URL/data/"
+
+        /* Query parameters */
+        private const val USER_ID_QPARAM_NAME = "userId"
+        private const val SINCE_QPARAM_NAME = "since"
     }
 
     //    for dev
@@ -81,29 +88,59 @@ class ApiServiceImpl @Inject constructor(
         return@withContext execute<AbstractData>(request)
     }
 
-    override suspend fun getMembers(): ApiResponse<List<SpaceMember>> = withContext(Dispatchers.IO) {
-        val request = Request.Builder()
-            .url(MEMBERS_PATH)
-            .header(RQUID, UUID.randomUUID().toString())
-            .header(AUTHORIZATION, getJwtToken())
-            .get()
-            .build()
-
-        return@withContext execute<List<SpaceMember>>(request)
+    override suspend fun getMembers(): ApiResponse<MembersResult> = withContext(Dispatchers.IO) {
+        return@withContext getMembers(MEMBERS_PATH.toHttpUrl())
     }
 
+    override suspend fun getMembers(since: Instant?): ApiResponse<MembersResult> = withContext(Dispatchers.IO) {
+        val urlBuilder = MEMBERS_PATH.toHttpUrl().newBuilder()
+        since?.let { urlBuilder.addQueryParameter(SINCE_QPARAM_NAME, it.toString()) }
+        return@withContext getMembers(urlBuilder.build())
+    }
 
-    override suspend fun getDataRange(
+    override suspend fun getRange(
         dataRangeRequest: DataRangeRequest, dataType: DataType
     ): ApiResponse<List<AbstractData>> = withContext(Dispatchers.IO) {
         val request = Request.Builder()
-            .url(RANGE_PATH_PATTERN + dataType)
+            .url("$DATA_PATTERN$dataType")
             .header(RQUID, UUID.randomUUID().toString())
             .header(AUTHORIZATION, getJwtToken())
             .post(Json.encodeToString(dataRangeRequest).toRequestBody(APPLICATION_JSON_MT))
             .build()
 
         return@withContext execute<List<AbstractData>>(request)
+    }
+
+
+    override suspend fun getUpdates(
+        userId: String?, dataType: DataType, since: Instant?
+    ): ApiResponse<List<AbstractData>> = withContext(Dispatchers.IO) {
+        HttpUrl.Builder()
+
+        val urlBuilder = "$DATA_PATTERN$dataType".toHttpUrl().newBuilder()
+        userId?.let { urlBuilder.addQueryParameter(USER_ID_QPARAM_NAME, it) }
+        since?.let { urlBuilder.addQueryParameter(SINCE_QPARAM_NAME, it.toString()) }
+
+        val request = Request.Builder()
+            .url(urlBuilder.build())
+            .header(RQUID, UUID.randomUUID().toString())
+            .header(AUTHORIZATION, getJwtToken())
+            .get()
+            .build()
+
+        return@withContext execute<List<AbstractData>>(request)
+    }
+
+
+    private fun getMembers(url: HttpUrl): ApiResponse<MembersResult> {
+        val request = Request.Builder()
+            .url(url)
+            .header(RQUID, UUID.randomUUID().toString())
+            .header(AUTHORIZATION, getJwtToken())
+            .get()
+            .build()
+
+        return execute<MembersResult>(request)
     }
 
     private inline fun <reified T> execute(request: Request): ApiResponse<T> {
