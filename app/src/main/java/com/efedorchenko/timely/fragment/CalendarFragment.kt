@@ -121,7 +121,7 @@ class CalendarFragment : Fragment(), AddEventListener {
             val targetCell = calendarGrid.getChildAt(cellIdx) as? ConstraintLayout
             targetCell?.let {
                 it.setOnClickListener { ToastHelper.cannotEditPlaned(requireContext()) }
-                event.applyTo(targetCell)
+                event.applyTo(targetCell, cellIdx, true)
             }
         }
     }
@@ -170,7 +170,7 @@ class CalendarFragment : Fragment(), AddEventListener {
             parentLayout.background =
                 ContextCompat.getDrawable(context, cell.parentBackground)
 
-            cell.event?.applyTo(parentLayout)
+            cell.event?.applyTo(parentLayout, i, false)
             parentLayout.addView(textView)
             calendarGrid.addView(parentLayout)
         }

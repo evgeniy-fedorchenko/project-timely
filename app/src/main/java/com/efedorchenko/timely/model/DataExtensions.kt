@@ -19,11 +19,12 @@ fun List<Event>.toEventMap(): MutableMap<LocalDate, Event> {
     return map
 }
 
-fun Event.applyTo(parentLayout: ConstraintLayout) {
+fun Event.applyTo(parentLayout: ConstraintLayout, cellIdx: Int, needReplace: Boolean) {
     val context = parentLayout.context
     val resources = parentLayout.resources
 
     val squareView = View(context)
+    squareView.tag = "square_$cellIdx"
 
     squareView.layoutParams = cellColorMarkParams(resources)
     val color = when {
@@ -33,8 +34,9 @@ fun Event.applyTo(parentLayout: ConstraintLayout) {
     squareView.setBackgroundColor(color)
     squareView.alpha = 0.5f
 
-    val minutesCount = workDuration.toMinutes()
     val textView = TextView(context)
+    textView.tag = "text_$cellIdx"
+    val minutesCount = workDuration.toMinutes()
     val minutes = minutesCount / 60
     val hours = minutesCount % 60
 
@@ -43,6 +45,16 @@ fun Event.applyTo(parentLayout: ConstraintLayout) {
     textView.layoutParams = cellHoursTextParams(resources)
     TextViewCompat.setTextAppearance(textView, R.style.work_duration)
 
+    if (needReplace) {
+        val existingSquareView = parentLayout.findViewWithTag<View>("square_$cellIdx")
+        val existingTextView = parentLayout.findViewWithTag<View>("text_$cellIdx")
+        if (existingTextView != null) {
+            parentLayout.removeView(existingTextView)
+        }
+        if (existingSquareView != null) {
+            parentLayout.removeView(existingSquareView)
+        }
+    }
     parentLayout.addView(textView)
     parentLayout.addView(squareView)
 }
