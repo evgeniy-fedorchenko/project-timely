@@ -35,6 +35,7 @@ class MonthUID private constructor(val value: Int) {
         return value == other.value
     }
 
+    @Deprecated(message = "use getValue()", replaceWith = ReplaceWith("value"))
     override fun hashCode(): Int {
         return value
     }
