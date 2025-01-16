@@ -67,6 +67,7 @@ class DoSyncButtonListener(
                     if (isActive) {
                         ToastHelper.syncFiled(eventsNotSyncSize, finesNotSyncSize, downloadResult, context)
                         if (downloadResult == UpdateResult.NOT_CONSIST_IN_SPACE) {
+                            parent.dismiss()
                             showDialogDetachedFromSpace(context)
                             profileStorage.deleteSpace()
                             viewModel.deleteMembers()
@@ -119,6 +120,8 @@ class DoSyncButtonListener(
 
     private fun showDialogDetachedFromSpace(context: Context) {
         val dBinding = DialogDetachedFromSpaceBinding.inflate(LayoutInflater.from(context))
+        val text = dBinding.youDetachedHeader.text.toString()
+        dBinding.youDetachedHeader.text = String.format(text, profileStorage.getSpaceName())
         val dialog = AlertDialog.Builder(context).setView(dBinding.root).create()
         dialog.window?.apply {
             setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))

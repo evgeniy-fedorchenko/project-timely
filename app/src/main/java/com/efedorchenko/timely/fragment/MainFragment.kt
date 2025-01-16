@@ -115,7 +115,12 @@ class MainFragment : Fragment() {
             val spaceRawText = getString(R.string.nav_menu_header_space, it)
             val preparedHeaderLine = prepareHeaderLine(spaceRawText, 8)
             headerView.findViewById<TextView>(R.id.space).text = preparedHeaderLine
+
+            navigationView.menu.findItem(R.id.my_space).isVisible = true
+        } ?: run {
+            navigationView.menu.findItem(R.id.connect_to_space).isVisible = true
         }
+
         userData?.rate?.let {
             val rateRawText = getString(R.string.nav_menu_header_rate, it)
             val preparedHeaderLine = prepareHeaderLine(rateRawText, 6)
@@ -123,8 +128,7 @@ class MainFragment : Fragment() {
         }
 
         if (encProfileStorage.isPrivileged()) {
-            val accessKeysMenuItem = navigationView.menu.findItem(R.id.access_keys)
-            accessKeysMenuItem.isVisible = true
+            navigationView.menu.findItem(R.id.access_keys).isVisible = true
         }
 
         navigationView.setNavigationItemSelectedListener(
