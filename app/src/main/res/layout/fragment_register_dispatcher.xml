@@ -41,7 +41,21 @@
         android:backgroundTint="@color/orange"
         android:padding="16dp"
         android:text="Я работник,\nхочу присоединиться к компании"
-        android:textSize="16dp"
+        android:textSize="16sp"
+        android:textColor="@color/base_background" />
+
+    <!-- Обработать эту кнопку в коде и в диалоге "Помощь" -->
+    <Button
+        android:id="@+id/buttonAloneWorker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="@color/orange"
+        android:padding="16dp"
+        android:text="Я работник,\nхочу продолжить без компании"
+        android:textSize="16sp"
         android:textColor="@color/base_background" />
 
     <Button
@@ -54,7 +68,7 @@
         android:backgroundTint="@color/orange"
         android:padding="16dp"
         android:text="Я руководитель,\nхочу присоединиться к компании"
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:textColor="@color/base_background" />
 
     <Button
@@ -66,7 +80,7 @@
         android:backgroundTint="@color/orange"
         android:padding="16dp"
         android:text="Я руководитель,\nхочу создать компанию"
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:textColor="@color/base_background" />
 
     <TextView
