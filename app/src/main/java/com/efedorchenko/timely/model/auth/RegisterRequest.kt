@@ -10,7 +10,7 @@ data class RegisterRequest(
     val name: String,
     val position: String,
     val rate: Int?,
-    val creatingSpace: SpaceCreateDto?,
+    val creatingSpace: SpaceDto?,
     val spaceKey: String?,
 ) {
 
@@ -31,7 +31,7 @@ data class RegisterRequest(
         var name: String = ""
         var position: String = ""
         var rate: Int? = null
-        var creatingSpace: SpaceCreateDto? = null
+        var creatingSpace: SpaceDto? = null
         var spaceKey: String? = null
 
         fun build() = RegisterRequest(

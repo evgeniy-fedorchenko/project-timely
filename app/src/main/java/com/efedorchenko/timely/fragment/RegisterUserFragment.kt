@@ -130,7 +130,7 @@ class RegisterUserFragment : AbstractRegisterFragment() {
         }
         val spaceKey = binding.spaceKeyEditText.text.toString()
         if (!Model.isSpaceKeyValid(spaceKey)) {
-            ToastHelper.invalidSpaceKeyOnReg(context)
+            ToastHelper.invalidSpaceKey(context)
             return null
         }
 

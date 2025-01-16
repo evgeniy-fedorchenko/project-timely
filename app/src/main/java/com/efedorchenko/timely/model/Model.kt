@@ -1,13 +1,18 @@
 package com.efedorchenko.timely.model
 
 object Model {
-
     private const val LOCAL = "[a-zA-Z0-9][a-zA-Z0-9._-]{0,62}[a-zA-Z0-9]"
+
     private const val SUBDOMAIN = "([a-zA-Z0-9][a-zA-Z0-9_-]{1,14}\\.)"
     private const val TLD = "([a-z]{2,4})"
-
     private const val EMAIL_REGEX = "^(?!.*[-._]{2})$LOCAL@$SUBDOMAIN{1,2}$TLD$"
+
     private const val PASSWORD_REGEX = "^(?!.*(.)\\1{3,})(?=.*[A-ZА-Я])(?=.*[a-zа-я])(?=.*\\d)[A-Za-zА-Яа-я0-9!@#$%^&*()_+\\-=\\[\\]{}|;:,.<>?\\\\]{8,64}$"
+
+    private const val NAME_LEN = 255
+    private const val SPACE_KEY_LEN = 36
+    private const val POSITION_LEN = 128
+    private const val SPACE_NAME_LEN = 128
 
     /**
      * Регулярное выражение для проверки пароля
@@ -32,7 +37,7 @@ object Model {
      *     - `Passsssword123` (больше трех одинаковых символов подряд)
      */
     fun isPasswordValid(password: String): Boolean {
-        return password.matches(PASSWORD_REGEX.toRegex())
+        return password.isNotBlank() && password.matches(PASSWORD_REGEX.toRegex())
     }
 
     /**
@@ -67,11 +72,11 @@ object Model {
      *     - `user@.com` (домен начинается с точки)
      *     - `user@domain` (нет домена верхнего уровня)
      *     - `user@sub.sub.domain.com` (слишком много поддоменов)
-     *     - `user@sub-.domain.com` (слишком много поддомен кончается на тире)
+     *     - `user@sub-.domain.com` (поддомен кончается на тире)
      *     - `user@domain.toolong` (слишком длинный домен верхнего уровня)
      */
     fun isLoginValid(login: String): Boolean {
-        return login.matches(EMAIL_REGEX.toRegex())
+        return login.isNotBlank() && login.matches(EMAIL_REGEX.toRegex())
     }
 
     fun isLoginPairValid(loginPair: Pair<String, String>): Boolean {
@@ -83,18 +88,18 @@ object Model {
     }
 
     fun isNameValid(name: String): Boolean {
-        return name.isNotEmpty() && name.length < 255
+        return name.isNotBlank() && name.length < NAME_LEN
     }
 
     fun isSpaceKeyValid(spaceKey: String): Boolean {
-        return spaceKey.isNotEmpty() && spaceKey.length < 36
+        return spaceKey.isNotBlank() && spaceKey.length < SPACE_KEY_LEN
     }
 
     fun isPositionValid(position: String): Boolean {
-        return position.isNotEmpty() && position.length < 128
+        return position.isNotBlank() && position.length < POSITION_LEN
     }
 
     fun isSpaceNameValid(spaceName: String): Boolean {
-        return spaceName.isNotEmpty() && spaceName.length < 128
+        return spaceName.isNotBlank() && spaceName.length < SPACE_NAME_LEN
     }
 }

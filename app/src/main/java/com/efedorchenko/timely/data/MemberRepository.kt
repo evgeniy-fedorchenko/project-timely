@@ -95,7 +95,7 @@ class MemberRepository @Inject constructor(application: Application) {
     }
 
     fun getMaxChangedAt(): Instant? {
-        val sql = "SELECT MAX($CHANGED_AT_COLUMN_NAME) FROM $MEMBERS_TABLE_NAME" // Добавить эту колонку
+        val sql = "SELECT MAX($CHANGED_AT_COLUMN_NAME) FROM $MEMBERS_TABLE_NAME"
         return dbHelper.readableDatabase.rawQuery(sql, null)
             .use { cursor ->
                 if (cursor.moveToFirst()) {

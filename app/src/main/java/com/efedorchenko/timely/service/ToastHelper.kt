@@ -25,8 +25,8 @@ object ToastHelper {
     const val NOT_SYNCHRONIZED =                        "Проблемы с интернетом, синхронизируйте данные позже"
     const val ALL_SYNCED =                              "Все данные синхронизированы"
     private const val FILED_ALL_PATTERN =               "Не удалось отправить %d смен и %d штрафов"
-    private const val FILED_EVENTS_PATTERN =            "Не удалось отправить %s смен"
-    private const val FILED_FINES_PATTERN =             "Не удалось отправить %s штрафов"
+    private const val FILED_EVENTS_PATTERN =            "Не удалось отправить %d смен"
+    private const val FILED_FINES_PATTERN =             "Не удалось отправить %d штрафов"
     private const val FILED_DOWNLOAD_NEW =              "Не удалось загрузить новые данные"
 
     /* Download data */
@@ -40,7 +40,7 @@ object ToastHelper {
     private const val INVALID_EMAIL_ON_REG =       "Неподходящий email. Смотри подсказку справа"
     private const val INVALID_PASSWORD_ON_REG =    "Неподходящий пароль. Смотри подсказку справа"
     private const val DIFFERENT_PASSWORDS_ON_REG = "Пароли не совпадают"
-    private const val INVALID_SPACE_KEY_ON_REG =   "Недействительный ключ пространства. Обратитесь к руководителю для его получения"
+    private const val INVALID_SPACE_KEY =          "Недействительный ключ пространства. Обратитесь к руководителю для его получения"
     private const val INVALID_SPACE_NAME_ON_REG =  "Неподходящее имя пространства"
     private const val INVALID_POSITION_ON_REG =    "Неподходящая должность. Смотри подсказку справа "
     const val INVALID_DATA_ON_REG =                "Упс! Некорректные данные, смотри подсказки справа"
@@ -62,7 +62,7 @@ object ToastHelper {
     fun invalidEmailOnReg(c: Context) =           doShow(INVALID_EMAIL_ON_REG, c, LENGTH_LONG)
     fun invalidPasswordOnReg(c: Context) =        doShow(INVALID_PASSWORD_ON_REG, c, LENGTH_LONG)
     fun passwordsAreDifferentOnReg(c: Context) =  doShow(DIFFERENT_PASSWORDS_ON_REG, c, LENGTH_LONG)
-    fun invalidSpaceKeyOnReg(c: Context) =        doShow(INVALID_SPACE_KEY_ON_REG, c, LENGTH_LONG)
+    fun invalidSpaceKey(c: Context) =             doShow(INVALID_SPACE_KEY, c, LENGTH_LONG)
     fun invalidSpaceNameOnReg(c: Context) =       doShow(INVALID_SPACE_NAME_ON_REG, c, LENGTH_LONG)
 
     fun invalidPositionOnReg(c: Context) =        doShow(INVALID_POSITION_ON_REG, c, LENGTH_LONG)

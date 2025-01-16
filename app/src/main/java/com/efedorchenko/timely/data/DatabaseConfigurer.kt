@@ -21,7 +21,7 @@ class DatabaseConfigurer private constructor(application: Application) :
 
         const val TAG = "DatabaseError"
         private const val DATABASE_NAME = "timely.db"
-        private const val DATABASE_VERSION = 6
+        private const val DATABASE_VERSION = 7
 
         const val EVENTS_TABLE_NAME = "events"
         const val FINES_TABLE_NAME = "fines"
@@ -46,9 +46,9 @@ class DatabaseConfigurer private constructor(application: Application) :
         const val AMOUNT_COLUMN_NAME = "amount"             // Integer not null
 
         /* Member */
+        const val USER_UUID_COLUMN_NAME = "user_uuid"       // Text not null unique
         const val NAME_COLUMN_NAME = "member_name"          // Text not null
         const val POSITION_COLUMN_NAME = "position"         // Text not null
-        const val USER_UUID_COLUMN_NAME = "user_uuid"       // Text not null unique
 
         private const val EVENTS_CREATE_TABLE =            "CREATE TABLE $EVENTS_TABLE_NAME($ID_COLUMN_NAME INTEGER PRIMARY KEY AUTOINCREMENT, $BACKEND_ID_COLUMN_NAME INTEGER UNIQUE, $MONTH_UID_COLUMN_NAME INTEGER NOT NULL, $DATE_COLUMN_NAME TEXT NOT NULL UNIQUE, $WORK_MINUTES_COLUMN_NAME INTEGER NOT NULL, $COMMENT_COLUMN_NAME TEXT, $CHANGED_AT_COLUMN_NAME INTEGER)"
         private const val EVENTS_CREATE_MONTH_UID_INDEX =  "CREATE INDEX $EVENTS_MONTH_UID_INDEX_NAME ON $EVENTS_TABLE_NAME($MONTH_UID_COLUMN_NAME)"

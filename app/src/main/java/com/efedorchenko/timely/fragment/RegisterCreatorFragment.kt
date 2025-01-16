@@ -21,7 +21,7 @@ import com.efedorchenko.timely.input.AuthInputWatcher
 import com.efedorchenko.timely.model.Model
 import com.efedorchenko.timely.model.auth.RegisterRequest
 import com.efedorchenko.timely.model.auth.RoleType
-import com.efedorchenko.timely.model.auth.SpaceCreateDto
+import com.efedorchenko.timely.model.auth.SpaceDto
 import com.efedorchenko.timely.service.ToastHelper
 
 /**
@@ -147,7 +147,7 @@ class RegisterCreatorFragment : AbstractRegisterFragment() {
             this.position = position
             role = RoleType.CREATOR
             this.name = name
-            creatingSpace = SpaceCreateDto(spaceName)
+            creatingSpace = SpaceDto(spaceName)
         }
     }
 

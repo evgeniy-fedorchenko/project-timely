@@ -119,7 +119,7 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
             if (deletedRows == 0) {
                 return true
             } else {
-                Log.e(TAG, "No event was deleted with id: $id. Ex: ")
+                Log.e(TAG, "No data was deleted with id: $id")
                 return false
             }
     }
@@ -127,4 +127,23 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
     fun clean() {
         dbHelper.writableDatabase.delete(getTableName(), null, null)
     }
+
+////    Для отладки
+//    fun getAllData(): List<Array<String>> {
+//        val resultList = mutableListOf<Array<String>>()
+//        val db = dbHelper.readableDatabase
+//        val cursor = db.rawQuery("SELECT * FROM ${getTableName()}", null)
+//
+//        while (cursor.moveToNext()) {
+//            val row = Array(cursor.columnCount) { index ->
+//                cursor.getString(index) ?: "null"
+//            }
+//            resultList.add(row)
+//        }
+//
+//        cursor.close()
+//        db.close()
+//
+//        return resultList
+//    }
 }

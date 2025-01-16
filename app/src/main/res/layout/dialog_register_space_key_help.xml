@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="Ключ пространства"
+        android:text="Ключ доступа"
         android:textColor="@color/light_gray"
         android:textSize="16sp"
         android:textStyle="bold" />
@@ -28,7 +28,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="Пожалуйста, введите ключ доступа к пространству, в которое вы хотите вступить"
+        android:text="Пожалуйста, введите ключ доступа к компании, в которую вы хотите вступить"
         android:textColor="@color/light_gray"
         android:textSize="16sp" />
 
