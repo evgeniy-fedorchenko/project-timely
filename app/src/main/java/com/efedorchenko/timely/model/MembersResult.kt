@@ -5,6 +5,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class MembersResult(
 
-    val consistInSpace: Boolean,
-    val members: List<SpaceMember>
+    val youConsistInSpace: Boolean,
+    val members: MutableList<SpaceMember>,
+
+//    @Serializable(with = UUIDSerializer::class)
+    val actualIds: List<String>
 )

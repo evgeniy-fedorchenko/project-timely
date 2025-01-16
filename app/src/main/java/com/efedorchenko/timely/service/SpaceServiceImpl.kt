@@ -11,6 +11,7 @@ import com.efedorchenko.timely.model.DataType
 import com.efedorchenko.timely.model.MembersResult
 import com.efedorchenko.timely.model.SpaceMember
 import com.efedorchenko.timely.model.api.ApiResponse
+import com.efedorchenko.timely.model.auth.RoleType
 import org.threeten.bp.LocalDate
 import org.threeten.bp.YearMonth
 import javax.inject.Inject
@@ -58,7 +59,7 @@ class SpaceServiceImpl @Inject constructor(
         DataType.entries.forEach { dataType ->
             val repository = repositoryFactory.getRepository<AbstractData>(dataType)
             val since = repository.getMaxChangedAt()
-            if (!doUpdateData(dataType) { apiService.getUpdates(userId, DataType.EVENT, since) }) {
+            if (!doUpdateData(dataType) { apiService.getUpdates(userId, dataType, since) }) {
                 return@updateData UpdateResult.FAIL
             }
         }
@@ -74,7 +75,7 @@ class SpaceServiceImpl @Inject constructor(
                 response.data?.let {
                     if (it.isNotEmpty()) {
                         val repository = repositoryFactory.getRepository(it[0])
-                        repository.saveBatch(it)
+                        repository.upsertBatch(it)
                         viewModel.updateLiveData(type, LocalDate.now())
                         viewModel.emitNeedUpdateData()
                     }
@@ -97,11 +98,24 @@ class SpaceServiceImpl @Inject constructor(
         when (val response = requestFunc.invoke()) {
             is ApiResponse.Success -> {
                 response.data?.let {
-                    if (!it.consistInSpace) {
+                    if (!it.youConsistInSpace) {
                         return UpdateResult.NOT_CONSIST_IN_SPACE
                     }
                     if (it.members.isNotEmpty()) {
+
+                        /* Для каждой роли отображаются только юзеры той же самой или более низкой роли:
+                         * - Для работников - только работники, при этом сам работник отображается у всех
+                         * - Для руководителей - работники и руководители, при этом сами руководители отображаются
+                         *       только у других руководителей и создателя
+                         * - Для создателя - работники и руководители, а сам создатель не отображатеся ни у кого
+                         * При этом сам юзер у себя не отображается  */
+                        val userUuid = encProfileStorage.getUserUuid()
+                        it.members.removeIf { member -> member.userUuid == userUuid || member.role == RoleType.CREATOR }
+                        if (encProfileStorage.getRole() != RoleType.CREATOR) {
+                            it.members.removeIf { member -> member.role == RoleType.BOSS }
+                        }
                         memberRepository.save(it.members)
+                        memberRepository.deleteIfNotContains(it.actualIds)
                         viewModel.updateMembers()
                     }
                     return UpdateResult.SUCCESS

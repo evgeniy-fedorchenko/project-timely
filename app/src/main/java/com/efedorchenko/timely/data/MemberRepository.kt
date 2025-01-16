@@ -25,9 +25,10 @@ class MemberRepository @Inject constructor(application: Application) {
         try {
             members.forEach { member ->
                 val contentValues = ContentValues().apply {
+                    put(USER_UUID_COLUMN_NAME, member.userUuid)
                     put(NAME_COLUMN_NAME, member.name)
                     put(POSITION_COLUMN_NAME, member.position)
-                    put(USER_UUID_COLUMN_NAME, member.userUuid)
+                    member.changedAt?.let { put(CHANGED_AT_COLUMN_NAME, it.toEpochMilli()) }
                 }
 
                 db.insertWithOnConflict(
@@ -94,6 +95,7 @@ class MemberRepository @Inject constructor(application: Application) {
         db.delete(MEMBERS_TABLE_NAME, null, null)
     }
 
+    // TODO: Проверить, почему-то возвращает не то что нужно, в ответе в этим сайнсом возвращаются все мемберы
     fun getMaxChangedAt(): Instant? {
         val sql = "SELECT MAX($CHANGED_AT_COLUMN_NAME) FROM $MEMBERS_TABLE_NAME"
         return dbHelper.readableDatabase.rawQuery(sql, null)
@@ -103,5 +105,10 @@ class MemberRepository @Inject constructor(application: Application) {
                     if (maxTime > 0) Instant.ofEpochMilli(maxTime) else null
                 } else null
             }
+    }
+
+    fun deleteIfNotContains(userIdsToKeep: List<String>) {
+        val whereClause = "$USER_UUID_COLUMN_NAME NOT IN (${userIdsToKeep.joinToString { "'$it'" }})"
+        dbHelper.readableDatabase.delete(MEMBERS_TABLE_NAME, whereClause, null)
     }
 }
