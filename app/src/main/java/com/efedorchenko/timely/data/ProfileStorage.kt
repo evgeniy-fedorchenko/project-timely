@@ -1,5 +1,6 @@
 package com.efedorchenko.timely.data
 
+import com.efedorchenko.timely.model.auth.SpaceDto
 import com.efedorchenko.timely.model.auth.UserData
 
 interface ProfileStorage {
@@ -27,6 +28,8 @@ interface ProfileStorage {
     fun deleteUserData()
 
     fun getUserData(): UserData?
+
+    fun saveSpace(space: SpaceDto)
 
     fun getSpaceName(): String?
 

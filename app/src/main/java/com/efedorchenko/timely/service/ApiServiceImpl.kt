@@ -11,6 +11,7 @@ import com.efedorchenko.timely.model.api.ApiResponse
 import com.efedorchenko.timely.model.auth.AuthResponse
 import com.efedorchenko.timely.model.auth.Credentials
 import com.efedorchenko.timely.model.auth.RegisterRequest
+import com.efedorchenko.timely.model.auth.SpaceConnectResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
@@ -29,25 +30,25 @@ import javax.inject.Inject
 class ApiServiceImpl @Inject constructor(
     private val encProfileStorage: EncProfileStorage
 ) : ApiService {
-
     companion object {
-
         /* Headers */
         private const val RQUID = "RqUID"
+
         private const val AUTHORIZATION = "Authorization"
         private val APPLICATION_JSON_MT = "application/json".toMediaType()
-
         /* Paths */
         private const val BASE_URL = "http://192.168.1.104:8080/api/v1"
+
         private const val REG_PATH = "$BASE_URL/auth/reg"
         private const val LOGIN_PATH = "$BASE_URL/auth/login"
         private const val DATA_PATH = "$BASE_URL/data"
-        private const val MEMBERS_PATH = "$BASE_URL/members"
         private const val DATA_PATTERN = "$BASE_URL/data/"
+        private const val SPACE_PATH = "$BASE_URL/spaces"
 
         /* Query parameters */
         private const val USER_ID_QPARAM_NAME = "userId"
         private const val SINCE_QPARAM_NAME = "since"
+        private const val KEY_QPARAM_NAME = "key"
     }
 
     //    for dev
@@ -89,11 +90,11 @@ class ApiServiceImpl @Inject constructor(
     }
 
     override suspend fun getMembers(): ApiResponse<MembersResult> = withContext(Dispatchers.IO) {
-        return@withContext getMembers(MEMBERS_PATH.toHttpUrl())
+        return@withContext getMembers(SPACE_PATH.toHttpUrl())
     }
 
     override suspend fun getMembers(since: Instant?): ApiResponse<MembersResult> = withContext(Dispatchers.IO) {
-        val urlBuilder = MEMBERS_PATH.toHttpUrl().newBuilder()
+        val urlBuilder = SPACE_PATH.toHttpUrl().newBuilder()
         since?.let { urlBuilder.addQueryParameter(SINCE_QPARAM_NAME, it.toString()) }
         return@withContext getMembers(urlBuilder.build())
     }
@@ -131,6 +132,16 @@ class ApiServiceImpl @Inject constructor(
         return@withContext execute<List<AbstractData>>(request)
     }
 
+    override suspend fun connectToSpace(key: String): ApiResponse<SpaceConnectResponse> = withContext(Dispatchers.IO) {
+        val request = Request.Builder()
+            .url(SPACE_PATH.toHttpUrl().newBuilder().addQueryParameter(KEY_QPARAM_NAME, key).build())
+            .header(RQUID, UUID.randomUUID().toString())
+            .header(AUTHORIZATION, getJwtToken())
+            .patch(ByteArray(0).toRequestBody(null))  // Empty request body
+            .build()
+
+        return@withContext execute<SpaceConnectResponse>(request)
+    }
 
     private fun getMembers(url: HttpUrl): ApiResponse<MembersResult> {
         val request = Request.Builder()

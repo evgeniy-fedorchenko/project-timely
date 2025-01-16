@@ -1,6 +1,7 @@
 package com.efedorchenko.timely.data
 
 import android.content.Context
+import com.efedorchenko.timely.model.auth.SpaceDto
 import com.efedorchenko.timely.model.auth.UserData
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -69,13 +70,6 @@ class ProfileStorageImpl @Inject constructor(@ApplicationContext context: Contex
         }
     }
 
-    override fun deleteSpace() {
-        with(sharedPref.edit()) {
-            remove(SPACE_NAME_KEY)
-            apply()
-        }
-    }
-
     override fun getPosition(): String? = sharedPref.getString(POSITION_KEY, null)
 
     override fun saveUserData(userData: UserData) {
@@ -105,7 +99,7 @@ class ProfileStorageImpl @Inject constructor(@ApplicationContext context: Contex
             val rate = getInt(RATE_KEY, -1)
             val spaceName = getString(SPACE_NAME_KEY, null)
 
-            if (name != null && position != null && spaceName != null) {
+            if (name != null && position != null) {
                 val nullableRate = if (rate == -1) null else rate
                 return UserData(name, position, nullableRate, spaceName)
             }
@@ -113,7 +107,21 @@ class ProfileStorageImpl @Inject constructor(@ApplicationContext context: Contex
         }
     }
 
+    override fun saveSpace(space: SpaceDto) {
+        with(sharedPref.edit()) {
+            putString(SPACE_NAME_KEY, space.name)
+            apply()
+        }
+    }
+
     override fun getSpaceName(): String? = sharedPref.getString(SPACE_NAME_KEY, null)
 
     override fun spaceExists() = sharedPref.contains(SPACE_NAME_KEY)
+
+    override fun deleteSpace() {
+        with(sharedPref.edit()) {
+            remove(SPACE_NAME_KEY)
+            apply()
+        }
+    }
 }

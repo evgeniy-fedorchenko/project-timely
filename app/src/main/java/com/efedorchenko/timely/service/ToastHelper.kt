@@ -17,6 +17,11 @@ object ToastHelper {
     private const val FINE_AMOUNT_TOO_SMALL =           "Слишком маленькая сумма"
     private const val WORK_DURATION_TOO_SHORT_PATTERN = "Минимальная длина: %s часов"
     const val INCORRECT_LOGIN_DATA =                    "Неверный логин или пароль"
+    private const val CONNECT_TO_SPACE_SUCCESS =        "Вы успешно присоединились к компании"
+    const val CONNECT_TO_SPACE_FILED_UNKNOWN =          "Не удалось присоединиться к компании, проверьте работу сеьт Интернет"
+    const val CONNECT_TO_SPACE_FILED_KEY_INVALID =      "Неверный ключ доступа"
+
+    /* Synchronizing data */
     const val NOT_SYNCHRONIZED =                        "Проблемы с интернетом, синхронизируйте данные позже"
     const val ALL_SYNCED =                              "Все данные синхронизированы"
     private const val FILED_ALL_PATTERN =               "Не удалось отправить %d смен и %d штрафов"
@@ -48,10 +53,10 @@ object ToastHelper {
     fun cannotEditPlaned(c: Context) =            doShow(CANNOT_EDIT_PLANED, c, LENGTH_SHORT)
     fun fineAmountTooSmall(c: Context) =          doShow(FINE_AMOUNT_TOO_SMALL, c, LENGTH_SHORT)
     fun incorrectLoginData(c: Context) =          doShow(INCORRECT_LOGIN_DATA, c, LENGTH_LONG)
+    fun connectToSpaceSuccess(c: Context) =       doShow(CONNECT_TO_SPACE_SUCCESS, c, LENGTH_SHORT)
 
     /* Download data */
     fun failDownloadMembers(c: Context) =         doShow(ERROR_DOWNLOAD_MEMBERS, c, LENGTH_SHORT)
-
     /* Registration */
     fun invalidNameOnReg(c: Context) =            doShow(INVALID_NAME_ON_REG, c, LENGTH_LONG)
     fun invalidEmailOnReg(c: Context) =           doShow(INVALID_EMAIL_ON_REG, c, LENGTH_LONG)
@@ -59,6 +64,7 @@ object ToastHelper {
     fun passwordsAreDifferentOnReg(c: Context) =  doShow(DIFFERENT_PASSWORDS_ON_REG, c, LENGTH_LONG)
     fun invalidSpaceKeyOnReg(c: Context) =        doShow(INVALID_SPACE_KEY_ON_REG, c, LENGTH_LONG)
     fun invalidSpaceNameOnReg(c: Context) =       doShow(INVALID_SPACE_NAME_ON_REG, c, LENGTH_LONG)
+
     fun invalidPositionOnReg(c: Context) =        doShow(INVALID_POSITION_ON_REG, c, LENGTH_LONG)
 
     fun workDurationTooShort(c: Context, minWorkDuration: Duration) {

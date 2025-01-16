@@ -9,4 +9,6 @@ interface AuthService {
     suspend fun tryLogin(credentials: Credentials): Resource<Unit>
 
     suspend fun tryRegister(registerRequest: RegisterRequest): Resource<Unit>
+
+    suspend fun connectToSpace(key: String): Resource<Unit>
 }

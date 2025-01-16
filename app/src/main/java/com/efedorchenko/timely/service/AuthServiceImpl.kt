@@ -1,5 +1,6 @@
 package com.efedorchenko.timely.service
 
+import android.util.Log
 import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.model.api.ApiErrorCode.AUTH
@@ -65,6 +66,30 @@ class AuthServiceImpl @Inject constructor(
                     CLIENT -> response.errorData?.errorCode?.description ?: "Client error"
                 }
                 Resource.Error(message)
+            }
+        }
+    }
+
+    override suspend fun connectToSpace(key: String): Resource<Unit> {
+        return when (val response = apiService.connectToSpace(key)) {
+            is ApiResponse.Success -> {
+                response.data?.let {
+                    if (!it.success) {
+                        Resource.Error(ToastHelper.CONNECT_TO_SPACE_FILED_KEY_INVALID)
+                    } else {
+                        it.space?.let { space -> profileStorage.saveSpace(space) }
+                        it.newRole?.let { role -> encProfileStorage.saveRole(role) }
+                        Resource.Success(true)
+                    }
+                } ?: Resource.Error(ToastHelper.CONNECT_TO_SPACE_FILED_UNKNOWN)
+            }
+            is ApiResponse.Error -> {
+                Log.e("Network error", "Cannot connected user to space [$key]" +
+                        "ApiErrorCode: ${response.apiErrorCode}, " +
+                        "error message: ${response.errorMessage}, " +
+                        "error data: ${response.errorData}"
+                )
+                Resource.Error(ToastHelper.CONNECT_TO_SPACE_FILED_UNKNOWN)
             }
         }
     }

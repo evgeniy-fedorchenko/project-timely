@@ -8,6 +8,7 @@ import com.efedorchenko.timely.model.api.ApiResponse
 import com.efedorchenko.timely.model.auth.AuthResponse
 import com.efedorchenko.timely.model.auth.Credentials
 import com.efedorchenko.timely.model.auth.RegisterRequest
+import com.efedorchenko.timely.model.auth.SpaceConnectResponse
 import org.threeten.bp.Instant
 
 interface ApiService {
@@ -25,4 +26,6 @@ interface ApiService {
     suspend fun getRange(dataRangeRequest: DataRangeRequest, dataType: DataType): ApiResponse<List<AbstractData>>
 
     suspend fun getUpdates(userId: String?, dataType: DataType, since: Instant?): ApiResponse<List<AbstractData>>
+
+    suspend fun connectToSpace(key: String): ApiResponse<SpaceConnectResponse>
 }
