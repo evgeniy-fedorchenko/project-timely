@@ -131,8 +131,9 @@ class MainFragment : Fragment() {
             navigationView.menu.findItem(R.id.access_keys).isVisible = true
         }
 
+        // TODO: добавить эмиттер чтобы при получении сигнала перерисовывать пункты меню если чел присоединился к пространству или вышел
+        // TODO: добавить кнопку "покуинуть пространство"
         navigationView.setNavigationItemSelectedListener(
-            // TODO: может сделать экран синхронизации отдельный фрагментом? DialogFragment например
             NavigationMenuListener(drawerLayout, viewModel, this)
         )
     }

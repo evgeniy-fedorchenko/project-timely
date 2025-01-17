@@ -109,6 +109,8 @@ class SpaceServiceImpl @Inject constructor(
                          *       только у других руководителей и создателя
                          * - Для создателя - работники и руководители, а сам создатель не отображатеся ни у кого
                          * При этом сам юзер у себя не отображается  */
+                        // TODO: Написать коммент зачем нужен отдельный список всех id юзеров
+                        // FIXME: Надо как-то перерисовать кнопки в боковом меню
                         val userUuid = encProfileStorage.getUserUuid()
                         it.members.removeIf { member -> member.userUuid == userUuid || member.role == RoleType.CREATOR }
                         if (encProfileStorage.getRole() != RoleType.CREATOR) {

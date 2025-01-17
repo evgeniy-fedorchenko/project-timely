@@ -17,7 +17,6 @@ import com.efedorchenko.timely.service.AuthService
 import com.efedorchenko.timely.service.SpaceService
 import com.efedorchenko.timely.service.ToastHelper
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -54,8 +53,7 @@ class ConnectSpaceDialogFragment : DialogFragment() {
                 }
                 connectButton.isEnabled = false
                 loadingContainer.visibility = View.VISIBLE
-                lifecycleScope.launch {
-                    delay(3000)
+                requireActivity().lifecycleScope.launch { //  Скоуп активити, чтобы корутина не умерла без фрагмента
                     try {
                         when (val result = authService.connectToSpace(key)) {
                             is Resource.Success -> {

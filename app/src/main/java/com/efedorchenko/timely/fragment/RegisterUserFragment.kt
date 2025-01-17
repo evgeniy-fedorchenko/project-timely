@@ -21,7 +21,7 @@ import com.efedorchenko.timely.model.auth.RoleType
 import com.efedorchenko.timely.service.ToastHelper
 
 /**
- * Регистрация для `RoleType.WORKER` и `RoleType.BOSS`
+ * Регистрация для `RoleType.WORKER` (сщ вступлением в пространстово и без) и `RoleType.BOSS`
  */
 class RegisterUserFragment : AbstractRegisterFragment() {
 
@@ -38,6 +38,9 @@ class RegisterUserFragment : AbstractRegisterFragment() {
         super.onViewCreated(view, savedInstanceState)
         val context = requireContext()
 
+        if (args.withSpace) {
+            binding.spaceKeyInput.visibility = View.VISIBLE
+        }
         this.setupImeInsets(binding)
         setTextChangedListeners()
         setHelpButtonListeners(context)
@@ -64,9 +67,11 @@ class RegisterUserFragment : AbstractRegisterFragment() {
             emailEditText.addTextChangedListener(
                 AuthInputWatcher(emailEditText, Model::isLoginValid)
             )
-            spaceKeyEditText.addTextChangedListener(
-                AuthInputWatcher(spaceKeyEditText, Model::isSpaceKeyValid)
-            )
+            if (args.withSpace) {
+                spaceKeyEditText.addTextChangedListener(
+                    AuthInputWatcher(spaceKeyEditText, Model::isSpaceKeyValid)
+                )
+            }
             passwordEditText.addTextChangedListener(
                 AuthInputWatcher(passwordEditText, Model::isPasswordValid)
             )
@@ -95,8 +100,10 @@ class RegisterUserFragment : AbstractRegisterFragment() {
             repeatPasswordHelpButton.setOnClickListener {
                 showHint(DialogRegisterRepeatPasswordHelpBinding.inflate(from(c)), c)
             }
-            spaceKeyHelpButton.setOnClickListener {
-                showHint(DialogRegisterSpaceKeyHelpBinding.inflate(from(c)), c)
+            if (args.withSpace) {
+                spaceKeyHelpButton.setOnClickListener {
+                    showHint(DialogRegisterSpaceKeyHelpBinding.inflate(from(c)), c)
+                }
             }
         }
     }
@@ -127,10 +134,13 @@ class RegisterUserFragment : AbstractRegisterFragment() {
             ToastHelper.passwordsAreDifferentOnReg(context)
             return null
         }
-        val spaceKey = binding.spaceKeyEditText.text.toString()
-        if (!Model.isSpaceKeyValid(spaceKey)) {
-            ToastHelper.invalidSpaceKey(context)
-            return null
+        var spaceKey: String? = null
+        if (args.withSpace) {
+            spaceKey = binding.spaceKeyEditText.text.toString()
+            if (!Model.isSpaceKeyValid(spaceKey)) {
+                ToastHelper.invalidSpaceKey(context)
+                return null
+            }
         }
 
         return RegisterRequest.build {

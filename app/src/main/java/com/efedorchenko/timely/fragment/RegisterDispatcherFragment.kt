@@ -29,13 +29,21 @@ class RegisterDispatcherFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val navController = findNavController()
-        binding.buttonWorker.setOnClickListener {
-            val action = RegisterDispatcherFragmentDirections.dispatchToRegisterUserFragment(RoleType.WORKER.name)
+        binding.buttonWorkerWithSpace.setOnClickListener {
+            val action = RegisterDispatcherFragmentDirections
+                .dispatchToRegisterUserFragment(RoleType.WORKER.name)
+            navController.navigate(action)
+        }
+
+        binding.buttonWorkerWithoutSpace.setOnClickListener {
+            val action = RegisterDispatcherFragmentDirections
+                .dispatchToRegisterUserFragment(RoleType.WORKER.name, false)
             navController.navigate(action)
         }
 
         binding.buttonBoss.setOnClickListener {
-            val action = RegisterDispatcherFragmentDirections.dispatchToRegisterUserFragment(RoleType.BOSS.name)
+            val action = RegisterDispatcherFragmentDirections
+                .dispatchToRegisterUserFragment(RoleType.BOSS.name)
             navController.navigate(action)
         }
 

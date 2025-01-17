@@ -40,6 +40,10 @@
         <argument
             android:name="userType"
             app:argType="string" />
+        <argument
+            android:name="withSpace"
+            app:argType="boolean"
+            android:defaultValue="true" />
     </fragment>
     <fragment
         android:id="@+id/registerCreatorFragment"

@@ -215,10 +215,13 @@
                     app:tint="#808080" />
             </FrameLayout>
 
+            <!-- Будет показан только если юзер собрается вступить в пространство -->
             <FrameLayout
+                android:id="@+id/spaceKeyInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp">
+                android:layout_marginBottom="10dp"
+                android:visibility="gone">
 
                 <EditText
                     android:id="@+id/spaceKeyEditText"

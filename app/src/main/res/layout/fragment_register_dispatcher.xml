@@ -32,7 +32,7 @@
     </LinearLayout>
 
     <Button
-        android:id="@+id/buttonWorker"
+        android:id="@+id/buttonWorkerWithSpace"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
@@ -46,7 +46,7 @@
 
     <!-- Обработать эту кнопку в коде и в диалоге "Помощь" -->
     <Button
-        android:id="@+id/buttonAloneWorker"
+        android:id="@+id/buttonWorkerWithoutSpace"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
