@@ -42,10 +42,9 @@ class RegisterUserFragment : AbstractRegisterFragment() {
         setTextChangedListeners()
         setHelpButtonListeners(context)
 
-        val windowToken = binding.root.windowToken
-        this.setHideKeyboardListener(binding.containerLayout, windowToken)
+        this.setHideKeyboardListener(binding.containerLayout)
         this.setBackButtonListener(binding.backToLoginTextView)
-        this.setRegisterButtonListener(binding.registerButton, context, binding.loadingProgressBar, windowToken)
+        this.setRegisterButtonListener(binding.registerButton, context, binding.loadingProgressBar)
     }
 
     override fun onDestroyView() {

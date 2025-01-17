@@ -45,10 +45,9 @@ class RegisterCreatorFragment : AbstractRegisterFragment() {
         setTextChangedListeners()
         setHelpButtonListeners(context)   // Подсказки у полей ввода
 
-        val windowToken = binding.root.windowToken
-        this.setHideKeyboardListener(binding.containerLayout, windowToken)
+        this.setHideKeyboardListener(binding.containerLayout)
         this.setBackButtonListener(binding.backToLoginTextView)
-        this.setRegisterButtonListener(binding.registerButton, context, binding.loadingProgressBar, windowToken)
+        this.setRegisterButtonListener(binding.registerButton, context, binding.loadingProgressBar)
 
         binding.helpButton.setOnClickListener {
             showHelpDialog(context)   // Кнопка помощи внизу экрана

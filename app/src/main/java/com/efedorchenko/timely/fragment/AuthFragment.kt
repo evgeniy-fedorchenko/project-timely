@@ -5,15 +5,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.databinding.FragmentLoginBinding
+import com.efedorchenko.timely.fragment.support.FragmentUtils
 import com.efedorchenko.timely.input.AuthInputWatcher
 import com.efedorchenko.timely.model.Model
 import com.efedorchenko.timely.model.api.Resource
@@ -52,10 +53,11 @@ class AuthFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val context = requireContext()
+        val activity = activity
         setupImeInsets()
 
         view.setOnClickListener {
-            hideKeyboard()
+            FragmentUtils.hideKeyboard(activity)
         }
 
         binding.loginEditText.addTextChangedListener(
@@ -69,13 +71,13 @@ class AuthFragment : Fragment() {
         }
 
         binding.loginButton.setOnClickListener {
-            doLogin(context)
+            doLogin(context, activity)
         }
     }
 
-    private fun doLogin(context: Context) {
+    private fun doLogin(context: Context, activity: FragmentActivity?) {
         binding.loginButton.isEnabled = false
-        hideKeyboard()
+        FragmentUtils.hideKeyboard(activity)
         val login = binding.loginEditText.text.toString()
         val password = binding.passwordEditText.text.toString()
         val loginPair = Pair(login, password)
@@ -87,7 +89,7 @@ class AuthFragment : Fragment() {
         }
 
         lifecycleScope.launch {
-            showLoading()
+            FragmentUtils.showLoading(binding.loadingProgressBar)
             try {
                 val credentials = Credentials(login, password)
                 when (val result = authService.tryLogin(credentials)) {
@@ -107,24 +109,9 @@ class AuthFragment : Fragment() {
 
             } finally {
                 binding.loginButton.isEnabled = true
-                hideLoading()
+                FragmentUtils.hideLoading(binding.loadingProgressBar)
             }
         }
-    }
-
-    private fun showLoading() {
-        binding.loadingProgressBar.apply {
-            visibility = View.VISIBLE
-            alpha = 0f
-            animate()
-                .alpha(1f)
-                .setDuration(200)
-                .start()
-        }
-    }
-
-    private fun hideLoading() {
-        binding.loadingProgressBar.visibility = View.GONE
     }
 
     private fun setupImeInsets() {
@@ -134,14 +121,4 @@ class AuthFragment : Fragment() {
             windowInsets
         }
     }
-
-    private fun hideKeyboard() {
-        val activity = activity
-        if (activity != null) {
-            val imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            val view = activity.currentFocus ?: View(activity)
-            imm.hideSoftInputFromWindow(view.windowToken, 0)
-        }
-    }
-
 }

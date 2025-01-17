@@ -44,7 +44,7 @@ class ConnectSpaceDialogFragment : DialogFragment() {
         with(binding) {
             keyEditText.addTextChangedListener(AuthInputWatcher(keyEditText, Model::isSpaceKeyValid))
             connectButton.setOnClickListener {
-                FragmentUtils.hideKeyboard(activity, root.windowToken)
+                FragmentUtils.hideKeyboard(activity)
                 val context = requireContext()
 
                 val key = keyEditText.text.toString()

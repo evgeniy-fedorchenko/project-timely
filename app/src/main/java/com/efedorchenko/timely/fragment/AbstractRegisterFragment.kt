@@ -4,10 +4,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import android.os.IBinder
-import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ProgressBar
@@ -20,6 +17,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.viewbinding.ViewBinding
 import com.efedorchenko.timely.R
+import com.efedorchenko.timely.fragment.support.FragmentUtils
 import com.efedorchenko.timely.model.api.Resource
 import com.efedorchenko.timely.model.auth.RegisterRequest
 import com.efedorchenko.timely.service.AuthService
@@ -57,9 +55,9 @@ abstract class AbstractRegisterFragment : Fragment() {
         }
     }
 
-    protected fun setHideKeyboardListener(targetLayout: LinearLayout, windowToken: IBinder) {
+    protected fun setHideKeyboardListener(targetLayout: LinearLayout) {
         targetLayout.setOnClickListener {
-            hideKeyboard(windowToken)
+           FragmentUtils.hideKeyboard(activity)
         }
     }
 
@@ -70,10 +68,10 @@ abstract class AbstractRegisterFragment : Fragment() {
     }
 
     protected fun setRegisterButtonListener(
-        registerButton: Button, context: Context, loadingProgressBar: ProgressBar, windowToken: IBinder
+        registerButton: Button, context: Context, loadingProgressBar: ProgressBar
     ) {
         registerButton.setOnClickListener {
-            doRegister(registerButton, context, loadingProgressBar, windowToken)
+            doRegister(registerButton, context, loadingProgressBar)
         }
     }
 
@@ -89,18 +87,11 @@ abstract class AbstractRegisterFragment : Fragment() {
         dialog.show()
     }
 
-    private fun hideKeyboard(windowToken: IBinder) {
-        activity?.let { activity ->
-            val imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(windowToken, 0)
-        }
-    }
-
     private fun doRegister(
-        registerButton: Button, context: Context, loadingProgressBar: ProgressBar, windowToken: IBinder
+        registerButton: Button, context: Context, loadingProgressBar: ProgressBar
     ) {
         registerButton.isEnabled = false
-        hideKeyboard(windowToken)
+        FragmentUtils.hideKeyboard(activity)
 
         val registerRequest = validateAndCreateDto(context)
         if (registerRequest == null) {
@@ -109,7 +100,7 @@ abstract class AbstractRegisterFragment : Fragment() {
         }
 
         lifecycleScope.launch {
-            showLoading(loadingProgressBar)
+            FragmentUtils.showLoading(loadingProgressBar)
             try {
                 when (val result = authService.tryRegister(registerRequest)) {
                     is Resource.Success -> {
@@ -124,23 +115,8 @@ abstract class AbstractRegisterFragment : Fragment() {
 
             } finally {
                 registerButton.isEnabled = true
-                hideLoading(loadingProgressBar)
+                FragmentUtils.hideLoading(loadingProgressBar)
             }
         }
-    }
-
-    private fun showLoading(loadingProgressBar: ProgressBar) {
-        loadingProgressBar.apply {
-            visibility = View.VISIBLE
-            alpha = 0f
-            animate()
-                .alpha(1f)
-                .setDuration(200)
-                .start()
-        }
-    }
-
-    private fun hideLoading(loadingProgressBar: ProgressBar) {
-        loadingProgressBar.visibility = View.GONE
     }
 }
