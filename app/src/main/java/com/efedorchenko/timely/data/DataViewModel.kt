@@ -26,8 +26,6 @@ import okio.IOException
 import org.threeten.bp.LocalDate
 import javax.inject.Inject
 
-// TODO: Когда юзер логинится - просить все ивенты с бека и обновлять бд
-
 class DataViewModel @Inject constructor(
     private val application: Application,
     private val eventRepository: DataRepository<Event>,
@@ -64,7 +62,7 @@ class DataViewModel @Inject constructor(
     }
 
     /* Эмит необходимости переключить пункты навигационного меню.
-     * Юзер вступил в пространство -> показать кноки пространства,
+     * Юзер вступил в пространство -> показать кнопки пространства,
      * юзер вышел из пространства -> убрать эти кнопки и показать кнопку вступления */
     private val _needSwitchSpaceItemsInSideMenu = MutableSharedFlow<Boolean>(replay = 0)
     val needSwitchSpaceItemsInSideMenu = _needSwitchSpaceItemsInSideMenu.asSharedFlow()

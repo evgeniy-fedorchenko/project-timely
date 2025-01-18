@@ -29,7 +29,7 @@ class EventRepository @Inject constructor(application: Application) : DataReposi
     private val dbHelper = DatabaseConfigurer.getInstance(application)
 
     /**
-     * Возвращается без `backend_id` и `changed_at``
+     * Возвращается без `backend_id` и `changed_at`
      */
     override fun findByMonth(monthUID: MonthUID, withComment: Boolean): List<Event> {
         val db = dbHelper.readableDatabase
