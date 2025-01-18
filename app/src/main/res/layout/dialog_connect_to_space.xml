@@ -23,7 +23,6 @@
             android:textStyle="bold" />
 
         <View
-            android:id="@+id/divider"
             android:layout_width="wrap_content"
             android:layout_height="1dp"
             android:layout_marginVertical="8dp"
@@ -82,7 +81,6 @@
         android:visibility="gone">
 
         <ProgressBar
-            android:id="@+id/loadingProgressBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"

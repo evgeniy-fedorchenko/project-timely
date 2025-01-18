@@ -12,13 +12,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="Вы были удалены из пространства"
+        android:text="Вы были удалены из компании"
         android:textColor="@color/light_gray"
         android:textSize="16sp"
         android:textStyle="bold" />
 
     <View
-        android:id="@+id/divider"
         android:layout_width="wrap_content"
         android:layout_height="1dp"
         android:layout_marginVertical="8dp"
@@ -46,7 +45,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:paddingTop="8dp"
+        android:padding="8dp"
         android:text="Но вы все еще можете пользоваться приложением самостоятельно без участия руководителей"
         android:textColor="@color/light_gray"
         android:textSize="16sp" />

@@ -17,7 +17,6 @@
         android:textStyle="bold" />
 
     <View
-        android:id="@+id/divider"
         android:layout_width="wrap_content"
         android:layout_height="1dp"
         android:layout_marginVertical="8dp"
@@ -51,7 +50,6 @@
         android:textStyle="bold" />
 
     <View
-        android:id="@+id/second_divider"
         android:layout_width="wrap_content"
         android:layout_height="1dp"
         android:layout_marginVertical="8dp"
