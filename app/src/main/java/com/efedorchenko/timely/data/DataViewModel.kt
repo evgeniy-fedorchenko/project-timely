@@ -52,7 +52,6 @@ class DataViewModel @Inject constructor(
     /* Эмит ошибки синзронизации */
     private val _alert = MutableSharedFlow<String>()
     val alert = _alert.asSharedFlow()
-
     private val emitNotSynced: suspend () -> Unit = {
         _alert.emit(ToastHelper.NOT_SYNCHRONIZED)
     }
@@ -60,9 +59,17 @@ class DataViewModel @Inject constructor(
     /* Эмит необходимости разово обновить данные data */
     private val _needUpdateData = MutableSharedFlow<Boolean>(replay = 0)
     val needUpdateData = _needUpdateData.asSharedFlow()
-
     suspend fun emitNeedUpdateData() {
         _needUpdateData.emit(true)
+    }
+
+    /* Эмит необходимости переключить пункты навигационного меню.
+     * Юзер вступил в пространство -> показать кноки пространства,
+     * юзер вышел из пространства -> убрать эти кнопки и показать кнопку вступления */
+    private val _needSwitchSpaceItemsInSideMenu = MutableSharedFlow<Boolean>(replay = 0)
+    val needSwitchSpaceItemsInSideMenu = _needSwitchSpaceItemsInSideMenu.asSharedFlow()
+    suspend fun needSwitchSpaceItemsInSideMenu() {
+        _needSwitchSpaceItemsInSideMenu.emit(true)
     }
 
     fun updateMembers() {

@@ -90,7 +90,7 @@ class MainFragment : Fragment() {
     private fun setupSummaryCard() {
         childFragmentManager.commit {
             setReorderingAllowed(true)
-            replace(R.id.summaryCard, SummaryFragment())
+            replace(R.id.summary_card, SummaryFragment())
         }
     }
 
@@ -111,15 +111,23 @@ class MainFragment : Fragment() {
             val preparedHeaderLine = prepareHeaderLine(positionRawText, 9)
             headerView.findViewById<TextView>(R.id.position).text = preparedHeaderLine
         }
+
+        val mySpaceItem = navigationView.menu.findItem(R.id.my_space)
+        val connectToSpaceItem = navigationView.menu.findItem(R.id.connect_to_space)
+        val leaveToSpaceItem = navigationView.menu.findItem(R.id.leave_space)
+        val accessKeysItem = navigationView.menu.findItem(R.id.access_keys)
+
         userData?.spaceName?.let {
             val spaceRawText = getString(R.string.nav_menu_header_space, it)
             val preparedHeaderLine = prepareHeaderLine(spaceRawText, 8)
             headerView.findViewById<TextView>(R.id.space).text = preparedHeaderLine
 
-            navigationView.menu.findItem(R.id.my_space).isVisible = true
-        } ?: run {
-            navigationView.menu.findItem(R.id.connect_to_space).isVisible = true
-        }
+            if (encProfileStorage.isPrivileged()) {
+                accessKeysItem.isVisible = true
+            }
+            mySpaceItem.isVisible = true
+            leaveToSpaceItem.isVisible = true
+        } ?: run { connectToSpaceItem.isVisible = true }
 
         userData?.rate?.let {
             val rateRawText = getString(R.string.nav_menu_header_rate, it)
@@ -127,10 +135,25 @@ class MainFragment : Fragment() {
             headerView.findViewById<TextView>(R.id.rate).text = preparedHeaderLine
         }
 
-        if (encProfileStorage.isPrivileged()) {
-            navigationView.menu.findItem(R.id.access_keys).isVisible = true
+        lifecycleScope.launch {
+            viewModel.needSwitchSpaceItemsInSideMenu.collect { needsSwitch ->
+                if (needsSwitch) {
+                    if (mySpaceItem.isVisible && !connectToSpaceItem.isVisible) {
+                        mySpaceItem.isVisible = false
+                        leaveToSpaceItem.isVisible = false
+                        connectToSpaceItem.isVisible = true
+                        if (encProfileStorage.isPrivileged()) {
+                            accessKeysItem.isVisible = true
+                        }
+                    } else if (!mySpaceItem.isVisible && connectToSpaceItem.isVisible) {
+                        mySpaceItem.isVisible = true
+                        leaveToSpaceItem.isVisible = true
+                        connectToSpaceItem.isVisible = false
+                        accessKeysItem.isVisible = false
+                    }
+                }
+            }
         }
-
         // TODO: добавить эмиттер чтобы при получении сигнала перерисовывать пункты меню если чел присоединился к пространству или вышел
         // TODO: добавить кнопку "покуинуть пространство"
         navigationView.setNavigationItemSelectedListener(
