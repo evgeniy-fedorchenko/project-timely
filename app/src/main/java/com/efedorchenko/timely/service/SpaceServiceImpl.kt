@@ -69,6 +69,21 @@ class SpaceServiceImpl @Inject constructor(
         return doUpdateMembers { apiService.getMembers(memberRepository.getMaxChangedAt()) }
     }
 
+    override suspend fun leaveSpace(): Boolean {
+        when (val response = apiService.leaveSpace()) {
+            is ApiResponse.Success -> return response.data ?: false
+            is ApiResponse.Error -> {
+                Log.e("Network error",
+                    "Cannot request for leave space for user: ${encProfileStorage.getUserUuid()}." +
+                        "ApiErrorCode: ${response.apiErrorCode}, " +
+                        "error message: ${response.errorMessage}, " +
+                        "error data: ${response.errorData}"
+                )
+                return false
+            }
+        }
+    }
+
     private suspend fun doUpdateData(type: DataType, func: suspend () -> ApiResponse<List<AbstractData>>): Boolean {
         when (val response = func.invoke()) {
             is ApiResponse.Success -> {
@@ -103,13 +118,8 @@ class SpaceServiceImpl @Inject constructor(
                     }
                     if (it.members.isNotEmpty()) {
 
-                        /* Для каждой роли отображаются только юзеры той же самой или более низкой роли:
-                         * - Для работников - только работники, при этом сам работник отображается у всех
-                         * - Для руководителей - работники и руководители, при этом сами руководители отображаются
-                         *       только у других руководителей и создателя
-                         * - Для создателя - работники и руководители, а сам создатель не отображатеся ни у кого
-                         * При этом сам юзер у себя не отображается  */
-                        // TODO: Написать коммент зачем нужен отдельный список всех id юзеров
+                        /* Работники отображаются у всех (в тч друг у друга). Руководители только у создателя,
+                         * а создатель ни у кого. При этом сам работник у себя не отображается */
                         // FIXME: Надо как-то перерисовать кнопки в боковом меню
                         val userUuid = encProfileStorage.getUserUuid()
                         it.members.removeIf { member -> member.userUuid == userUuid || member.role == RoleType.CREATOR }
@@ -118,6 +128,7 @@ class SpaceServiceImpl @Inject constructor(
                         }
                         memberRepository.save(it.members)
                         memberRepository.deleteIfNotContains(it.actualIds)
+                        viewModel.needSwitchSpaceItemsInSideMenu()
                         viewModel.updateMembers()
                     }
                     return UpdateResult.SUCCESS

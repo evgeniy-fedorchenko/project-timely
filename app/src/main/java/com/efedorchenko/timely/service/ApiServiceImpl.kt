@@ -44,6 +44,7 @@ class ApiServiceImpl @Inject constructor(
         private const val DATA_PATH = "$BASE_URL/data"
         private const val DATA_PATTERN = "$BASE_URL/data/"
         private const val SPACE_PATH = "$BASE_URL/spaces"
+        private const val KICK_PATH = "$BASE_URL/spaces/kick"
 
         /* Query parameters */
         private const val USER_ID_QPARAM_NAME = "userId"
@@ -99,6 +100,17 @@ class ApiServiceImpl @Inject constructor(
         return@withContext getMembers(urlBuilder.build())
     }
 
+    private fun getMembers(url: HttpUrl): ApiResponse<MembersResult> {
+        val request = Request.Builder()
+            .url(url)
+            .header(RQUID, UUID.randomUUID().toString())
+            .header(AUTHORIZATION, getJwtToken())
+            .get()
+            .build()
+
+        return execute<MembersResult>(request)
+    }
+
     override suspend fun getRange(
         dataRangeRequest: DataRangeRequest, dataType: DataType
     ): ApiResponse<List<AbstractData>> = withContext(Dispatchers.IO) {
@@ -143,15 +155,15 @@ class ApiServiceImpl @Inject constructor(
         return@withContext execute<SpaceConnectResponse>(request)
     }
 
-    private fun getMembers(url: HttpUrl): ApiResponse<MembersResult> {
+    override suspend fun leaveSpace(): ApiResponse<Boolean> = withContext(Dispatchers.IO) {
         val request = Request.Builder()
-            .url(url)
+            .url(KICK_PATH)
             .header(RQUID, UUID.randomUUID().toString())
             .header(AUTHORIZATION, getJwtToken())
             .get()
             .build()
 
-        return execute<MembersResult>(request)
+        return@withContext execute<Boolean>(request)
     }
 
     private inline fun <reified T> execute(request: Request): ApiResponse<T> {
