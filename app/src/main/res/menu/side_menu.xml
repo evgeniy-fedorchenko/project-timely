@@ -7,8 +7,12 @@
         android:title="Моя команда"
         android:visible="false" />
     <item
+        android:id="@+id/leave_space"
+        android:title="Покинуть команду"
+        android:visible="false" />
+    <item
         android:id="@+id/connect_to_space"
-        android:title="Присоединиться к компании"
+        android:title="Присоединиться к команде"
         android:visible="false" />
     <item
         android:id="@+id/do_sync"

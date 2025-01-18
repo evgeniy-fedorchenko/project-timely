@@ -13,4 +13,6 @@ interface SpaceService {
     suspend fun initData(): InitResult
 
     suspend fun updateData(userId: String?, withMembers: Boolean): UpdateResult
+
+    suspend fun leaveSpace(): Boolean
 }

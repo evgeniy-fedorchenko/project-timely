@@ -21,11 +21,13 @@ interface ApiService {
 
     suspend fun getMembers(): ApiResponse<MembersResult>
 
-    suspend fun getMembers(since: Instant?): ApiResponse<MembersResult>
+    suspend fun getMembers(since: Instant?): ApiResponse<MembersResult> // TODO: посмотреть, может можно соединить с предыдущей функцией
 
     suspend fun getRange(dataRangeRequest: DataRangeRequest, dataType: DataType): ApiResponse<List<AbstractData>>
 
     suspend fun getUpdates(userId: String?, dataType: DataType, since: Instant?): ApiResponse<List<AbstractData>>
 
     suspend fun connectToSpace(key: String): ApiResponse<SpaceConnectResponse>
+
+    suspend fun leaveSpace(): ApiResponse<Boolean>
 }
