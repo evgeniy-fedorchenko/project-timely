@@ -53,7 +53,8 @@ class ConnectSpaceDialogFragment : DialogFragment() {
                 }
                 connectButton.isEnabled = false
                 loadingContainer.visibility = View.VISIBLE
-                requireActivity().lifecycleScope.launch { //  Скоуп активити, чтобы корутина не умерла без фрагмента
+                val activity = activity
+                activity?.lifecycleScope?.launch { //  Скоуп активити, чтобы корутина не умерла без фрагмента
                     try {
                         when (val result = authService.connectToSpace(key)) {
                             is Resource.Success -> {
@@ -68,6 +69,7 @@ class ConnectSpaceDialogFragment : DialogFragment() {
                         }
 
                     } finally {
+                        FragmentUtils.hideKeyboard(activity)
                         connectButton.isEnabled = true
                         loadingContainer.visibility = View.GONE
                     }
