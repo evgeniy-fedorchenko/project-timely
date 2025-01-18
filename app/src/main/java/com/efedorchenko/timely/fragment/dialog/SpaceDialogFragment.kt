@@ -17,8 +17,9 @@ import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.databinding.DialogSpaceShowBinding
+import com.efedorchenko.timely.fragment.support.RecyclerItemDecoration
 import com.efedorchenko.timely.fragment.support.SpaceAdapter
-import com.efedorchenko.timely.fragment.support.SpaceItemDecoration
+import com.efedorchenko.timely.model.SpaceMember
 import com.efedorchenko.timely.service.SpaceService
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -33,7 +34,7 @@ class SpaceDialogFragment : DialogFragment() {
     private var _binding: DialogSpaceShowBinding? = null
     private val binding get() = _binding!!
 
-    private val dismissRequest = { func() }
+    private val showMemberFunc = { member: SpaceMember -> showMember(member) }
 
     @Inject
     lateinit var viewModel: DataViewModel
@@ -64,10 +65,10 @@ class SpaceDialogFragment : DialogFragment() {
 
         binding.membersRecyclerView.layoutManager = LinearLayoutManager(context)
         val members = viewModel.members.value
-        binding.membersRecyclerView.adapter = SpaceAdapter(members, spaceService, dismissRequest)
+        binding.membersRecyclerView.adapter = SpaceAdapter(members, spaceService, showMemberFunc)
 
         val spaceInPixels = resources.getDimensionPixelSize(R.dimen.item_spacing_horizontal)
-        binding.membersRecyclerView.addItemDecoration(SpaceItemDecoration(spaceInPixels))
+        binding.membersRecyclerView.addItemDecoration(RecyclerItemDecoration(spaceInPixels))
         binding.closeButton.setOnClickListener {
             dismiss()
         }
@@ -88,7 +89,9 @@ class SpaceDialogFragment : DialogFragment() {
         _binding = null
     }
 
-    fun func() {
+    private fun showMember(member: SpaceMember) {
+        binding.loadingContainer.visibility = View.VISIBLE
+
         lifecycleScope.launch {
             try {
                 // Показываем индикатор

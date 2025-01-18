@@ -14,7 +14,7 @@ import com.efedorchenko.timely.data.EncProfileStorageImpl
 import com.efedorchenko.timely.data.ProfileStorageImpl
 import com.efedorchenko.timely.databinding.DialogFinesShowBinding
 import com.efedorchenko.timely.fragment.support.FinesAdapter
-import com.efedorchenko.timely.fragment.support.SpaceItemDecoration
+import com.efedorchenko.timely.fragment.support.RecyclerItemDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import org.threeten.bp.LocalDate
 import javax.inject.Inject
@@ -70,7 +70,7 @@ class FinesDialogFragment : DialogFragment() {
         }
 
         val spaceInPixels = resources.getDimensionPixelSize(R.dimen.item_spacing_horizontal)
-        binding.finesRecyclerView.addItemDecoration(SpaceItemDecoration(spaceInPixels))
+        binding.finesRecyclerView.addItemDecoration(RecyclerItemDecoration(spaceInPixels))
         binding.closeButton.setOnClickListener {
             dismiss()
         }

@@ -10,7 +10,7 @@ import com.efedorchenko.timely.service.SpaceService
 class SpaceAdapter(
     private val members: List<SpaceMember>?,
     private val spaceService: SpaceService,
-    private val dismissRequest: () -> Unit
+    private val showMemberFunc: (member: SpaceMember) -> Unit
 ) : RecyclerView.Adapter<SpaceAdapter.MemberViewHolder>() {
 
     inner class MemberViewHolder(val binding: DialogSpaceShowItemBinding) : RecyclerView.ViewHolder(binding.root)
@@ -28,8 +28,7 @@ class SpaceAdapter(
         holder.binding.position.text = positionFormatted
 
         holder.itemView.setOnLongClickListener {
-//            longRunningOperation(member)
-            dismissRequest.invoke()
+            showMemberFunc.invoke(member)
             true
         }
     }
@@ -45,16 +44,18 @@ class SpaceAdapter(
         - Штрафы так же обновляются по этой кнопке
 
         При нажатии на юзера:
-        - Показываем окошко загрузки с кнопкой отмены
-        - Проверить локально в новых таблицах данные этого юзера, если их нет, то сходить на сервер за данными (смены и штрафы) и разместить их в бд
-        - Убираем окно загрузки и отрисовываем календарь с данными выбранного юзера
-            - мб сделать отдельную viewModel для данных других юзеров и при перескоке переходить
-              через findNavController() с передачей флага, что используем другого юзера и id этого юзера тоже передавать.
+
+        1. Сходить в БД - найти данные выбранного юзера
+           - Если этого юзера вообще нету в БД - показать индикатор загрузки и кнопку отмены и сходить за данными на бек (синхронно)
+           - Если данные есть в БД - сходить на бек асинхронно и подгрузить новые данные - если бек недоступен, то показать тост
+           - Если данные есть (с бд или с бека) - перерисовать календарь и сохранить данные в БД
+           - Если данные есть в бд, то при получении данных с бека снова перерисовать календарь (и сохранить данные)
+           - Кнопка "обновить данные" будет обновлять данные выбранного юзера, а не свои
+
+              через findNavController() или через эмит с передачей флага, что используем другого юзера и id этого юзера тоже передавать.
               Переходить на MainFragment, а не CalendarFragment, чтобы Summary тоже была в коляске
             - SummaryFragment может получать флаг юзера через конструктор, а CalendarFragment нет, тк он инстанцируется через ViewPager
               Calendar должен получить значение либо через Bundle, как он получает monthOffset либо еще как-то
-
-
 
         - На пустом месте разместить имя просматриваемого юзера и шестеренку для настроек юзера (актуально для начальников)
         - В боковом меню сделать кнопку "домой", которая ведет на экран календаря, но уже со своими данными
