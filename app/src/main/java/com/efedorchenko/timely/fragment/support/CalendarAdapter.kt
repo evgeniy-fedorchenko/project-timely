@@ -5,7 +5,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.efedorchenko.timely.fragment.CalendarFragment
 
-class CalendarAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
+class CalendarAdapter(fa: FragmentActivity, private val userUuid: String?) : FragmentStateAdapter(fa) {
 
     companion object {
         const val CALENDAR_SCROLL_BORDERS = 100
@@ -19,7 +19,7 @@ class CalendarAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
     override fun getItemCount(): Int = CALENDAR_SCROLL_BORDERS
 
     override fun createFragment(position: Int): Fragment {
-        return CalendarFragment.newInstance(calculateMonthOffset(position))
+        return CalendarFragment.newInstance(calculateMonthOffset(position), userUuid)
 
     }
 }

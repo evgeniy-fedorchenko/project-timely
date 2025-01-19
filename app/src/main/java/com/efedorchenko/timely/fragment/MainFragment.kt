@@ -21,14 +21,20 @@ import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.databinding.FragmentMainBinding
 import com.efedorchenko.timely.fragment.support.CalendarAdapter
 import com.efedorchenko.timely.fragment.support.NavigationMenuListener
+import com.efedorchenko.timely.model.DataType
 import com.efedorchenko.timely.service.ToastHelper
 import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import org.threeten.bp.LocalDate
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainFragment : Fragment() {
+
+    companion object {
+        const val USER_UUID_ARG = "user_uuid"
+    }
 
     private var _binding: FragmentMainBinding? = null
     private val binding get() = _binding!!
@@ -57,14 +63,18 @@ class MainFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val context = requireContext()
 
-        setupViewPager()   // Calendar scroller
-        setupSummaryCard()   // Summary card at the bottom of screen
+        setupViewPager(null)   // Calendar scroller
+        setupSummaryCard(null)   // Summary card at the bottom of screen
         setupSideMenu()   // Side navigation menu
 
         lifecycleScope.launch {
-            viewModel.alert.collect {
-                ToastHelper.message(it, context)
+            viewModel.switchToMember.collect {
+                setupSummaryCard(it)
+                setupViewPager(it)
             }
+        }
+        lifecycleScope.launch {
+            viewModel.alert.collect { ToastHelper.message(it, context) }
         }
     }
 
@@ -74,23 +84,30 @@ class MainFragment : Fragment() {
         viewPager.adapter = null
     }
 
-    private fun setupViewPager() {
+    private fun setupViewPager(userUuid: String?) {
         viewPager = binding.viewPager
-        viewPager.adapter = CalendarAdapter(requireActivity())
+        viewPager.adapter = CalendarAdapter(requireActivity(), userUuid)
         viewPager.setCurrentItem(CalendarAdapter.CALENDAR_SCROLL_BORDERS / 2, false)
 
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
-                viewModel.updateLiveData(position)
+                viewModel.updateLiveData(position, userUuid)
                 viewModel.updateMonthOffset(position)
             }
         })
     }
 
-    private fun setupSummaryCard() {
+    private fun setupSummaryCard(userUuid: String?) {
         childFragmentManager.commit {
             setReorderingAllowed(true)
-            replace(R.id.summary_card, SummaryFragment())
+            replace(R.id.summary_card, SummaryFragment.newInstance(userUuid))
+            if (userUuid != null) {
+                runOnCommit {
+                    viewModel.updateLiveData(DataType.EVENT, LocalDate.now(), userUuid)
+                    viewModel.updateLiveData(DataType.FINE, LocalDate.now(), userUuid)
+
+                }
+            }
         }
     }
 
@@ -154,7 +171,6 @@ class MainFragment : Fragment() {
                 }
             }
         }
-        // TODO: добавить эмиттер чтобы при получении сигнала перерисовывать пункты меню если чел присоединился к пространству или вышел
         // TODO: добавить кнопку "покуинуть пространство"
         navigationView.setNavigationItemSelectedListener(
             NavigationMenuListener(drawerLayout, viewModel, this)

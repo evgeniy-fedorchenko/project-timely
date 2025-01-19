@@ -25,8 +25,17 @@ class SummaryFragment : Fragment(), AddFineListener {
     companion object {
         private const val ADD_FINE_DIALOG_TAG = "add_fine_dialog"
         private const val SHOW_FINES_DIALOG_TAG = "show_fines_dialog"
+
+        fun newInstance(userUuid: String? = null): SummaryFragment {
+            return SummaryFragment().apply {
+                arguments = Bundle().apply {
+                    putString(MainFragment.USER_UUID_ARG, userUuid)
+                }
+            }
+        }
     }
 
+    private var userUuid: String? = null
     private var _binding: FragmentSummaryCardBinding? = null
     private val binding get() = _binding!!
 
@@ -35,6 +44,11 @@ class SummaryFragment : Fragment(), AddFineListener {
 
     @Inject
     lateinit var encProfileStorage: EncProfileStorage
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        userUuid = arguments?.getString(MainFragment.USER_UUID_ARG)
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentSummaryCardBinding.inflate(inflater, container, false)
@@ -55,8 +69,35 @@ class SummaryFragment : Fragment(), AddFineListener {
                 showAddFineDialog(LocalDate.now().plusMonths(monthOffset).month)
             }
         }
-        viewModel.events.observe(viewLifecycleOwner) { updateEvents(it) }
-        viewModel.fines.observe(viewLifecycleOwner) { updateFines(it) }
+        viewModel.memberEvents.observe(viewLifecycleOwner) {
+            if (userUuid != null) {
+                updateEvents(it)
+            }
+        }
+        viewModel.membersFines.observe(viewLifecycleOwner) {
+            if (userUuid != null) {
+                if (encProfileStorage.isPrivileged()) {
+                    updateFines(it)
+                } else {
+                    binding.finesCount.visibility = View.INVISIBLE
+                    binding.finesAmount.visibility = View.INVISIBLE
+                    binding.showFinesButton.visibility = View.INVISIBLE
+                    binding.showFinesButton.isEnabled = false
+                }
+            }
+        }
+
+
+        viewModel.events.observe(viewLifecycleOwner) {
+            if (userUuid == null) {
+                updateEvents(it)
+            }
+        }
+        viewModel.fines.observe(viewLifecycleOwner) {
+            if (userUuid == null) {
+                updateFines(it)
+            }
+        }
     }
 
     override fun showAddFineDialog(targetMonth: Month) {

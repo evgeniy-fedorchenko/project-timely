@@ -44,9 +44,12 @@ class CalendarFragment : Fragment(), AddEventListener {
 
         private val DATE_FORMATTER = SimpleDateFormat("LLLL yyyy", Locale("ru"))
 
-        fun newInstance(monthOffset: Int): CalendarFragment {
+        fun newInstance(monthOffset: Int, userUuid: String?): CalendarFragment {
             return CalendarFragment().apply {
-                arguments = Bundle().apply { putInt(MONTH_OFFSET_ARG, monthOffset) }
+                arguments = Bundle().apply {
+                    putInt(MONTH_OFFSET_ARG, monthOffset)
+                    putString(MainFragment.USER_UUID_ARG, userUuid)
+                }
             }
         }
     }
@@ -65,7 +68,7 @@ class CalendarFragment : Fragment(), AddEventListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         monthOffset = arguments?.getInt(MONTH_OFFSET_ARG) ?: 0
-        monthEventsDef = viewModel.getEventsAsync(monthOffset)
+        monthEventsDef = viewModel.getEventsAsync(monthOffset, arguments?.getString(MainFragment.USER_UUID_ARG))
 
         super.onCreate(savedInstanceState)
     }
@@ -203,6 +206,7 @@ class CalendarFragment : Fragment(), AddEventListener {
         return textView
     }
 
+    // TODO: посмотреть, может быстрее создать схему и инфлейтить ее
     private fun createConstraintLayout(context: Context): ConstraintLayout {
         val constraintLayout = ConstraintLayout(context)
         val params = GridLayout.LayoutParams()
