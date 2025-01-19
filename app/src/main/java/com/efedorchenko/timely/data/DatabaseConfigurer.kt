@@ -21,7 +21,7 @@ class DatabaseConfigurer private constructor(application: Application) :
 
         const val TAG = "DatabaseError"
         private const val DATABASE_NAME = "timely.db"
-        private const val DATABASE_VERSION = 7
+        private const val DATABASE_VERSION = 8
 
         const val EVENTS_TABLE_NAME = "events"
         const val FINES_TABLE_NAME = "fines"
