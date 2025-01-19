@@ -1,15 +1,16 @@
 package com.efedorchenko.timely.data
 
+import android.app.Application
 import com.efedorchenko.timely.model.AbstractData
 import com.efedorchenko.timely.model.DataType
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.Fine
 import javax.inject.Inject
 
-class RepositoryFactory @Inject constructor(
-    private val eventRepository: DataRepository<Event>,
-    private val fineRepository: DataRepository<Fine>
-) {
+class RepositoryFactory @Inject constructor(application: Application) {
+
+    private val eventRepository: DataRepository<Event> = EventRepository(application)
+    private val fineRepository: DataRepository<Fine> = FineRepository(application)
 
     fun <T : AbstractData> getRepository(data: T): DataRepository<T> = getRepository(data.getType())
 

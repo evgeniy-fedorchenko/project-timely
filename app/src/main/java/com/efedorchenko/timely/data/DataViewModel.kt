@@ -26,14 +26,16 @@ import okio.IOException
 import org.threeten.bp.LocalDate
 import javax.inject.Inject
 
+// TODO: инжектить только фабрику, наследников инициализировать во вторичном конструкторе
 class DataViewModel @Inject constructor(
     private val application: Application,
-    private val eventRepository: DataRepository<Event>,
-    private val fineRepository: DataRepository<Fine>,
     private val repositoryFactory: RepositoryFactory,
     private val memberRepository: MemberRepository,
     private val apiService: ApiService
 ) : AndroidViewModel(application) {
+
+    private val eventRepository: DataRepository<Event> = repositoryFactory.getRepository(EVENT)
+    private val fineRepository: DataRepository<Fine> = repositoryFactory.getRepository(FINE)
 
     private val _events = MutableLiveData<List<Event>>()
     val events: LiveData<List<Event>> get() = _events
@@ -108,6 +110,7 @@ class DataViewModel @Inject constructor(
      * При конфликте (на ту же дату отправили другие данные) сервер вернет старые данные -> локальные данные
      * перезапишуться, чтобы юзер не создал данные, которые конфликтуют с теми, что уже сохранены на сервре
      */
+    // TODO: использовать просто AbstractData, а не наследника T
     suspend fun <T : AbstractData> sendData(data: T): Boolean {
         var success = false
         try {
