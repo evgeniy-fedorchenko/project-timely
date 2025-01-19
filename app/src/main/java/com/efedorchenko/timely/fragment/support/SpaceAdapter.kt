@@ -35,8 +35,8 @@ class SpaceAdapter(
 
     override fun getItemCount(): Int = members?.size ?: 0
 
-    private fun longRunningOperation(member: SpaceMember) {
-        spaceService.downloadMember(member)
+}
+
         /*
         Перед началом:
         - Нужно иметь отдельные таблицы по типу events и fines, но для команды (там плюсом колонка user_id)
@@ -63,5 +63,3 @@ class SpaceAdapter(
             - мб стоит делать это через findNavController() и передавать аргумент user_id, если это наш юзер - просто берем данные из своей бд
 
         */
-    }
-}

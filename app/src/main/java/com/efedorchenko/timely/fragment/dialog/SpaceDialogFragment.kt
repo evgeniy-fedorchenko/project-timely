@@ -1,5 +1,6 @@
 package com.efedorchenko.timely.fragment.dialog
 
+import android.app.AlertDialog
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
@@ -16,16 +17,17 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.ProfileStorage
+import com.efedorchenko.timely.databinding.DialogLoadingBinding
 import com.efedorchenko.timely.databinding.DialogSpaceShowBinding
 import com.efedorchenko.timely.fragment.support.RecyclerItemDecoration
 import com.efedorchenko.timely.fragment.support.SpaceAdapter
 import com.efedorchenko.timely.model.SpaceMember
 import com.efedorchenko.timely.service.SpaceService
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import java.lang.ref.WeakReference
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -90,27 +92,28 @@ class SpaceDialogFragment : DialogFragment() {
     }
 
     private fun showMember(member: SpaceMember) {
-        binding.loadingContainer.visibility = View.VISIBLE
+        val context = context ?: return
 
-        lifecycleScope.launch {
-            try {
-                // Показываем индикатор
-                withContext(Dispatchers.Main) {
-                    binding.loadingContainer.visibility = View.VISIBLE
-                }
+        val binding = DialogLoadingBinding.inflate(layoutInflater)
+        val dialog = AlertDialog.Builder(context).setView(binding.root).create()
+        dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        binding.memberName.text = member.name
 
-                // Имитация длительной операции
-                withContext(Dispatchers.IO) {
-                    delay(5000)
-                }
+        var getMemberDataJob: Job? = null
+        binding.buttonCancel.setOnClickListener {
+            getMemberDataJob?.cancel()
+            dialog.dismiss()
+        }
 
-            } finally {
-                // Скрываем индикатор
-                withContext(Dispatchers.Main) {
-                    binding.loadingContainer.visibility = View.GONE
-                }
+        getMemberDataJob = viewLifecycleOwner.lifecycleScope.launch {
+            val weakFragment = WeakReference(this@SpaceDialogFragment)
+            delay(3000)  // TODO: test delay удалить
+            spaceService.downloadMember(member)
+            dialog.dismiss()
+            if (isAdded) {
+                weakFragment.get()?.dismiss()
             }
         }
+        dialog.show()
     }
-
 }
