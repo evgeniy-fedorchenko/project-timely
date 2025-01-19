@@ -37,6 +37,7 @@ class DataViewModel @Inject constructor(
     private val eventRepository: DataRepository<Event> = repositoryFactory.getRepository(EVENT)
     private val fineRepository: DataRepository<Fine> = repositoryFactory.getRepository(FINE)
 
+    /* Собственные данные */
     private val _events = MutableLiveData<List<Event>>()
     val events: LiveData<List<Event>> get() = _events
 
@@ -45,6 +46,18 @@ class DataViewModel @Inject constructor(
 
     private val _monthOffset = MutableLiveData(CalendarAdapter.INITIAL_MONTH_OFFSET)
     val monthOffset: LiveData<Int> get() = _monthOffset
+
+
+    /* Данные команды */
+    private val _membersEvents = MutableLiveData<List<Event>>()
+    val memberEvents: LiveData<List<Event>> get() = _membersEvents
+
+    private val _membersFines = MutableLiveData<List<Fine>>()
+    val membersFines: LiveData<List<Fine>> get() = _membersFines
+
+    private val _membersMonthOffset = MutableLiveData(CalendarAdapter.INITIAL_MONTH_OFFSET)
+    val membersMonthOffset: LiveData<Int> get() = _membersMonthOffset
+
 
     private val _members = MutableLiveData<List<SpaceMember>>()
     val members: LiveData<List<SpaceMember>> get() = _members
@@ -70,6 +83,13 @@ class DataViewModel @Inject constructor(
     val needSwitchSpaceItemsInSideMenu = _needSwitchSpaceItemsInSideMenu.asSharedFlow()
     suspend fun needSwitchSpaceItemsInSideMenu() {
         _needSwitchSpaceItemsInSideMenu.emit(true)
+    }
+
+    /* Эмит юзера, данные которого нужно отобразить на экране */
+    private val _switchToMember = MutableSharedFlow<String>(replay = 0)
+    val switchToMember = _switchToMember.asSharedFlow()
+    suspend fun switchToMember(userUuid: String) {
+        _switchToMember.emit(userUuid)
     }
 
     fun updateMembers() {
@@ -132,9 +152,9 @@ class DataViewModel @Inject constructor(
         return success
     }
 
-    fun getEventsAsync(monthOffset: Int) = viewModelScope.async {
+    fun getEventsAsync(monthOffset: Int, userUuid: String?) = viewModelScope.async {
         val monthUID = MonthUID.create(LocalDate.now().plusMonths(monthOffset.toLong()))
-        return@async eventRepository.findByMonth(monthUID, false).toEventMap()
+        return@async eventRepository.findByMonth(monthUID, false, userUuid).toEventMap()
     }
 
     fun updateMonthOffset(position: Int) {
@@ -163,42 +183,55 @@ class DataViewModel @Inject constructor(
         return fineRepository.findNullableBackendId()
     }
 
-    fun updateLiveData(position: Int) {
+    fun updateLiveData(position: Int, userUuid: String?) {
         val monthOffset = CalendarAdapter.calculateMonthOffset(position)
         val monthUID = MonthUID.create(LocalDate.now().plusMonths(monthOffset.toLong()))
-        doUpdateEventsLiveData(monthUID)
-        doUpdateFinesLiveData(monthUID)
+        doUpdateEventsLiveData(monthUID, userUuid)
+        doUpdateFinesLiveData(monthUID, userUuid)
     }
 
-    fun updateLiveData(dataType: DataType, date: LocalDate) {
+    fun updateLiveData(dataType: DataType, date: LocalDate, userUuid: String? = null) {
         val monthUID = MonthUID.create(date)
         when (dataType) {
-            EVENT -> doUpdateEventsLiveData(monthUID)
-            FINE -> doUpdateFinesLiveData(monthUID)
+            EVENT -> doUpdateEventsLiveData(monthUID, userUuid)
+            FINE -> doUpdateFinesLiveData(monthUID, userUuid)
         }
     }
 
-    private fun doUpdateFinesLiveData(monthUID: MonthUID) {
+    private fun doUpdateFinesLiveData(monthUID: MonthUID, userUuid: String? = null) {
         viewModelScope.launch {
-            _fines.value = fineRepository.findByMonth(monthUID, true)
+            if (userUuid == null) {
+                _fines.value = fineRepository.findByMonth(monthUID, true)
+            } else {
+                _membersFines.value = fineRepository.findByMonth(monthUID, false, userUuid)
+            }
         }
     }
 
-    private fun doUpdateEventsLiveData(monthUID: MonthUID) {
+    private fun doUpdateEventsLiveData(monthUID: MonthUID, userUuid: String? = null) {
         viewModelScope.launch {
-            _events.value = eventRepository.findByMonth(monthUID, false)
+            if (userUuid == null) {
+                _events.value = eventRepository.findByMonth(monthUID, false)
+            } else {
+                _membersEvents.value = eventRepository.findByMonth(monthUID, false, userUuid)
+            }
         }
     }
 
     fun cleanAll() {
         _events.value = emptyList()
         _fines.value = emptyList()
+
+        _membersEvents.value = emptyList()
+        _membersFines.value = emptyList()
+
         _members.value = emptyList()
 
         eventRepository.clean()
         fineRepository.clean()
         memberRepository.clean()
 
+        _membersMonthOffset.value = 0
         _monthOffset.value = 0
     }
 
