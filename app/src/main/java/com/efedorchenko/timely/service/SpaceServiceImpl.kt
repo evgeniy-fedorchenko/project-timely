@@ -28,15 +28,29 @@ class SpaceServiceImpl @Inject constructor(
         return doUpdateMembers { apiService.getMembers() } == UpdateResult.SUCCESS
     }
 
-    override fun downloadMember(member: SpaceMember) {
-        TODO("Not yet implemented")
+    override suspend fun downloadMember(member: SpaceMember) {
+        val startInclusive = YearMonth.now().minusMonths(10L)
+        val endInclusive = YearMonth.now().plusMonths(10L)
+        val requestBody = DataRangeRequest(startInclusive, endInclusive, member.userUuid)
+        when (val response = apiService.getRange(requestBody, DataType.EVENT)) {
+            is ApiResponse.Success -> {
+                response.data?.let {
+                    if (it.isNotEmpty()) {
+                        repositoryFactory.getRepository(it[0]).upsertBatch(it, member.userUuid)
+                    }
+                    viewModel.switchToMember(member.userUuid)
+                }
+            }
+
+            is ApiResponse.Error -> TODO()
+        }
     }
 
     override suspend fun initData(): InitResult {
         val userUuid = encProfileStorage.getUserUuid() ?: return InitResult.ENC_PROFILE_NULL
 
-        val startInclusive = YearMonth.now().minusMonths(2L)
-        val endInclusive = YearMonth.now().plusMonths(1L)
+        val startInclusive = YearMonth.now().minusMonths(10L)
+        val endInclusive = YearMonth.now().plusMonths(10L)
         val requestBody = DataRangeRequest(startInclusive, endInclusive, userUuid)
 
         if (!doUpdateData(DataType.EVENT) { apiService.getRange(requestBody, DataType.EVENT) }) {
@@ -89,8 +103,7 @@ class SpaceServiceImpl @Inject constructor(
             is ApiResponse.Success -> {
                 response.data?.let {
                     if (it.isNotEmpty()) {
-                        val repository = repositoryFactory.getRepository(it[0])
-                        repository.upsertBatch(it)
+                        repositoryFactory.getRepository(it[0]).upsertBatch(it)
                         viewModel.updateLiveData(type, LocalDate.now())
                         viewModel.emitNeedUpdateData()
                     }
@@ -120,7 +133,6 @@ class SpaceServiceImpl @Inject constructor(
 
                         /* Работники отображаются у всех (в тч друг у друга). Руководители только у создателя,
                          * а создатель ни у кого. При этом сам работник у себя не отображается */
-                        // FIXME: Надо как-то перерисовать кнопки в боковом меню
                         val userUuid = encProfileStorage.getUserUuid()
                         it.members.removeIf { member -> member.userUuid == userUuid || member.role == RoleType.CREATOR }
                         if (encProfileStorage.getRole() != RoleType.CREATOR) {
