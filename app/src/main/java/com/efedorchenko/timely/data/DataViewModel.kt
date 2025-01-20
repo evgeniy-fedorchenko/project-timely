@@ -5,6 +5,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.efedorchenko.timely.data.repository.DataRepository
+import com.efedorchenko.timely.data.repository.RepositoryFactory
 import com.efedorchenko.timely.fragment.support.CalendarAdapter
 import com.efedorchenko.timely.model.AbstractData
 import com.efedorchenko.timely.model.DataType

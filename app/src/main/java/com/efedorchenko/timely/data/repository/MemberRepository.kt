@@ -1,16 +1,16 @@
-package com.efedorchenko.timely.data
+package com.efedorchenko.timely.data.repository
 
 import android.app.Application
 import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
-import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.CHANGED_AT_COLUMN_NAME
-import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.MEMBERS_TABLE_NAME
-import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.NAME_COLUMN_NAME
-import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.POSITION_COLUMN_NAME
-import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.TAG
-import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.USER_UUID_COLUMN_NAME
+import com.efedorchenko.timely.data.repository.DatabaseConfigurer.Companion.CHANGED_AT_COLUMN_NAME
+import com.efedorchenko.timely.data.repository.DatabaseConfigurer.Companion.MEMBERS_TABLE_NAME
+import com.efedorchenko.timely.data.repository.DatabaseConfigurer.Companion.NAME_COLUMN_NAME
+import com.efedorchenko.timely.data.repository.DatabaseConfigurer.Companion.POSITION_COLUMN_NAME
+import com.efedorchenko.timely.data.repository.DatabaseConfigurer.Companion.TAG
+import com.efedorchenko.timely.data.repository.DatabaseConfigurer.Companion.USER_UUID_COLUMN_NAME
 import com.efedorchenko.timely.model.SpaceMember
 import org.threeten.bp.Instant
 import javax.inject.Inject

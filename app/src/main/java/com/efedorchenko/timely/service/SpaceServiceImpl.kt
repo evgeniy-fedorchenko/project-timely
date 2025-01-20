@@ -3,8 +3,9 @@ package com.efedorchenko.timely.service
 import android.util.Log
 import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.EncProfileStorage
-import com.efedorchenko.timely.data.MemberRepository
-import com.efedorchenko.timely.data.RepositoryFactory
+import com.efedorchenko.timely.data.SpaceViewModel
+import com.efedorchenko.timely.data.repository.MemberRepository
+import com.efedorchenko.timely.data.repository.RepositoryFactory
 import com.efedorchenko.timely.model.AbstractData
 import com.efedorchenko.timely.model.DataRangeRequest
 import com.efedorchenko.timely.model.DataType

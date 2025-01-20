@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.data
+package com.efedorchenko.timely.data.repository
 
 import android.database.Cursor
 

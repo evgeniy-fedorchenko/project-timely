@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.data
+package com.efedorchenko.timely.data.repository
 
 import android.app.Application
 import android.content.ContentValues
@@ -6,10 +6,10 @@ import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 import androidx.core.content.contentValuesOf
-import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.BACKEND_ID_COLUMN_NAME
-import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.CHANGED_AT_COLUMN_NAME
-import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.ID_COLUMN_NAME
-import com.efedorchenko.timely.data.DatabaseConfigurer.Companion.TAG
+import com.efedorchenko.timely.data.repository.DatabaseConfigurer.Companion.BACKEND_ID_COLUMN_NAME
+import com.efedorchenko.timely.data.repository.DatabaseConfigurer.Companion.CHANGED_AT_COLUMN_NAME
+import com.efedorchenko.timely.data.repository.DatabaseConfigurer.Companion.ID_COLUMN_NAME
+import com.efedorchenko.timely.data.repository.DatabaseConfigurer.Companion.TAG
 import com.efedorchenko.timely.model.AbstractData
 import com.efedorchenko.timely.model.MonthUID
 import org.threeten.bp.Instant

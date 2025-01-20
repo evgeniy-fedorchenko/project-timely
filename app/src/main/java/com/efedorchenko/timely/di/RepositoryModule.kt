@@ -1,8 +1,8 @@
 package com.efedorchenko.timely.di
 
 import android.app.Application
-import com.efedorchenko.timely.data.MemberRepository
-import com.efedorchenko.timely.data.RepositoryFactory
+import com.efedorchenko.timely.data.repository.MemberRepository
+import com.efedorchenko.timely.data.repository.RepositoryFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
