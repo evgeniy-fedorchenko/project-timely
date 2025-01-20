@@ -44,7 +44,7 @@ class FineRepository @Inject constructor(application: Application) : DataReposit
             val sql = "SELECT * FROM ${getTableName(userUuid != null)} WHERE $MONTH_UID_COLUMN_NAME = ?${(userUuid?.let { " AND $USER_UUID_COLUMN_NAME = ?" } ?: "")}"
             val argsList = mutableListOf(monthUID.value.toString())
             userUuid?.let { argsList.add(userUuid) }
-            cursor = db.rawQuery(sql, arrayOf(monthUID.value.toString()))
+            cursor = db.rawQuery(sql, argsList.toTypedArray())
                 ?.run {
                     while (moveToNext()) {
                         val id = columnAs(ID_COLUMN_NAME) { idx -> getLong(idx) }

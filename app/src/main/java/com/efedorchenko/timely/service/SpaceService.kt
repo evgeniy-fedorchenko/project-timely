@@ -8,7 +8,7 @@ interface SpaceService {
 
     suspend fun initMembers(): Boolean
 
-    suspend fun downloadMember(member: SpaceMember)
+    suspend fun downloadMember(member: SpaceMember): Boolean
 
     suspend fun initData(): InitResult
 

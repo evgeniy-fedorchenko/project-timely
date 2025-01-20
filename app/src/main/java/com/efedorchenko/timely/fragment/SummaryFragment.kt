@@ -76,14 +76,15 @@ class SummaryFragment : Fragment(), AddFineListener {
         }
         viewModel.membersFines.observe(viewLifecycleOwner) {
             if (userUuid != null) {
-                if (encProfileStorage.isPrivileged()) {
+                // Закоментировано для более легкого тестирования отобрражения чужих штрафов
+//                if (encProfileStorage.isPrivileged()) {
                     updateFines(it)
-                } else {
-                    binding.finesCount.visibility = View.INVISIBLE
-                    binding.finesAmount.visibility = View.INVISIBLE
-                    binding.showFinesButton.visibility = View.INVISIBLE
-                    binding.showFinesButton.isEnabled = false
-                }
+//                } else {
+//                    binding.finesCount.visibility = View.INVISIBLE
+//                    binding.finesAmount.visibility = View.INVISIBLE
+//                    binding.showFinesButton.visibility = View.INVISIBLE
+//                    binding.showFinesButton.isEnabled = false
+//                }
             }
         }
 

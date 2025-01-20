@@ -28,21 +28,55 @@ class SpaceServiceImpl @Inject constructor(
         return doUpdateMembers { apiService.getMembers() } == UpdateResult.SUCCESS
     }
 
-    override suspend fun downloadMember(member: SpaceMember) {
+    /**
+     * Загрузить данные участника
+     *
+     * 1. Выполняется загрузка [DataType.EVENT], при неудаче - возвращается false и перехода на юзера не происходит
+     * 2. При успехе - выполняется проверка роли: если это работник - выполняется переход на юзера и возвращает `true`
+     * 3. Если роль привилегированная - выполняется попытка загрузить [DataType.FINE]
+     *       - В случае успеха - переход на юзера и возврат `true`
+     *       - В случае неудачи - возврат `false` без перехода
+     */
+    override suspend fun downloadMember(member: SpaceMember): Boolean {
         val startInclusive = YearMonth.now().minusMonths(10L)
         val endInclusive = YearMonth.now().plusMonths(10L)
         val requestBody = DataRangeRequest(startInclusive, endInclusive, member.userUuid)
-        when (val response = apiService.getRange(requestBody, DataType.EVENT)) {
+
+        if (!downloadMemberData(requestBody, DataType.EVENT, member.userUuid)) {
+            return false
+        }
+            // Закоментировано для более легкого тестирования отобрражения чужих штрафов
+//        if (!encProfileStorage.isPrivileged()) {
+//            viewModel.switchToMember(member.userUuid)
+//            return true
+//        }
+        val finesDownloaded = downloadMemberData(requestBody, DataType.FINE, member.userUuid)
+        if (finesDownloaded) {
+            viewModel.switchToMember(member.userUuid)
+        }
+        return finesDownloaded
+    }
+
+    private suspend fun downloadMemberData(request: DataRangeRequest, type: DataType, userUuid: String): Boolean {
+        when (val response = apiService.getRange(request, type)) {
             is ApiResponse.Success -> {
                 response.data?.let {
                     if (it.isNotEmpty()) {
-                        repositoryFactory.getRepository(it[0]).upsertBatch(it, member.userUuid)
+                        repositoryFactory.getRepository(it[0]).upsertBatch(it, userUuid)
                     }
-                    viewModel.switchToMember(member.userUuid)
+                    return true
                 }
+                return false
             }
-
-            is ApiResponse.Error -> TODO()
+            is ApiResponse.Error -> {
+                Log.e("Network error",
+                    "Cannot request data of member: [$userUuid], type: [$type], request body: [$request]" +
+                        "ApiErrorCode: ${response.apiErrorCode}, " +
+                        "error message: ${response.errorMessage}, " +
+                        "error data: ${response.errorData}"
+                )
+                return false
+            }
         }
     }
 
