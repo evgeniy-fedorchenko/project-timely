@@ -139,7 +139,6 @@ class SpaceServiceImpl @Inject constructor(
                     if (it.isNotEmpty()) {
                         repositoryFactory.getRepository(it[0]).upsertBatch(it)
                         viewModel.updateLiveData(type, LocalDate.now())
-                        viewModel.emitNeedUpdateData()
                     }
                     return true
                 }

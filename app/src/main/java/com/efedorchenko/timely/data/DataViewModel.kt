@@ -69,6 +69,7 @@ class DataViewModel @Inject constructor(
         _alert.emit(ToastHelper.NOT_SYNCHRONIZED)
     }
 
+    // TODO: Посмотреть, может можно не эмитить, а просто подписаться на events и апдейты будут сами приходить
     /* Эмит необходимости разово обновить данные data */
     private val _needUpdateData = MutableSharedFlow<Boolean>(replay = 0)
     val needUpdateData = _needUpdateData.asSharedFlow()
@@ -184,37 +185,38 @@ class DataViewModel @Inject constructor(
     }
 
     fun updateLiveData(position: Int, userUuid: String?) {
-        val monthOffset = CalendarAdapter.calculateMonthOffset(position)
-        val monthUID = MonthUID.create(LocalDate.now().plusMonths(monthOffset.toLong()))
-        doUpdateEventsLiveData(monthUID, userUuid)
-        doUpdateFinesLiveData(monthUID, userUuid)
+        viewModelScope.launch {
+            val monthOffset = CalendarAdapter.calculateMonthOffset(position)
+            val monthUID = MonthUID.create(LocalDate.now().plusMonths(monthOffset.toLong()))
+            doUpdateEventsLiveData(monthUID, userUuid)
+            doUpdateFinesLiveData(monthUID, userUuid)
+        }
     }
 
     fun updateLiveData(dataType: DataType, date: LocalDate, userUuid: String? = null) {
-        val monthUID = MonthUID.create(date)
-        when (dataType) {
-            EVENT -> doUpdateEventsLiveData(monthUID, userUuid)
-            FINE -> doUpdateFinesLiveData(monthUID, userUuid)
+        viewModelScope.launch {
+            val monthUID = MonthUID.create(date)
+            when (dataType) {
+                EVENT -> doUpdateEventsLiveData(monthUID, userUuid)
+                FINE -> doUpdateFinesLiveData(monthUID, userUuid)
+            }
+            emitNeedUpdateData()
         }
     }
 
     private fun doUpdateFinesLiveData(monthUID: MonthUID, userUuid: String? = null) {
-        viewModelScope.launch {
-            if (userUuid == null) {
-                _fines.value = fineRepository.findByMonth(monthUID, true)
-            } else {
-                _membersFines.value = fineRepository.findByMonth(monthUID, false, userUuid)
-            }
+        if (userUuid == null) {
+            _fines.value = fineRepository.findByMonth(monthUID, true)
+        } else {
+            _membersFines.value = fineRepository.findByMonth(monthUID, false, userUuid)
         }
     }
 
     private fun doUpdateEventsLiveData(monthUID: MonthUID, userUuid: String? = null) {
-        viewModelScope.launch {
-            if (userUuid == null) {
-                _events.value = eventRepository.findByMonth(monthUID, false)
-            } else {
-                _membersEvents.value = eventRepository.findByMonth(monthUID, false, userUuid)
-            }
+        if (userUuid == null) {
+            _events.value = eventRepository.findByMonth(monthUID, false)
+        } else {
+            _membersEvents.value = eventRepository.findByMonth(monthUID, false, userUuid)
         }
     }
 
