@@ -21,10 +21,14 @@ object ViewModelModule {
     fun provideDataViewModel(
         application: Application,
         repositoryFactory: RepositoryFactory,
-        memberRepository: MemberRepository,
         apiService: ApiService
     ): DataViewModel {
+        return DataViewModel(application, repositoryFactory, apiService)
+    }
 
-        return DataViewModel(application, repositoryFactory, memberRepository, apiService)
+    @Provides
+    @Singleton
+    fun provideSpaceViewModel(application: Application, memberRepository: MemberRepository): SpaceViewModel {
+        return SpaceViewModel(application, memberRepository)
     }
 }
