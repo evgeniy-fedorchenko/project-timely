@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.ProfileStorage
+import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.DialogDetachedFromSpaceBinding
 import com.efedorchenko.timely.databinding.DialogSyncingDataBinding
 import com.efedorchenko.timely.model.Event
@@ -29,7 +30,8 @@ class DoSyncButtonListener(
     private val spaceService: SpaceService,
     private val parentBinding: DialogSyncingDataBinding,
     private val viewModel: DataViewModel,
-    private val profileStorage: ProfileStorage
+    private val profileStorage: ProfileStorage,
+    private val spaceViewModel: SpaceViewModel
 ) : View.OnClickListener {
 
     private var syncJob: Job? = null
@@ -70,8 +72,8 @@ class DoSyncButtonListener(
                             parent.dismiss()
                             showDialogDetachedFromSpace(context)
                             profileStorage.deleteSpace()
-                            viewModel.deleteMembers()
-                            viewModel.needSwitchSpaceItemsInSideMenu()
+                            spaceViewModel.clean()
+                            spaceViewModel.needSwitchSpaceItemsInSideMenu()
                             // Удалить всех участников из таблиц events и fines для участников
                         }
                     }

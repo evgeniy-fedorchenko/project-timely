@@ -8,8 +8,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
-import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.ProfileStorage
+import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.DialogLeaveSpaceBinding
 import com.efedorchenko.timely.service.SpaceService
 import com.efedorchenko.timely.service.ToastHelper
@@ -27,7 +27,7 @@ class LeaveSpaceDialogFragment : DialogFragment() {
     lateinit var profileStorage: ProfileStorage
 
     @Inject
-    lateinit var viewModel: DataViewModel
+    lateinit var spaceViewModel: SpaceViewModel
 
     private var _binding: DialogLeaveSpaceBinding? = null
     private val binding get() = _binding!!
@@ -51,9 +51,9 @@ class LeaveSpaceDialogFragment : DialogFragment() {
                 lifecycleScope.launch {
                     try {
                         if (spaceService.leaveSpace()) {
-                            viewModel.deleteMembers()
+                            spaceViewModel.clean()
                             profileStorage.deleteSpace()
-                            viewModel.needSwitchSpaceItemsInSideMenu()
+                            spaceViewModel.needSwitchSpaceItemsInSideMenu()
                             dismiss()
                             ToastHelper.leaveSpaceSuccess(context)
                         } else {

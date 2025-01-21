@@ -15,8 +15,8 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.efedorchenko.timely.R
-import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.ProfileStorage
+import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.DialogLoadingBinding
 import com.efedorchenko.timely.databinding.DialogSpaceShowBinding
 import com.efedorchenko.timely.fragment.support.RecyclerItemDecoration
@@ -39,7 +39,7 @@ class SpaceDialogFragment : DialogFragment() {
     private val showMemberFunc = { member: SpaceMember -> showMember(member) }
 
     @Inject
-    lateinit var viewModel: DataViewModel
+    lateinit var spaceViewModel: SpaceViewModel
 
     @Inject
     lateinit var spaceService: SpaceService
@@ -66,7 +66,7 @@ class SpaceDialogFragment : DialogFragment() {
         }
 
         binding.membersRecyclerView.layoutManager = LinearLayoutManager(context)
-        val members = viewModel.members.value
+        val members = spaceViewModel.members.value
         binding.membersRecyclerView.adapter = SpaceAdapter(members, spaceService, showMemberFunc)
 
         val spaceInPixels = resources.getDimensionPixelSize(R.dimen.item_spacing_horizontal)
@@ -108,7 +108,10 @@ class SpaceDialogFragment : DialogFragment() {
         getMemberDataJob = viewLifecycleOwner.lifecycleScope.launch {
             val weakFragment = WeakReference(this@SpaceDialogFragment)
             delay(3000)  // TODO: test delay удалить
-            spaceService.downloadMember(member)
+            if (!spaceService.downloadMember(member)) {
+
+            }
+            spaceViewModel.switchTo(member)
             dialog.dismiss()
             if (isAdded) {
                 weakFragment.get()?.dismiss()

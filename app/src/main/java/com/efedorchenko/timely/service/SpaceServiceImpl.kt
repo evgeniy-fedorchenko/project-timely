@@ -22,7 +22,8 @@ class SpaceServiceImpl @Inject constructor(
     private val memberRepository: MemberRepository,
     private val repositoryFactory: RepositoryFactory,
     private val encProfileStorage: EncProfileStorage,
-    private val viewModel: DataViewModel
+    private val viewModel: DataViewModel,
+    private val spaceViewModel: SpaceViewModel
 ) : SpaceService {
 
     override suspend fun initMembers(): Boolean {
@@ -48,12 +49,12 @@ class SpaceServiceImpl @Inject constructor(
         }
             // Закоментировано для более легкого тестирования отобрражения чужих штрафов
 //        if (!encProfileStorage.isPrivileged()) {
-//            viewModel.switchToMember(member.userUuid)
+//            spaceViewModel.switchTo(member)
 //            return true
 //        }
         val finesDownloaded = downloadMemberData(requestBody, DataType.FINE, member.userUuid)
         if (finesDownloaded) {
-            viewModel.switchToMember(member.userUuid)
+            spaceViewModel.switchTo(member)
         }
         return finesDownloaded
     }
@@ -174,8 +175,8 @@ class SpaceServiceImpl @Inject constructor(
                         }
                         memberRepository.save(it.members)
                         memberRepository.deleteIfNotContains(it.actualIds)
-                        viewModel.needSwitchSpaceItemsInSideMenu()
-                        viewModel.updateMembers()
+                        spaceViewModel.needSwitchSpaceItemsInSideMenu()
+                        spaceViewModel.updateMembers()
                     }
                     return UpdateResult.SUCCESS
                 }

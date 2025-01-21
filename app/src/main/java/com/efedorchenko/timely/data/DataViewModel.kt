@@ -15,7 +15,6 @@ import com.efedorchenko.timely.model.DataType.FINE
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.Fine
 import com.efedorchenko.timely.model.MonthUID
-import com.efedorchenko.timely.model.SpaceMember
 import com.efedorchenko.timely.model.api.ApiResponse
 import com.efedorchenko.timely.model.toEventMap
 import com.efedorchenko.timely.service.ApiService
@@ -30,9 +29,8 @@ import javax.inject.Inject
 
 // TODO: инжектить только фабрику, наследников инициализировать во вторичном конструкторе
 class DataViewModel @Inject constructor(
-    private val application: Application,
+    application: Application,
     private val repositoryFactory: RepositoryFactory,
-    private val memberRepository: MemberRepository,
     private val apiService: ApiService
 ) : AndroidViewModel(application) {
 
@@ -57,13 +55,6 @@ class DataViewModel @Inject constructor(
     private val _membersFines = MutableLiveData<List<Fine>>()
     val membersFines: LiveData<List<Fine>> get() = _membersFines
 
-    private val _membersMonthOffset = MutableLiveData(CalendarAdapter.INITIAL_MONTH_OFFSET)
-    val membersMonthOffset: LiveData<Int> get() = _membersMonthOffset
-
-
-    private val _members = MutableLiveData<List<SpaceMember>>()
-    val members: LiveData<List<SpaceMember>> get() = _members
-
     /* Эмит ошибки синзронизации */
     private val _alert = MutableSharedFlow<String>()
     val alert = _alert.asSharedFlow()
@@ -79,31 +70,10 @@ class DataViewModel @Inject constructor(
         _needUpdateData.emit(true)
     }
 
-    /* Эмит необходимости переключить пункты навигационного меню.
-     * Юзер вступил в пространство -> показать кнопки пространства,
-     * юзер вышел из пространства -> убрать эти кнопки и показать кнопку вступления */
-    private val _needSwitchSpaceItemsInSideMenu = MutableSharedFlow<Boolean>(replay = 0)
-    val needSwitchSpaceItemsInSideMenu = _needSwitchSpaceItemsInSideMenu.asSharedFlow()
-    suspend fun needSwitchSpaceItemsInSideMenu() {
-        _needSwitchSpaceItemsInSideMenu.emit(true)
-    }
-
-    /* Эмит юзера, данные которого нужно отобразить на экране */
-    private val _switchToMember = MutableSharedFlow<String>(replay = 0)
-    val switchToMember = _switchToMember.asSharedFlow()
-    suspend fun switchToMember(userUuid: String) {
-        _switchToMember.emit(userUuid)
-    }
-
-    fun updateMembers() {
-        _members.value = memberRepository.getMembersList()
-    }
-
     init {
         val monthUID = MonthUID.create()
         _events.value = eventRepository.findByMonth(monthUID, false)
         _fines.value = fineRepository.findByMonth(monthUID, true)
-        _members.value = memberRepository.getMembersList()
     }
 
     fun addNewData(data: AbstractData) {
@@ -229,19 +199,9 @@ class DataViewModel @Inject constructor(
         _membersEvents.value = emptyList()
         _membersFines.value = emptyList()
 
-        _members.value = emptyList()
-
         eventRepository.clean()
         fineRepository.clean()
-        memberRepository.clean()
 
-        _membersMonthOffset.value = 0
         _monthOffset.value = 0
     }
-
-    fun deleteMembers() {
-        _members.value = emptyList()
-        memberRepository.clean()
-    }
-
 }

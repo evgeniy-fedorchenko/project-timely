@@ -13,6 +13,7 @@ import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.EncProfileStorageImpl
 import com.efedorchenko.timely.data.ProfileStorageImpl
 import com.efedorchenko.timely.databinding.DialogFinesShowBinding
+import com.efedorchenko.timely.fragment.MainFragment
 import com.efedorchenko.timely.fragment.support.FinesAdapter
 import com.efedorchenko.timely.fragment.support.RecyclerItemDecoration
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,6 +25,14 @@ class FinesDialogFragment : DialogFragment() {
 
     companion object {
         private val MONTH_NAMES = arrayOf("январь", "февраль", "март", "апрель", "май", "июнь", "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь")
+
+        fun newInstance(someParam: String): FinesDialogFragment {
+            val fragment = FinesDialogFragment()
+            val args = Bundle()
+            args.putString(MainFragment.USER_UUID_ARG, someParam)
+            fragment.arguments = args
+            return fragment
+        }
     }
 
     private var _binding: DialogFinesShowBinding? = null

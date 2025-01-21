@@ -25,8 +25,17 @@ object SpaceServiceModule {
         memberRepository: MemberRepository,
         repositoryFactory: RepositoryFactory,
         encProfileStorage: EncProfileStorage,
-        viewModel: DataViewModel
+        viewModel: DataViewModel,
+        spaceViewModel: SpaceViewModel
     ): SpaceService {
-        return SpaceServiceImpl(apiService, memberRepository, repositoryFactory, encProfileStorage, viewModel)
+
+        return SpaceServiceImpl(
+            apiService,
+            memberRepository,
+            repositoryFactory,
+            encProfileStorage,
+            viewModel,
+            spaceViewModel
+        )
     }
 }

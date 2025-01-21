@@ -11,6 +11,7 @@ import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.data.ProfileStorage
+import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.DialogSyncingDataBinding
 import com.efedorchenko.timely.fragment.support.DoSyncButtonListener
 import com.efedorchenko.timely.service.SpaceService
@@ -31,6 +32,9 @@ class SyncDialogFragment : DialogFragment() {
 
     @Inject
     lateinit var spaceService: SpaceService
+
+    @Inject
+    lateinit var spaceViewModel: SpaceViewModel
 
     private var _binding: DialogSyncingDataBinding? = null
     private val binding get() = _binding!!
@@ -78,7 +82,7 @@ class SyncDialogFragment : DialogFragment() {
             }
         }
         binding.doSyncButton.setOnClickListener(
-            DoSyncButtonListener(this, spaceService, binding, viewModel, profileStorage)
+            DoSyncButtonListener(this, spaceService, binding, viewModel, profileStorage, spaceViewModel)
         )
     }
 

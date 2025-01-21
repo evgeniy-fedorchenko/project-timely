@@ -18,6 +18,7 @@ import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.data.ProfileStorage
+import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.FragmentMainBinding
 import com.efedorchenko.timely.fragment.support.CalendarAdapter
 import com.efedorchenko.timely.fragment.support.NavigationMenuListener
@@ -41,6 +42,9 @@ class MainFragment : Fragment() {
 
     @Inject
     lateinit var viewModel: DataViewModel
+
+    @Inject
+    lateinit var spaceViewModel: SpaceViewModel
 
     @Inject
     lateinit var encProfileStorage: EncProfileStorage
@@ -68,9 +72,11 @@ class MainFragment : Fragment() {
         setupSideMenu()   // Side navigation menu
 
         lifecycleScope.launch {
-            viewModel.switchToMember.collect {
-                setupSummaryCard(it)
-                setupViewPager(it)
+            spaceViewModel.selectedMember.collect {
+                it?.let {
+                    setupSummaryCard(it.userUuid)
+                    setupViewPager(it.userUuid)
+                }
             }
         }
         lifecycleScope.launch {
@@ -100,7 +106,7 @@ class MainFragment : Fragment() {
     private fun setupSummaryCard(userUuid: String?) {
         childFragmentManager.commit {
             setReorderingAllowed(true)
-            replace(R.id.summary_card, SummaryFragment.newInstance(userUuid))
+            replace(R.id.summary_card, SummaryFragment())
             if (userUuid != null) {
                 runOnCommit {
                     viewModel.updateLiveData(DataType.EVENT, LocalDate.now(), userUuid)
@@ -153,7 +159,7 @@ class MainFragment : Fragment() {
         }
 
         lifecycleScope.launch {
-            viewModel.needSwitchSpaceItemsInSideMenu.collect { needsSwitch ->
+            spaceViewModel.needSwitchSpaceItemsInSideMenu.collect { needsSwitch ->
                 if (needsSwitch) {
                     if (mySpaceItem.isVisible && !connectToSpaceItem.isVisible) {
                         mySpaceItem.isVisible = false
