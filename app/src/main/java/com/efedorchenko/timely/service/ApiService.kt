@@ -19,9 +19,7 @@ interface ApiService {
 
     suspend fun save(data: AbstractData): ApiResponse<AbstractData>
 
-    suspend fun getMembers(): ApiResponse<MembersResult>
-
-    suspend fun getMembers(since: Instant?): ApiResponse<MembersResult> // TODO: посмотреть, может можно соединить с предыдущей функцией
+    suspend fun getMembers(since: Instant? = null): ApiResponse<MembersResult>
 
     suspend fun getRange(dataRangeRequest: DataRangeRequest, dataType: DataType): ApiResponse<List<AbstractData>>
 

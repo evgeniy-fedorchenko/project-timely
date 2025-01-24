@@ -33,9 +33,9 @@ class ApiServiceImpl @Inject constructor(
     companion object {
         /* Headers */
         private const val RQUID = "RqUID"
-
         private const val AUTHORIZATION = "Authorization"
         private val APPLICATION_JSON_MT = "application/json".toMediaType()
+
         /* Paths */
         private const val BASE_URL = "http://192.168.1.104:8080/api/v1"
 
@@ -61,7 +61,6 @@ class ApiServiceImpl @Inject constructor(
     override suspend fun login(credentials: Credentials): ApiResponse<AuthResponse> = withContext(Dispatchers.IO) {
         val request = Request.Builder()
             .url(LOGIN_PATH)
-            .header(RQUID, UUID.randomUUID().toString())
             .post(Json.encodeToString(credentials).toRequestBody(APPLICATION_JSON_MT))
             .build()
 
@@ -72,7 +71,6 @@ class ApiServiceImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             val request = Request.Builder()
                 .url(REG_PATH)
-                .header(RQUID, UUID.randomUUID().toString())
                 .post(Json.encodeToString(registerRequest).toRequestBody(APPLICATION_JSON_MT))
                 .build()
 
@@ -82,33 +80,16 @@ class ApiServiceImpl @Inject constructor(
     override suspend fun save(data: AbstractData): ApiResponse<AbstractData> = withContext(Dispatchers.IO) {
         val request = Request.Builder()
             .url(DATA_PATH)
-            .header(RQUID, UUID.randomUUID().toString())
-            .header(AUTHORIZATION, getJwtToken())
             .post(Json.encodeToString(data).toRequestBody(APPLICATION_JSON_MT))
             .build()
 
         return@withContext execute<AbstractData>(request)
     }
 
-    override suspend fun getMembers(): ApiResponse<MembersResult> = withContext(Dispatchers.IO) {
-        return@withContext getMembers(SPACE_PATH.toHttpUrl())
-    }
-
     override suspend fun getMembers(since: Instant?): ApiResponse<MembersResult> = withContext(Dispatchers.IO) {
-        val urlBuilder = SPACE_PATH.toHttpUrl().newBuilder()
-        since?.let { urlBuilder.addQueryParameter(SINCE_QPARAM_NAME, it.toString()) }
-        return@withContext getMembers(urlBuilder.build())
-    }
-
-    private fun getMembers(url: HttpUrl): ApiResponse<MembersResult> {
-        val request = Request.Builder()
-            .url(url)
-            .header(RQUID, UUID.randomUUID().toString())
-            .header(AUTHORIZATION, getJwtToken())
-            .get()
-            .build()
-
-        return execute<MembersResult>(request)
+        val url = SPACE_PATH
+        since?.let { url.toHttpUrl().newBuilder().addQueryParameter(SINCE_QPARAM_NAME, it.toString()).build() }
+        return@withContext execute<MembersResult>(Request.Builder().url(url).get().build())
     }
 
     override suspend fun getRange(
@@ -116,8 +97,6 @@ class ApiServiceImpl @Inject constructor(
     ): ApiResponse<List<AbstractData>> = withContext(Dispatchers.IO) {
         val request = Request.Builder()
             .url("$DATA_PATTERN$dataType")
-            .header(RQUID, UUID.randomUUID().toString())
-            .header(AUTHORIZATION, getJwtToken())
             .post(Json.encodeToString(dataRangeRequest).toRequestBody(APPLICATION_JSON_MT))
             .build()
 
@@ -133,13 +112,7 @@ class ApiServiceImpl @Inject constructor(
         val urlBuilder = "$DATA_PATTERN$dataType".toHttpUrl().newBuilder()
         userId?.let { urlBuilder.addQueryParameter(USER_ID_QPARAM_NAME, it) }
         since?.let { urlBuilder.addQueryParameter(SINCE_QPARAM_NAME, it.toString()) }
-
-        val request = Request.Builder()
-            .url(urlBuilder.build())
-            .header(RQUID, UUID.randomUUID().toString())
-            .header(AUTHORIZATION, getJwtToken())
-            .get()
-            .build()
+        val request = Request.Builder().url(urlBuilder.build()).get().build()
 
         return@withContext execute<List<AbstractData>>(request)
     }
@@ -147,8 +120,6 @@ class ApiServiceImpl @Inject constructor(
     override suspend fun connectToSpace(key: String): ApiResponse<SpaceConnectResponse> = withContext(Dispatchers.IO) {
         val request = Request.Builder()
             .url(SPACE_PATH.toHttpUrl().newBuilder().addQueryParameter(KEY_QPARAM_NAME, key).build())
-            .header(RQUID, UUID.randomUUID().toString())
-            .header(AUTHORIZATION, getJwtToken())
             .patch(ByteArray(0).toRequestBody(null))  // Empty request body
             .build()
 
@@ -156,69 +127,64 @@ class ApiServiceImpl @Inject constructor(
     }
 
     override suspend fun leaveSpace(): ApiResponse<Boolean> = withContext(Dispatchers.IO) {
-        val request = Request.Builder()
-            .url(KICK_PATH)
-            .header(RQUID, UUID.randomUUID().toString())
-            .header(AUTHORIZATION, getJwtToken())
-            .get()
-            .build()
-
-        return@withContext execute<Boolean>(request)
+        return@withContext execute<Boolean>(Request.Builder().url(KICK_PATH).get().build())
     }
 
-    private inline fun <reified T> execute(request: Request): ApiResponse<T> {
+    private inline fun <reified T> execute(request: Request, withJwt: Boolean = true): ApiResponse<T> {
+        val rqUid = UUID.randomUUID().toString()
+
         return try {
-            val response = client.newCall(request).execute()
+            val builder = request.newBuilder().addHeader(RQUID, rqUid)
+            if (withJwt) {
+                builder.addHeader(AUTHORIZATION, "Bearer ${encProfileStorage.getApiToken()}")
+            }
+            val response = client.newCall(builder.build()).execute()
             val body = response.body?.string()
 
             when (response.code) {
                 in 200..299 -> handleSuccess<T>(body)
-                400, in 404..408, in 410..499 -> handleClientError(body)
-                401, 403, 409 -> handleAuthError<T>(body)
-                else -> ApiResponse.Error(ApiErrorCode.SERVER)
+                400, in 404..408, in 410..499 -> handleClientError(body, rqUid)
+                401, 403, 409 -> handleAuthError<T>(body, rqUid)
+                else -> ApiResponse.Error(rqUid, ApiErrorCode.SERVER)
             }
 
         } catch (e: Exception) {
             e.message?.let { Log.d("e", it) }
-            ApiResponse.Error(ApiErrorCode.SERVER)
+            ApiResponse.Error(rqUid, ApiErrorCode.SERVER)
         }
     }
 
     private inline fun <reified T> handleSuccess(body: String?): ApiResponse<T> {
-        val success = if (body.isNullOrEmpty()) {
+        return if (body.isNullOrEmpty()) {
             ApiResponse.Success()
         } else {
             ApiResponse.Success(Json.decodeFromString<T>(body))
         }
-        return success
     }
 
-    private inline fun <reified T> handleClientError(body: String?): ApiResponse<T> {
-        val error = if (body.isNullOrEmpty()) {
-            ApiResponse.Error(ApiErrorCode.VALIDATION)
+    private inline fun <reified T> handleClientError(body: String?, rqUid: String?): ApiResponse<T> {
+        return if (body.isNullOrEmpty()) {
+            ApiResponse.Error(rqUid, ApiErrorCode.VALIDATION)
         } else {
             ApiResponse.Error( // FIXME: посмотреть как мапить ошибки ErrorResponse
+                rqUid = rqUid,
                 apiErrorCode = ApiErrorCode.CLIENT,
                 errorData = Json.decodeFromString<T>(body)
             )
         }
-        return error
     }
 
-    private inline fun <reified T> handleAuthError(body: String?): ApiResponse<T> {
-        val error = if (body.isNullOrEmpty()) {
-            ApiResponse.Error(ApiErrorCode.AUTH)
+    private inline fun <reified T> handleAuthError(body: String?, rqUid: String?): ApiResponse<T> {
+        return if (body.isNullOrEmpty()) {
+            ApiResponse.Error(rqUid, ApiErrorCode.AUTH)
         } else {
             ApiResponse.Error(
+                rqUid = rqUid,
                 apiErrorCode = ApiErrorCode.AUTH,
                 errorData = Json.decodeFromString<T>(body)
             )
         }
-        return error
     }
-
-    private fun getJwtToken() = "Bearer ${encProfileStorage.getApiToken()}"
-
 }
 
 /*
