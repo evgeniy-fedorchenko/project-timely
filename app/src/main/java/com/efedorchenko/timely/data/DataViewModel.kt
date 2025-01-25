@@ -25,9 +25,37 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import okio.IOException
 import org.threeten.bp.LocalDate
+import org.threeten.bp.YearMonth
 import javax.inject.Inject
 
-// TODO: инжектить только фабрику, наследников инициализировать во вторичном конструкторе
+/*
+* Как сохраняются и отображаются данные в разных сценариях:
+*
+* 1. При создании нового инстанса фрагмента каледаря, в самой пеовой фазе (в onCreate) вызывается метод getEventsAsync,
+*    чтобы данные загружались из репозитория параллельно с построением фрагмента. Далее (как можно позде) происходит
+*    проверка готовности и ожидание, если данные еще не готовы. После получения данных они отрисовываются на каледаре
+*    Почему не используется прямое взятие из viewModel.events?
+*    - Потому что там содержаться данные текущего месяца, а не того, который требуется построить
+*    Почему не выполняется updateLiveData, чтобы загрузить во viewModel.events данные, а потом просто не взять их?
+*    - Потому что нет гарантий, что к моменту взятия данные там будут лежать уже новые готовые данные. Есть вероятность,
+*      что поле не успеет обновиться и будут взяты новые данные
+*
+* 2. При добавлении нового события руками юзера в календарь)
+*    Выполнение исходит из AddEventDialog или AddFineDialog, который принимает на вход слушатель кнопки сохранения,
+*    который реализован прямо на соответствующем фрагменте. Соотвтетствеено при сохранении выполнение переходит во
+*    фрагмент, где происходит обновление ячейки (CalendarFragment.updateCell), данные смены рисуются на соответсвующей
+*    ячейке. Так же параллельно viewModel сохраняет и отправляет данные в фоне
+*
+* 3. При получении новых данных по http (через обновление данных). Сервис, занимающийся вызовом API сохраняет полученные
+*    данные в репозиторий, а так же вызывает метод updateLiveData, который перезагружает viewModel новыми, только что
+*    сохраненными данными и емитит фгал необходимости обновления данных. Фрагмент ловит этот флаг и перерисовывает весь
+*    календарь
+*    Почему бы просто не подписаться на обновления viewModel.events?
+*    - Потому что это помешает четкому полению данных при изначальном создании календаря. Когда надо иметь контроль
+*      над моментом запуска обновления и взятия новых данных. Если запустить обновление во фрагменте как можно раньше
+*      и далее просто налеяться на этого слушателя - не получиться выставить на него таймаут получения данных и
+*      отобразить ошибку загрузки.
+*/
 class DataViewModel @Inject constructor(
     application: Application,
     private val repositoryFactory: RepositoryFactory,
@@ -58,8 +86,8 @@ class DataViewModel @Inject constructor(
     /* Эмит ошибки синзронизации */
     private val _alert = MutableSharedFlow<String>()
     val alert = _alert.asSharedFlow()
-    private val emitNotSynced: suspend () -> Unit = {
-        _alert.emit(ToastHelper.NOT_SYNCHRONIZED)
+    val emitNotSynced: suspend () -> Unit = {
+        _alert.emit(ToastHelper.NOT_SYNCED)
     }
 
     // TODO: Посмотреть, может можно не эмитить, а просто подписаться на events и апдейты будут сами приходить
@@ -78,12 +106,10 @@ class DataViewModel @Inject constructor(
 
     fun addNewData(data: AbstractData) {
         viewModelScope.launch {
-            val repository = repositoryFactory.getRepository(data)
-            val appId = repository.save(data)
-            data.appId = appId
+            val savedData = repositoryFactory.getRepository(data).save(data)
             when (data.getType()) {
-                EVENT -> _events.value = (_events.value ?: emptyList()) + data as Event
-                FINE -> _fines.value = (_fines.value ?: emptyList()) + data as Fine
+                EVENT -> _events.value = (_events.value ?: emptyList()) + savedData as Event
+                FINE -> _fines.value = (_fines.value ?: emptyList()) + savedData as Fine
             }
             if (!sendData(data)) {
                 emitNotSynced.invoke()
@@ -160,14 +186,20 @@ class DataViewModel @Inject constructor(
         }
     }
 
-    fun updateLiveData(dataType: DataType, date: LocalDate, userUuid: String? = null) {
+    fun updateLiveData(dataType: DataType? = null, userUuid: String? = null) {
         viewModelScope.launch {
-            val monthUID = MonthUID.create(date)
-            when (dataType) {
-                EVENT -> doUpdateEventsLiveData(monthUID, userUuid)
-                FINE -> doUpdateFinesLiveData(monthUID, userUuid)
+            val yearMonth = YearMonth.now().plusMonths(monthOffset.value?.toLong() ?: 0)
+            val monthUID = MonthUID.create(yearMonth)
+            dataType?.let {
+                when (dataType) {
+                    EVENT -> doUpdateEventsLiveData(monthUID, userUuid)
+                    FINE -> doUpdateFinesLiveData(monthUID, userUuid)
+                }
+            } ?: run {
+                doUpdateEventsLiveData(monthUID, userUuid)
+                doUpdateFinesLiveData(monthUID, userUuid)
             }
-            emitNeedUpdateData()
+            emitNeedUpdateData.invoke()
         }
     }
 

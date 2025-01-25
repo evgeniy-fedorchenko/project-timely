@@ -22,12 +22,10 @@ import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.FragmentMainBinding
 import com.efedorchenko.timely.fragment.support.CalendarAdapter
 import com.efedorchenko.timely.fragment.support.NavigationMenuListener
-import com.efedorchenko.timely.model.DataType
 import com.efedorchenko.timely.service.ToastHelper
 import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import org.threeten.bp.LocalDate
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -109,9 +107,7 @@ class MainFragment : Fragment() {
             replace(R.id.summary_card, SummaryFragment())
             if (userUuid != null) {
                 runOnCommit {
-                    viewModel.updateLiveData(DataType.EVENT, LocalDate.now(), userUuid)
-                    viewModel.updateLiveData(DataType.FINE, LocalDate.now(), userUuid)
-
+                    viewModel.updateLiveData(userUuid = userUuid)
                 }
             }
         }
