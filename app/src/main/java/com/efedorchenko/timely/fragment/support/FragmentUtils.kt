@@ -1,10 +1,13 @@
 package com.efedorchenko.timely.fragment.support
 
+import android.app.Dialog
 import android.content.Context
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ProgressBar
 import androidx.fragment.app.FragmentActivity
+import com.google.android.material.R.id.design_bottom_sheet
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 
 class FragmentUtils {
 
@@ -31,6 +34,14 @@ class FragmentUtils {
 
         fun hideLoading(loadingProgressBar: ProgressBar) {
             loadingProgressBar.visibility = View.GONE
+        }
+
+        fun setUpDialogListener(dialog: Dialog?) {
+            dialog?.setOnShowListener {
+                dialog.findViewById<View>(design_bottom_sheet)?.let {
+                    BottomSheetBehavior.from(it).state = BottomSheetBehavior.STATE_EXPANDED
+                }
+            }
         }
     }
 }

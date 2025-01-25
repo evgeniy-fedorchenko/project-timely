@@ -6,14 +6,13 @@ import android.view.View
 import android.view.ViewGroup
 import com.efedorchenko.timely.databinding.DialogEventAddBinding
 import com.efedorchenko.timely.fragment.support.AddEventListener
+import com.efedorchenko.timely.fragment.support.FragmentUtils
 import com.efedorchenko.timely.input.AddEventDialogFieldsWatcher
 import com.efedorchenko.timely.input.CommentInputFilter
 import com.efedorchenko.timely.input.HoursInputFilter
 import com.efedorchenko.timely.input.MinutesInputFilter
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.service.ToastHelper
-import com.google.android.material.R.id.design_bottom_sheet
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.threeten.bp.Duration
 import org.threeten.bp.LocalDate
@@ -41,11 +40,13 @@ class AddEventDialog : BottomSheetDialogFragment() {
         this.addEventListener = listener
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
-
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = DialogEventAddBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         val targetDate = LocalDate.parse(arguments?.getString(SELECTED_DATE_KEY))
         val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale("ru"))
@@ -82,18 +83,11 @@ class AddEventDialog : BottomSheetDialogFragment() {
                 dismiss()
             }
         }
-        return binding.root
     }
 
-    //    Поднятие диалога над клавиатурой
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        dialog?.setOnShowListener {
-            val bottomSheet = dialog?.findViewById<View>(design_bottom_sheet)
-            bottomSheet?.let { bs ->
-                BottomSheetBehavior.from(bs).state = BottomSheetBehavior.STATE_EXPANDED
-            }
-        }
+    override fun onStart() {
+        super.onStart()
+        FragmentUtils.setUpDialogListener(dialog)
     }
 
     override fun onDestroyView() {

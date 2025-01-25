@@ -1,11 +1,11 @@
 package com.efedorchenko.timely.fragment.support
 
 import com.efedorchenko.timely.model.Fine
-import org.threeten.bp.Month
+import org.threeten.bp.YearMonth
 
 interface AddFineListener {
 
-    fun showAddFineDialog(targetMonth: Month)
+    fun showAddFineDialog(targetYearMonth: YearMonth)
 
     fun onSaveFine(newFine: Fine)
 }

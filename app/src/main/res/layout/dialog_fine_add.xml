@@ -8,12 +8,13 @@
     app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
     <TextView
+        android:id="@+id/header_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:paddingTop="8dp"
         android:paddingBottom="16dp"
-        android:text="Новый штраф"
+        android:text="Новый штраф за %s"
         android:textAlignment="center"
         android:textColor="@color/light_gray"
         android:textSize="20sp"
