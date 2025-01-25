@@ -91,9 +91,8 @@ class CalendarFragment : Fragment(), AddEventListener {
         lifecycleScope.launch {
             viewModel.needUpdateData.collect { needsUpdate ->
                 if (needsUpdate) {
-                    viewModel.events.value?.forEach {
-                        updateCell(it)
-                    }
+                    monthEventsDef = viewModel.getEventsAsync(monthOffset, arguments?.getString(MainFragment.USER_UUID_ARG))
+                    updateCalendar()
                 }
             }
         }
