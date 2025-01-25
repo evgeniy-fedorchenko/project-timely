@@ -24,7 +24,7 @@ import javax.inject.Inject
 class FinesDialogFragment : DialogFragment() {
 
     companion object {
-        private val MONTH_NAMES = arrayOf("январь", "февраль", "март", "апрель", "май", "июнь", "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь")
+        val MONTH_NAMES = arrayOf("январь", "февраль", "март", "апрель", "май", "июнь", "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь")
 
         fun newInstance(someParam: String): FinesDialogFragment {
             val fragment = FinesDialogFragment()

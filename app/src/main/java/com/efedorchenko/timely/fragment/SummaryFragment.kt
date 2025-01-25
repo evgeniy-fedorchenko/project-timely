@@ -17,7 +17,7 @@ import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.Fine
 import dagger.hilt.android.AndroidEntryPoint
 import org.threeten.bp.LocalDate
-import org.threeten.bp.Month
+import org.threeten.bp.YearMonth
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -62,7 +62,7 @@ class SummaryFragment : Fragment(), AddFineListener {
             addFineButton.visibility = View.VISIBLE
             addFineButton.setOnClickListener {
                 val monthOffset = viewModel.monthOffset.value?.toLong() ?: 0
-                showAddFineDialog(LocalDate.now().plusMonths(monthOffset).month)
+                showAddFineDialog(YearMonth.from(LocalDate.now().plusMonths(monthOffset)))
             }
         }
 
@@ -75,8 +75,8 @@ class SummaryFragment : Fragment(), AddFineListener {
         _binding = null
     }
 
-    override fun showAddFineDialog(targetMonth: Month) {
-        AddFineDialog.newInstance(this, targetMonth)
+    override fun showAddFineDialog(targetYearMonth: YearMonth) {
+        AddFineDialog.newInstance(this, targetYearMonth)
             .show(parentFragmentManager, ADD_FINE_DIALOG_TAG)
     }
 
@@ -103,7 +103,6 @@ class SummaryFragment : Fragment(), AddFineListener {
 //                }
             }
         }
-
 
         viewModel.events.observe(viewLifecycleOwner) {
             if (userUuid == null) {
