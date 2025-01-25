@@ -66,7 +66,7 @@ class DataViewModel @Inject constructor(
     /* Эмит необходимости разово обновить данные data */
     private val _needUpdateData = MutableSharedFlow<Boolean>(replay = 0)
     val needUpdateData = _needUpdateData.asSharedFlow()
-    suspend fun emitNeedUpdateData() {
+    val emitNeedUpdateData: suspend () -> Unit = {
         _needUpdateData.emit(true)
     }
 
@@ -103,16 +103,14 @@ class DataViewModel @Inject constructor(
      * При конфликте (на ту же дату отправили другие данные) сервер вернет старые данные -> локальные данные
      * перезапишуться, чтобы юзер не создал данные, которые конфликтуют с теми, что уже сохранены на сервре
      */
-    // TODO: использовать просто AbstractData, а не наследника T
-    suspend fun <T : AbstractData> sendData(data: T): Boolean {
+    suspend fun sendData(data: AbstractData): Boolean {
         var success = false
         try {
             // TODO: если данные с сервера другие - надо обновлять UI
             when (val response = apiService.save(data)) {
                 is ApiResponse.Success -> response.data?.let {
                     it.appId = data.appId
-                    val repository = repositoryFactory.getRepository(data)
-                    repository.upsert(it.toInheritor())
+                    repositoryFactory.getRepository(data).upsert(it)
                     success = true
                 } ?: run { success = false }
 
@@ -136,6 +134,7 @@ class DataViewModel @Inject constructor(
     }
 
     // FIXME: заменить на deleteData(data: AbstractData)
+    // TODO: при удалении штрафа обновлять сумму в summary
     fun delete(position: Int) {
         val currentList = _fines.value?.toMutableList() ?: return
 
