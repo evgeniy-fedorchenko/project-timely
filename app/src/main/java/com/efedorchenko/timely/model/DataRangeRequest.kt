@@ -13,5 +13,14 @@ data class DataRangeRequest(
     @Serializable(with = YearMonthSerializer::class)
     private val endInclusive: YearMonth,
 
-    private val requestedUserId: String
-)
+    private val requestedUserId: String? = null
+) {
+
+    companion object {
+        fun createFirst(userId: String?): DataRangeRequest {
+            val startInclusive = YearMonth.now().minusMonths(10L)
+            val endInclusive = YearMonth.now().plusMonths(10L)
+            return DataRangeRequest(startInclusive, endInclusive, userId)
+        }
+    }
+}

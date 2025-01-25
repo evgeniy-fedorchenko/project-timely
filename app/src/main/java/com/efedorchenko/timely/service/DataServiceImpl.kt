@@ -13,7 +13,6 @@ import com.efedorchenko.timely.model.api.ApiResponse
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.threeten.bp.YearMonth
 import javax.inject.Inject
 
 class DataServiceImpl @Inject constructor(
@@ -75,10 +74,7 @@ class DataServiceImpl @Inject constructor(
     }
 
     private suspend fun getAndSaveData(userUuid: String?): Boolean {
-        val startInclusive = YearMonth.now().minusMonths(10L)
-        val endInclusive = YearMonth.now().plusMonths(10L)
-        val requestBody = DataRangeRequest(startInclusive, endInclusive, userUuid)
-
+        val requestBody = DataRangeRequest.createFirst(userUuid)
         if (!downloadData(userUuid) { apiService.getRange(requestBody, DataType.EVENT) }) {
             return false
         }
