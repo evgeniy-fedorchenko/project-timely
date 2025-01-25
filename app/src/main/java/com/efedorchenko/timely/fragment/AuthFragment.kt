@@ -20,8 +20,8 @@ import com.efedorchenko.timely.model.Model
 import com.efedorchenko.timely.model.api.Resource
 import com.efedorchenko.timely.model.auth.Credentials
 import com.efedorchenko.timely.service.AuthService
+import com.efedorchenko.timely.service.DataService
 import com.efedorchenko.timely.service.SpaceService
-import com.efedorchenko.timely.service.SpaceServiceImpl.InitResult.SUCCESS
 import com.efedorchenko.timely.service.ToastHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -35,6 +35,9 @@ class AuthFragment : Fragment() {
 
     @Inject
     lateinit var spaceService: SpaceService
+
+    @Inject
+    lateinit var dataService: DataService
 
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
@@ -95,9 +98,8 @@ class AuthFragment : Fragment() {
                 when (val result = authService.tryLogin(credentials)) {
                     is Resource.Success -> {
                         findNavController().navigate(R.id.mainFragment)
-                        val initResult = spaceService.initData()
-                        if (initResult != SUCCESS) {
-                            ToastHelper.message(initResult.failMess, context)
+                        if (!dataService.loadData()) {
+                            ToastHelper.failDownloadData(context)
                         }
                         if (result.spacePresent && !spaceService.initMembers()) {   // Все равно пытаемся, хотя бы чтобы показать тост
                             ToastHelper.failDownloadMembers(context)

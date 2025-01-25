@@ -14,6 +14,8 @@ import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.DialogSyncingDataBinding
 import com.efedorchenko.timely.fragment.support.DoSyncButtonListener
+import com.efedorchenko.timely.model.DataType
+import com.efedorchenko.timely.service.DataService
 import com.efedorchenko.timely.service.SpaceService
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -32,6 +34,9 @@ class SyncDialogFragment : DialogFragment() {
 
     @Inject
     lateinit var spaceService: SpaceService
+
+    @Inject
+    lateinit var dataService: DataService
 
     @Inject
     lateinit var spaceViewModel: SpaceViewModel
@@ -62,8 +67,8 @@ class SyncDialogFragment : DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // TODO: Просто получать количество
-        val eventsOutOfSync = viewModel.getNotSyncedEvents()
-        val finesOutOfSync = viewModel.getNotSyncedFine()
+        val eventsOutOfSync = viewModel.getNotSynced(DataType.EVENT)
+        val finesOutOfSync = viewModel.getNotSynced(DataType.FINE)
 
         with(binding) {
             if ((eventsOutOfSync.size + finesOutOfSync.size) > 0) {
@@ -82,7 +87,7 @@ class SyncDialogFragment : DialogFragment() {
             }
         }
         binding.doSyncButton.setOnClickListener(
-            DoSyncButtonListener(this, spaceService, binding, viewModel, profileStorage, spaceViewModel)
+            DoSyncButtonListener(this, spaceService, dataService, binding, profileStorage, viewModel, spaceViewModel)
         )
     }
 

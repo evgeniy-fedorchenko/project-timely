@@ -1,124 +1,30 @@
 package com.efedorchenko.timely.service
 
 import android.util.Log
-import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.data.repository.MemberRepository
-import com.efedorchenko.timely.data.repository.RepositoryFactory
-import com.efedorchenko.timely.model.AbstractData
-import com.efedorchenko.timely.model.DataRangeRequest
-import com.efedorchenko.timely.model.DataType
 import com.efedorchenko.timely.model.MembersResult
-import com.efedorchenko.timely.model.SpaceMember
+import com.efedorchenko.timely.model.SyncProcess
 import com.efedorchenko.timely.model.api.ApiResponse
 import com.efedorchenko.timely.model.auth.RoleType
-import org.threeten.bp.LocalDate
-import org.threeten.bp.YearMonth
 import javax.inject.Inject
 
 class SpaceServiceImpl @Inject constructor(
     private val apiService: ApiService,
     private val memberRepository: MemberRepository,
-    private val repositoryFactory: RepositoryFactory,
     private val encProfileStorage: EncProfileStorage,
-    private val viewModel: DataViewModel,
     private val spaceViewModel: SpaceViewModel
 ) : SpaceService {
 
-    override suspend fun initMembers(): Boolean {
-        return doUpdateMembers { apiService.getMembers() } == UpdateResult.SUCCESS
-    }
+    override suspend fun initMembers() =
+        doUpdateMembers { apiService.getMembers() } == SyncProcess.UpdateResult.SUCCESS
 
-    /**
-     * Загрузить данные участника
-     *
-     * 1. Выполняется загрузка [DataType.EVENT], при неудаче - возвращается false и перехода на юзера не происходит
-     * 2. При успехе - выполняется проверка роли: если это работник - выполняется переход на юзера и возвращает `true`
-     * 3. Если роль привилегированная - выполняется попытка загрузить [DataType.FINE]
-     *       - В случае успеха - переход на юзера и возврат `true`
-     *       - В случае неудачи - возврат `false` без перехода
-     */
-    override suspend fun downloadMember(member: SpaceMember): Boolean {
-        val startInclusive = YearMonth.now().minusMonths(10L)
-        val endInclusive = YearMonth.now().plusMonths(10L)
-        val requestBody = DataRangeRequest(startInclusive, endInclusive, member.userUuid)
+    override suspend fun updateMembers() =
+        doUpdateMembers { apiService.getMembers(memberRepository.getMaxChangedAt()) }
 
-        if (!downloadMemberData(requestBody, DataType.EVENT, member.userUuid)) {
-            return false
-        }
-            // Закоментировано для более легкого тестирования отобрражения чужих штрафов
-//        if (!encProfileStorage.isPrivileged()) {
-//            spaceViewModel.switchTo(member)
-//            return true
-//        }
-        val finesDownloaded = downloadMemberData(requestBody, DataType.FINE, member.userUuid)
-        if (finesDownloaded) {
-            spaceViewModel.switchTo(member)
-        }
-        return finesDownloaded
-    }
 
-    private suspend fun downloadMemberData(request: DataRangeRequest, type: DataType, userUuid: String): Boolean {
-        when (val response = apiService.getRange(request, type)) {
-            is ApiResponse.Success -> {
-                response.data?.let {
-                    if (it.isNotEmpty()) {
-                        repositoryFactory.getRepository(it[0]).upsertBatch(it, userUuid)
-                    }
-                    return true
-                }
-                return false
-            }
-            is ApiResponse.Error -> {
-                Log.e("Network error",
-                    "Cannot request data of member: [$userUuid], type: [$type], request body: [$request]" +
-                        "ApiErrorCode: ${response.apiErrorCode}, " +
-                        "error message: ${response.errorMessage}, " +
-                        "error data: ${response.errorData}"
-                )
-                return false
-            }
-        }
-    }
-
-    override suspend fun initData(): InitResult {
-        val userUuid = encProfileStorage.getUserUuid() ?: return InitResult.ENC_PROFILE_NULL
-
-        val startInclusive = YearMonth.now().minusMonths(10L)
-        val endInclusive = YearMonth.now().plusMonths(10L)
-        val requestBody = DataRangeRequest(startInclusive, endInclusive, userUuid)
-
-        if (!doUpdateData(DataType.EVENT) { apiService.getRange(requestBody, DataType.EVENT) }) {
-            return InitResult.FILED
-        }
-        if (!doUpdateData(DataType.FINE) { apiService.getRange(requestBody, DataType.FINE) }) {
-            return InitResult.FINES_FILED
-        }
-        return InitResult.SUCCESS
-    }
-
-    /**
-     * Запросить новые данные с сервера
-     *
-     * Отправляется наивысший `changed_at`, в ответе приходят все события после него - все они новые.
-     * Полученные данные сохраняются и обновляются их `LiveData`.
-     * По очереди для каждого типа данных: `Event`, `Fine`, `SpaceMember`
-     */
-    override suspend fun updateData(userId: String?, withMembers: Boolean): UpdateResult {
-        DataType.entries.forEach { dataType ->
-            val repository = repositoryFactory.getRepository<AbstractData>(dataType)
-            val since = repository.getMaxChangedAt()
-            if (!doUpdateData(dataType) { apiService.getUpdates(userId, dataType, since) }) {
-                return@updateData UpdateResult.FAIL
-            }
-        }
-        if (!withMembers) {
-            return UpdateResult.SUCCESS
-        }
-        return doUpdateMembers { apiService.getMembers(memberRepository.getMaxChangedAt()) }
-    }
-
+    // TODO: принимать параметр userUuid: String? - при отсутствии - кикать currentUser, при наличии - кикать переданного
     override suspend fun leaveSpace(): Boolean {
         when (val response = apiService.leaveSpace()) {
             is ApiResponse.Success -> return response.data ?: false
@@ -134,35 +40,12 @@ class SpaceServiceImpl @Inject constructor(
         }
     }
 
-    private suspend fun doUpdateData(type: DataType, func: suspend () -> ApiResponse<List<AbstractData>>): Boolean {
-        when (val response = func.invoke()) {
-            is ApiResponse.Success -> {
-                response.data?.let {
-                    if (it.isNotEmpty()) {
-                        repositoryFactory.getRepository(it[0]).upsertBatch(it)
-                        viewModel.updateLiveData(type, LocalDate.now())
-                    }
-                    return true
-                }
-                return false
-            }
-            is ApiResponse.Error -> {
-                Log.e("Network error", "Cannot request data of $type." +
-                        "ApiErrorCode: ${response.apiErrorCode}, " +
-                        "error message: ${response.errorMessage}, " +
-                        "error data: ${response.errorData}"
-                )
-                return false
-            }
-        }
-    }
-
-    private suspend fun doUpdateMembers(requestFunc: suspend () -> ApiResponse<MembersResult>): UpdateResult {
+    private suspend fun doUpdateMembers(requestFunc: suspend () -> ApiResponse<MembersResult>): SyncProcess.UpdateResult {
         when (val response = requestFunc.invoke()) {
             is ApiResponse.Success -> {
                 response.data?.let {
                     if (!it.youConsistInSpace) {
-                        return UpdateResult.NOT_CONSIST_IN_SPACE
+                        return SyncProcess.UpdateResult.NOT_CONSIST_IN_SPACE
                     }
                     if (it.members.isNotEmpty()) {
 
@@ -175,12 +58,12 @@ class SpaceServiceImpl @Inject constructor(
                         }
                         memberRepository.save(it.members)
                         memberRepository.deleteIfNotContains(it.actualIds)
-                        spaceViewModel.needSwitchSpaceItemsInSideMenu()
+//                        spaceViewModel.needSwitchSpaceItemsInSideMenu()
                         spaceViewModel.updateMembers()
                     }
-                    return UpdateResult.SUCCESS
+                    return SyncProcess.UpdateResult.SUCCESS
                 }
-                return UpdateResult.FAIL
+                return SyncProcess.UpdateResult.FAIL
             }
             is ApiResponse.Error -> {
                 Log.e("Network error", "Cannot get members from server." +
@@ -188,20 +71,9 @@ class SpaceServiceImpl @Inject constructor(
                         "error message: ${response.errorMessage}, " +
                         "error data: ${response.errorData}"
                 )
-                return UpdateResult.FAIL
+                return SyncProcess.UpdateResult.FAIL
             }
         }
-    }
-
-    enum class InitResult(val failMess: String) {
-        SUCCESS(""),                            // Успех
-        ENC_PROFILE_NULL(ToastHelper.ERROR_ENC_PROFILE), // Не удалось получить данные профиля для запроса
-        FILED(ToastHelper.ERROR_DOWNLOAD_DATA),          // Event не получилось инициализировать, поэтому Fine даже не пытались
-        FINES_FILED(ToastHelper.ERROR_DOWNLOAD_FINES)    // Event инициализрованы, Fine не удалось
-    }
-
-    enum class UpdateResult {
-        SUCCESS, FAIL, NOT_CONSIST_IN_SPACE
     }
 }
 

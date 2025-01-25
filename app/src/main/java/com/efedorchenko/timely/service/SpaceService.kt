@@ -1,18 +1,12 @@
 package com.efedorchenko.timely.service
 
-import com.efedorchenko.timely.model.SpaceMember
-import com.efedorchenko.timely.service.SpaceServiceImpl.InitResult
-import com.efedorchenko.timely.service.SpaceServiceImpl.UpdateResult
+import com.efedorchenko.timely.model.SyncProcess
 
 interface SpaceService {
 
     suspend fun initMembers(): Boolean
 
-    suspend fun downloadMember(member: SpaceMember): Boolean
-
-    suspend fun initData(): InitResult
-
-    suspend fun updateData(userId: String?, withMembers: Boolean): UpdateResult
+    suspend fun updateMembers(): SyncProcess.UpdateResult
 
     suspend fun leaveSpace(): Boolean
 }

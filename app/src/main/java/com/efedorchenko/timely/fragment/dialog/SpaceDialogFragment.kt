@@ -22,6 +22,7 @@ import com.efedorchenko.timely.databinding.DialogSpaceShowBinding
 import com.efedorchenko.timely.fragment.support.RecyclerItemDecoration
 import com.efedorchenko.timely.fragment.support.SpaceAdapter
 import com.efedorchenko.timely.model.SpaceMember
+import com.efedorchenko.timely.service.DataService
 import com.efedorchenko.timely.service.SpaceService
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
@@ -43,6 +44,9 @@ class SpaceDialogFragment : DialogFragment() {
 
     @Inject
     lateinit var spaceService: SpaceService
+
+    @Inject
+    lateinit var dataService: DataService
 
     @Inject
     lateinit var profileStorage: ProfileStorage
@@ -108,8 +112,8 @@ class SpaceDialogFragment : DialogFragment() {
         getMemberDataJob = viewLifecycleOwner.lifecycleScope.launch {
             val weakFragment = WeakReference(this@SpaceDialogFragment)
             delay(3000)  // TODO: test delay удалить
-            if (!spaceService.downloadMember(member)) {
-
+            if (!dataService.loadData(member.userUuid)) {
+                // Нарисовать плашку "вы простматриваете участника такого-то"
             }
             spaceViewModel.switchTo(member)
             dialog.dismiss()
