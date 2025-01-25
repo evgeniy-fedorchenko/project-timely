@@ -37,6 +37,7 @@ object ToastHelper {
     /* Download data */
     private const val ERROR_DOWNLOAD_DATA =        "Не удалось некоторые данные, обновите данные при подключении к сети Интернет"
     private const val ERROR_DOWNLOAD_MEMBERS =     "Не удалось загрузить участников компании, обновите данные при подключении к сети Интернет"
+    private const val ERROR_GET_MEMBER =           "Не удалось загрузить участника, проверьте интернет-соединение"
 
     /* Registration */
     private const val INVALID_NAME_ON_REG =        "Неподходящее имя. Смотри подсказку справа"
@@ -66,6 +67,7 @@ object ToastHelper {
     /* Download data */
     fun failDownloadData(c: Context) =            doShow(ERROR_DOWNLOAD_DATA, c, LENGTH_LONG)
     fun failDownloadMembers(c: Context) =         doShow(ERROR_DOWNLOAD_MEMBERS, c, LENGTH_SHORT)
+    fun errorGetMember(c: Context) =              doShow(ERROR_GET_MEMBER, c, LENGTH_SHORT)
 
     /* Registration */
     fun invalidNameOnReg(c: Context) =            doShow(INVALID_NAME_ON_REG, c, LENGTH_LONG)

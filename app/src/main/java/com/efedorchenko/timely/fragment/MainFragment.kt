@@ -1,5 +1,6 @@
 package com.efedorchenko.timely.fragment
 
+import android.content.Context
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.Spannable
@@ -21,7 +22,9 @@ import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.FragmentMainBinding
 import com.efedorchenko.timely.fragment.support.CalendarAdapter
+import com.efedorchenko.timely.fragment.support.FragmentUtils
 import com.efedorchenko.timely.fragment.support.NavigationMenuListener
+import com.efedorchenko.timely.model.SpaceMember
 import com.efedorchenko.timely.service.ToastHelper
 import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
@@ -72,6 +75,7 @@ class MainFragment : Fragment() {
         lifecycleScope.launch {
             spaceViewModel.selectedMember.collect {
                 it?.let {
+                    setupMemberCard(it, context)
                     setupSummaryCard(it.userUuid)
                     setupViewPager(it.userUuid)
                 }
@@ -179,6 +183,18 @@ class MainFragment : Fragment() {
         )
     }
 
+    private fun setupMemberCard(member: SpaceMember, context: Context) {
+        with(binding) {
+            selectedUserName.text = member.name
+            selectedUserPosition.text = getString(R.string.selected_user_position, member.position)
+            selectedUserInfo.visibility = View.VISIBLE
+            if (encProfileStorage.isPrivileged()) {
+                FragmentUtils.setupButtonAnimationAndClick(selectedUserSettingsButton, context) { showUserSettings() }
+                selectedUserSettingsButton.visibility = View.VISIBLE
+            }
+        }
+    }
+
     private fun prepareHeaderLine(rawText: String, boldEndPosition: Int): SpannableString {
         val spannablePositionText = SpannableString(rawText)
         spannablePositionText.setSpan(
@@ -186,5 +202,10 @@ class MainFragment : Fragment() {
             boldEndPosition, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
         )
         return spannablePositionText
+    }
+
+    private fun showUserSettings() {
+        // Что происходит при нажатии на кнопку настроек просматриваемого юзера
+        // binding.selectedUserSettingsButton
     }
 }
