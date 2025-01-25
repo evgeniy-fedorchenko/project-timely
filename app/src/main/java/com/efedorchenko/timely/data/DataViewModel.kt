@@ -148,12 +148,8 @@ class DataViewModel @Inject constructor(
         }
     }
 
-    fun getNotSyncedEvents(): List<Event> {
-        return eventRepository.findNullableBackendId()
-    }
-
-    fun getNotSyncedFine(): List<Fine> {
-        return fineRepository.findNullableBackendId()
+    fun getNotSynced(dataType: DataType): List<AbstractData> {
+        return repositoryFactory.get(dataType).findNullableBackendId()
     }
 
     fun updateLiveData(position: Int, userUuid: String?) {

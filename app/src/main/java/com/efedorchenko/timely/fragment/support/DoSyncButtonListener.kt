@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,10 +16,11 @@ import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.DialogDetachedFromSpaceBinding
 import com.efedorchenko.timely.databinding.DialogSyncingDataBinding
-import com.efedorchenko.timely.model.Event
-import com.efedorchenko.timely.model.Fine
+import com.efedorchenko.timely.model.DataType
+import com.efedorchenko.timely.model.SyncProcess
+import com.efedorchenko.timely.model.SyncProcess.UpdateResult
+import com.efedorchenko.timely.service.DataService
 import com.efedorchenko.timely.service.SpaceService
-import com.efedorchenko.timely.service.SpaceServiceImpl.UpdateResult
 import com.efedorchenko.timely.service.ToastHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -28,9 +30,10 @@ import kotlinx.coroutines.launch
 class DoSyncButtonListener(
     private val parent: DialogFragment,
     private val spaceService: SpaceService,
+    private val dataService: DataService,
     private val parentBinding: DialogSyncingDataBinding,
-    private val viewModel: DataViewModel,
     private val profileStorage: ProfileStorage,
+    private val viewModel: DataViewModel,
     private val spaceViewModel: SpaceViewModel
 ) : View.OnClickListener {
 
@@ -42,35 +45,31 @@ class DoSyncButtonListener(
         parentBinding.doSyncButton.text = parent.getString(R.string.sync_button_stop)
         parentBinding.loadingProgressBar.visibility = View.VISIBLE
 
-        val eventsOutOfSync = viewModel.getNotSyncedEvents()
-        val finesOutOfSync = viewModel.getNotSyncedFine()
-        var eventsNotSyncSize = eventsOutOfSync.size
-        var finesNotSyncSize = finesOutOfSync.size
-        var downloadResult: UpdateResult? = null
+        val syncProcess = SyncProcess(viewModel.getNotSynced(DataType.EVENT), viewModel.getNotSynced(DataType.FINE))
 
         syncJob = parent.lifecycleScope.launch {
             try {
 
-                doSyncLocalData(eventsOutOfSync, finesOutOfSync, this)?.let {
-                    eventsNotSyncSize = it.first
-                    finesNotSyncSize = it.second
-                }
+                doSync(syncProcess, this)
 
-                downloadResult = spaceService.updateData(null, profileStorage.spaceExists())
+            } catch (ex: Exception) {
+                Log.e("SyncError", "Sync failed", ex)
+                parent.context?.let { ToastHelper.message(ToastHelper.NOT_SYNCED, it) }
 
             } finally {
                 parentBinding.loadingProgressBar.visibility = View.INVISIBLE
                 parentBinding.doSyncButton.text = parent.getString(R.string.sync_button_sync)
-                val context = parent.requireContext()
-                if (eventsNotSyncSize == 0 && finesNotSyncSize == 0 && downloadResult == UpdateResult.SUCCESS) {
-                    ToastHelper.message(ToastHelper.ALL_SYNCED, context)
+                val context = parent.context
+                if (syncProcess.isSuccess()) {
+                    context?.let { ToastHelper.message(ToastHelper.ALL_SYNCED, it) }
                     parent.dismiss()
                 } else {
                     if (isActive) {
-                        ToastHelper.syncFiled(eventsNotSyncSize, finesNotSyncSize, downloadResult, context)
-                        if (downloadResult == UpdateResult.NOT_CONSIST_IN_SPACE) {
+                        val result = syncProcess.getResult()
+                        context?.let { ToastHelper.syncFiled(result, it) }
+                        if (result.isRemoteMembersAccepted == UpdateResult.NOT_CONSIST_IN_SPACE) {
                             parent.dismiss()
-                            showDialogDetachedFromSpace(context)
+                            context?.let { showDialogDetachedFromSpace(it) }
                             profileStorage.deleteSpace()
                             spaceViewModel.clean()
                             spaceViewModel.needSwitchSpaceItemsInSideMenu()
@@ -82,6 +81,27 @@ class DoSyncButtonListener(
         }
     }
 
+    private suspend fun doSync(syncProcess: SyncProcess, coroutineScope: CoroutineScope) {
+        val notSyncedEventsPattern = parent.getString(R.string.found_not_synced_events)
+        syncProcess.eventsOutOfSync?.forEach {
+            if (!coroutineScope.isActive) return@doSync
+            if (viewModel.sendData(it)) {
+                parentBinding.eventsCount.text = String.format(notSyncedEventsPattern, syncProcess.eventsDec())
+            }
+        }
+        val notSyncedFinesPattern = parent.getString(R.string.found_not_synced_fines)
+        syncProcess.finesOutOfSync?.forEach {
+            if (!coroutineScope.isActive) return@doSync
+            if (viewModel.sendData(it)) {
+                parentBinding.finesCount.text = String.format(notSyncedFinesPattern, syncProcess.finesDec())
+            }
+        }
+        syncProcess.isRemoteDataAccepted = dataService.updateData(null)
+        if (profileStorage.spaceExists()) {
+            syncProcess.isRemoteMembersAccepted = spaceService.updateMembers()
+        }
+    }
+
     private fun cancelIfActive(): Boolean {
         if (syncJob?.isActive == true) {
             syncJob?.cancel()
@@ -90,35 +110,6 @@ class DoSyncButtonListener(
             return true
         }
         return false
-    }
-
-    /**
-     * Отправить данные, которые еще не были отправлены на бек
-     *
-     * После получения успеха данные будут помечены как отправленные (устнаовиться `backend_id` в БД).
-     * Если отправляемые данные неконсистентны с БД сервера - за истину принимаются данные сервера
-     */
-    private suspend fun doSyncLocalData(
-        events: List<Event>, fines: List<Fine>, coroutineScope: CoroutineScope
-    ): Pair<Int, Int>? {
-
-        var eventsCount = events.size
-        var finesCount = fines.size
-        val notSyncedEventsPattern = parent.getString(R.string.found_not_synced_events)
-        events.forEach {
-            if (!coroutineScope.isActive) return@doSyncLocalData null
-            if (viewModel.sendData(it)) {
-                parentBinding.eventsCount.text = String.format(notSyncedEventsPattern, --eventsCount)
-            }
-        }
-        val notSyncedFinesPattern = parent.getString(R.string.found_not_synced_fines)
-        fines.forEach {
-            if (!coroutineScope.isActive) return@doSyncLocalData null
-            if (viewModel.sendData(it)) {
-                parentBinding.finesCount.text = String.format(notSyncedFinesPattern, --finesCount)
-            }
-        }
-        return Pair(eventsCount, finesCount)
     }
 
     private fun showDialogDetachedFromSpace(context: Context) {
