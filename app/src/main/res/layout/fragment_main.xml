@@ -31,6 +31,69 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/headerLayout" />
 
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/selected_user_info"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:background="@android:color/transparent"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toTopOf="@id/summary_card"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/view_pager">
+
+            <!-- Текст "Вы просматриваете:"-->
+            <TextView
+                android:id="@+id/static_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Вы просматриваете:"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Динамическое имя участника -->
+            <TextView
+                android:id="@+id/selected_user_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                app:layout_constraintEnd_toStartOf="@id/selected_user_settings_button"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/static_label" />
+
+            <!-- Должность -->
+            <TextView
+                android:id="@+id/selected_user_position"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                app:layout_constraintEnd_toStartOf="@id/selected_user_settings_button"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/selected_user_name" />
+
+            <!-- Кнопка настроек юзера -->
+            <ImageButton
+                android:id="@+id/selected_user_settings_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:clickable="true"
+                android:focusable="true"
+                android:src="@drawable/ic_settings"
+                android:visibility="gone"
+                app:tint="@color/weekend_gray"
+                app:layout_constraintBottom_toBottomOf="@id/selected_user_name"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/selected_user_name" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
         <!-- Вставка CardView - статистика по месяцу (статичный фрагмент, обновляются только числовые поля внутри) -->
         <FrameLayout
             android:id="@+id/summary_card"
