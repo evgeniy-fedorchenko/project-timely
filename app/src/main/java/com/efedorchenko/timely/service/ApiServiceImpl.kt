@@ -87,8 +87,13 @@ class ApiServiceImpl @Inject constructor(
     }
 
     override suspend fun getMembers(since: Instant?): ApiResponse<MembersResult> = withContext(Dispatchers.IO) {
-        val url = SPACE_PATH
-        since?.let { url.toHttpUrl().newBuilder().addQueryParameter(SINCE_QPARAM_NAME, it.toString()).build() }
+        var url = SPACE_PATH
+        since?.let {
+            url = url.toHttpUrl().newBuilder()
+                .addQueryParameter(SINCE_QPARAM_NAME, it.toString())
+                .build()
+                .toString()
+        }
         return@withContext execute<MembersResult>(Request.Builder().url(url).get().build())
     }
 
@@ -102,7 +107,6 @@ class ApiServiceImpl @Inject constructor(
 
         return@withContext execute<List<AbstractData>>(request)
     }
-
 
     override suspend fun getUpdates(
         userId: String?, dataType: DataType, since: Instant?
