@@ -7,7 +7,6 @@ import android.util.Log
 import com.efedorchenko.timely.data.repository.DatabaseConfigurer.Companion.AMOUNT_COLUMN_NAME
 import com.efedorchenko.timely.data.repository.DatabaseConfigurer.Companion.BACKEND_ID_COLUMN_NAME
 import com.efedorchenko.timely.data.repository.DatabaseConfigurer.Companion.CHANGED_AT_COLUMN_NAME
-import com.efedorchenko.timely.data.repository.DatabaseConfigurer.Companion.COMMENT_COLUMN_NAME
 import com.efedorchenko.timely.data.repository.DatabaseConfigurer.Companion.DATE_COLUMN_NAME
 import com.efedorchenko.timely.data.repository.DatabaseConfigurer.Companion.DESCRIPTION_COLUMN_NAME
 import com.efedorchenko.timely.data.repository.DatabaseConfigurer.Companion.FINES_TABLE_NAME
@@ -87,7 +86,7 @@ class FineRepository @Inject constructor(application: Application) : DataReposit
                         val id = columnAs(ID_COLUMN_NAME) { idx -> getLong(idx) }
                         val date = columnAs(DATE_COLUMN_NAME) { idx -> getString(idx) }
                         val amount = columnAs(AMOUNT_COLUMN_NAME) { idx -> getInt(idx) }
-                        val description = columnAs(COMMENT_COLUMN_NAME) { idx -> getString(idx) }
+                        val description = columnAs(DESCRIPTION_COLUMN_NAME) { idx -> getString(idx) }
 
                         if (amount != null && description != null) {
                             val fine = Fine(

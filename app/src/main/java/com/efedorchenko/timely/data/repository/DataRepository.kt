@@ -5,11 +5,11 @@ import android.content.ContentValues
 import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
-import androidx.core.content.contentValuesOf
 import com.efedorchenko.timely.data.repository.DatabaseConfigurer.Companion.BACKEND_ID_COLUMN_NAME
 import com.efedorchenko.timely.data.repository.DatabaseConfigurer.Companion.CHANGED_AT_COLUMN_NAME
 import com.efedorchenko.timely.data.repository.DatabaseConfigurer.Companion.ID_COLUMN_NAME
 import com.efedorchenko.timely.data.repository.DatabaseConfigurer.Companion.TAG
+import com.efedorchenko.timely.data.repository.DatabaseConfigurer.Companion.USER_UUID_COLUMN_NAME
 import com.efedorchenko.timely.model.AbstractData
 import com.efedorchenko.timely.model.MonthUID
 import org.threeten.bp.Instant
@@ -30,8 +30,9 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
      * Сохранить новое событие через `insert`, (без `changed_at`).
      * Сгенерировать новый `id (pk)`
      */
-    fun save(data: T): Long = saveOne(
+    fun save(data: T, userUuid: String? = null): T? = saveOne(
         writableDb = dbHelper.writableDatabase,
+        tableName = getTableName(userUuid != null),
         data = data,
         conflictAlgorithm = SQLiteDatabase.CONFLICT_NONE
     )
@@ -39,15 +40,16 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
     /**
      * Сохранить новое событие через `insertWithOnConflict (CONFLICT_REPLACE)` (защита от перезаписи).
      * Должен выполняться после синхронизации с сервером
+     * Если заполнено поле `deletedAt`, то объект будет удален
      */
-    fun upsert(data: T): Long {
+    fun upsert(data: T, userUuid: String? = null): T? {
         return if (data.deletedAt != null) {
-            if (data.appId?.let { deleteById(it) } == true) {
-                data.appId ?: -1
-            } else -1
+            delete(data)
+            return data
         } else {
             saveOne(
                 writableDb = dbHelper.writableDatabase,
+                tableName = getTableName(userUuid != null),
                 data = data,
                 conflictAlgorithm = SQLiteDatabase.CONFLICT_REPLACE
             )
@@ -58,13 +60,15 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
      * Сохранить пачку новых событий через `insert` в одной транзакции.
      * Сгенерировать новые `id (pk)`
      */
-    fun saveBatch(dataBatch: List<T>) {
+    fun saveBatch(dataBatch: List<T>, userUuid: String? = null) {
         val db = dbHelper.writableDatabase
         db.beginTransaction()
         try {
+            val tableName = getTableName(userUuid != null)
             dataBatch.forEach {
                 saveOne(
                     writableDb = dbHelper.writableDatabase,
+                    tableName = tableName,
                     data = it,
                     conflictAlgorithm = SQLiteDatabase.CONFLICT_NONE
                 )
@@ -83,11 +87,12 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
         val db = dbHelper.writableDatabase
         db.beginTransaction()
         try {
+            val tableName = getTableName(userUuid != null)
             dataBatch.forEach {
                 if (it.deletedAt != null) {
-                    it.appId?.let { id -> deleteById(id) }
+                        delete(it)
                 } else {
-                    saveOne(db, it, userUuid, SQLiteDatabase.CONFLICT_REPLACE)
+                    saveOne(db, tableName, it, userUuid, SQLiteDatabase.CONFLICT_REPLACE)
                 }
             }
             db.setTransactionSuccessful()
@@ -96,25 +101,10 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
         }
     }
 
-    // TODO: вынести getTableName() из цикла
-    private fun saveOne(writableDb: SQLiteDatabase, data: T, userUuid: String? = null, conflictAlgorithm: Int): Long {
-        try {
-            val values = extractContentValues(data, userUuid)
-            val tableName = getTableName(userUuid != null)
-            return writableDb.insertWithOnConflict(tableName, null, values, conflictAlgorithm)
-        } catch (ex: SQLException) {
-            Log.e(TAG, "Error when insert data with conflict algorithm [$conflictAlgorithm] data: $data. Ex: $ex")
-            return -1
-        }
-    }
-
-    fun setBackendProperties(data: T) {
-        dbHelper.writableDatabase.update(
-            getTableName(),
-            contentValuesOf(Pair(CHANGED_AT_COLUMN_NAME, data.changedAt), Pair(BACKEND_ID_COLUMN_NAME, data.backendId)),
-            "$ID_COLUMN_NAME = ?",
-            arrayOf(data.appId.toString())
-        )
+    fun exist(userUuid: String): Boolean {
+        val sql = "SELECT 1 FROM ${getTableName(true)} WHERE $USER_UUID_COLUMN_NAME = ? LIMIT 1"
+        return dbHelper.readableDatabase.rawQuery(sql, arrayOf(userUuid))
+            .use { cursor -> cursor.moveToFirst() }
     }
 
     fun getMaxChangedAt(): Instant? {
@@ -140,17 +130,56 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
         }
     }
 
+    fun delete(data: T): Boolean {
+        val db = dbHelper.writableDatabase
+        val deletedRows: Int
+
+        if (data.appId != null) {
+            deletedRows = db.delete(getTableName(), "$ID_COLUMN_NAME = ?", arrayOf(data.appId.toString()))
+        } else if (data.backendId != null) {
+            val whereArgs = arrayOf(data.backendId.toString())
+            deletedRows = db.delete(getTableName(), "$BACKEND_ID_COLUMN_NAME = ?", whereArgs)
+        } else {
+            Log.e(TAG, "No data was deleted, appId and backendId are null. Data: $data")
+            return false
+        }
+
+        if (deletedRows > 0) {
+            return true
+        } else {
+            Log.e(TAG, "No data was deleted. Data: $data")
+            return false
+        }
+    }
+
     fun clean() {
         dbHelper.writableDatabase.delete(getTableName(), null, null)
     }
 
-//    Для отладки
+    /**
+     * Сохранить единичный объект в переданную БД и вернуть этот же объект.
+     * Если в объекте `data` отсутствует `appId`, объект будет сохранен, как новый и возвращен с заполненным `appId`,
+     * иначе запись под указанным `id` будет обновлена с указанным `conflictAlgorithm`
+     */
+    private fun saveOne(
+        writableDb: SQLiteDatabase, tableName: String, data: T, userUuid: String? = null, conflictAlgorithm: Int
+    ): T? {
+
+        try {
+            val values = extractContentValues(data, userUuid)
+            val id = writableDb.insertWithOnConflict(tableName, null, values, conflictAlgorithm)
+            data.appId = id
+            return data
+        } catch (ex: SQLException) {
+            Log.e(TAG, "Error when insert data with conflict algorithm [$conflictAlgorithm] data: $data. Ex: $ex")
+            return null
+        }
+    }
+
+    //    Для отладки
     fun getAll(tableName: String): List<Map<String, String>> {
         val resultList = mutableListOf<Map<String, String>>()
-        val db = dbHelper.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $tableName", null)
-
-        // Получаем имена колонок
+        val cursor = dbHelper.readableDatabase.rawQuery("SELECT * FROM $tableName", null)
         val columnNames = cursor.columnNames
 
         while (cursor.moveToNext()) {
@@ -161,8 +190,6 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
         }
 
         cursor.close()
-        db.close()
-
         return resultList
     }
 }

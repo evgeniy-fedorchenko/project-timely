@@ -19,4 +19,13 @@ class RepositoryFactory @Inject constructor(application: Application) {
         DataType.EVENT -> eventRepository as DataRepository<T>
         DataType.FINE -> fineRepository as DataRepository<T>
     }
+
+    // TODO: Посмотреть, можем ли мы перейти на такие методы
+    fun <T : AbstractData> get(data: T): DataRepository<T> = getRepository(data.getType())
+
+    @Suppress("unchecked_cast")
+    fun get(dataType: DataType): DataRepository<AbstractData> = when (dataType) {
+        DataType.EVENT -> eventRepository as DataRepository<AbstractData>
+        DataType.FINE -> fineRepository as DataRepository<AbstractData>
+    }
 }
