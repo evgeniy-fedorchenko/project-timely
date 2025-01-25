@@ -1,18 +1,13 @@
 package com.efedorchenko.timely.fragment.support
 
-import android.animation.ValueAnimator
 import android.app.AlertDialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.view.LayoutInflater.from
 import android.view.MenuItem
-import android.widget.ImageButton
-import androidx.core.animation.doOnEnd
-import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
@@ -89,40 +84,17 @@ class NavigationMenuListener(
         binding.workerKey.text = keys?.workerKey
         binding.bossKey.text = keys?.bossKey
 
-        setupButtonAnimationAndClick(binding.workerKeyCopyButton, context) {
+        FragmentUtils.setupButtonAnimationAndClick(binding.workerKeyCopyButton, context) {
             copyToClipboard(context, "worker_key", binding.workerKey.text.toString())
         }
-        setupButtonAnimationAndClick(binding.bossKeyCopyButton, context) {
+        FragmentUtils.setupButtonAnimationAndClick(binding.bossKeyCopyButton, context) {
             copyToClipboard(context, "boss_key", binding.bossKey.text.toString())
         }
-
         dialog.show()
     }
 
-    private fun setupButtonAnimationAndClick(
-        button: ImageButton, context: Context, onClick: () -> Unit
-    ) {
-        val whiteColor = ContextCompat.getColor(context, R.color.weekend_gray)
-        val blackColor = ContextCompat.getColor(context, R.color.dark_gray)
-
-        button.setOnClickListener {
-            ToastHelper.keyCopied(context)
-            button.animate().scaleX(0.9f).scaleY(0.9f).setDuration(150).withEndAction {
-                button.animate().scaleX(1f).scaleY(1f).setDuration(150).start()
-            }.start()
-
-            ValueAnimator.ofArgb(whiteColor, blackColor, whiteColor).apply {
-                duration = 300
-                addUpdateListener { animator ->
-                    button.imageTintList = ColorStateList.valueOf(animator.animatedValue as Int)
-                }
-                doOnEnd { onClick() }
-                start()
-            }
-        }
-    }
-
     private fun copyToClipboard(context: Context, label: String, text: String) {
+        ToastHelper.keyCopied(context)
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText(label, text)
         clipboard.setPrimaryClip(clip)

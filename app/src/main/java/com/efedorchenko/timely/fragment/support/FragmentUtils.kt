@@ -1,11 +1,17 @@
 package com.efedorchenko.timely.fragment.support
 
+import android.animation.ValueAnimator
 import android.app.Dialog
 import android.content.Context
+import android.content.res.ColorStateList
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.ImageButton
 import android.widget.ProgressBar
+import androidx.core.animation.doOnStart
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
+import com.efedorchenko.timely.R
 import com.google.android.material.R.id.design_bottom_sheet
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 
@@ -40,6 +46,26 @@ class FragmentUtils {
             dialog?.setOnShowListener {
                 dialog.findViewById<View>(design_bottom_sheet)?.let {
                     BottomSheetBehavior.from(it).state = BottomSheetBehavior.STATE_EXPANDED
+                }
+            }
+        }
+
+         fun setupButtonAnimationAndClick(button: ImageButton, context: Context, onClick: () -> Unit) {
+            val whiteColor = ContextCompat.getColor(context, R.color.weekend_gray)
+            val blackColor = ContextCompat.getColor(context, R.color.dark_gray)
+
+            button.setOnClickListener {
+                button.animate().scaleX(0.9f).scaleY(0.9f).setDuration(150).withEndAction {
+                    button.animate().scaleX(1f).scaleY(1f).setDuration(150).start()
+                }.start()
+
+                ValueAnimator.ofArgb(whiteColor, blackColor, whiteColor).apply {
+                    duration = 300
+                    addUpdateListener { animator ->
+                        button.imageTintList = ColorStateList.valueOf(animator.animatedValue as Int)
+                    }
+                    doOnStart { onClick() }
+                    start()
                 }
             }
         }
