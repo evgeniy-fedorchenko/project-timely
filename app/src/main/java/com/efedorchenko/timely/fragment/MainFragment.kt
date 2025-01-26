@@ -57,6 +57,7 @@ class MainFragment : Fragment() {
     lateinit var profileStorage: ProfileStorage
 
     private lateinit var viewPager: ViewPager2
+    private var pageChangeCallback: ViewPager2.OnPageChangeCallback? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -97,19 +98,24 @@ class MainFragment : Fragment() {
         super.onDestroyView()
         _binding = null
         viewPager.adapter = null
+        pageChangeCallback?.let { viewPager.unregisterOnPageChangeCallback(it) }
+        pageChangeCallback = null
     }
 
     private fun setupViewPager(userUuid: String?) {
         viewPager = binding.viewPager
         viewPager.adapter = CalendarAdapter(requireActivity(), userUuid)
-        viewPager.setCurrentItem(CalendarAdapter.CALENDAR_SCROLL_BORDERS / 2, false)
 
-        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+        pageChangeCallback?.let { viewPager.unregisterOnPageChangeCallback(it) }
+        pageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 viewModel.updateLiveData(position, userUuid)
                 viewModel.updateMonthOffset(position)
             }
-        })
+        }.also { viewPager.registerOnPageChangeCallback(it) }
+
+        // При установке вызывается onPageSelected, поэтому сначала обновляем колбек, потом ставим setCurrentItem
+        viewPager.setCurrentItem(CalendarAdapter.CALENDAR_SCROLL_BORDERS / 2, false)
     }
 
     private fun setupSummaryCard(userUuid: String?) {
