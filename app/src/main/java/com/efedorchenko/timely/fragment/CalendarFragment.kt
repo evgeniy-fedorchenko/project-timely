@@ -17,7 +17,7 @@ import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.databinding.CalendarGridLayoutBinding
 import com.efedorchenko.timely.fragment.dialog.AddEventDialog
-import com.efedorchenko.timely.fragment.support.AddEventListener
+import com.efedorchenko.timely.fragment.support.AddAbstractDataListener
 import com.efedorchenko.timely.model.CalendarCellBuilder
 import com.efedorchenko.timely.model.CalendarCellBuilder.CellType
 import com.efedorchenko.timely.model.Event
@@ -35,7 +35,7 @@ import java.util.Locale
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class CalendarFragment : Fragment(), AddEventListener {
+class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
 
     companion object {
         private const val MONTH_OFFSET_ARG = "month_offset"
@@ -103,7 +103,7 @@ class CalendarFragment : Fragment(), AddEventListener {
         _binding = null
     }
 
-    override fun showAddEventDialog(targetDate: LocalDate) {
+    override fun showAddDataDialog(targetDate: LocalDate) {
         val bundle = Bundle()
         bundle.putString(SELECTED_DATE_KEY, targetDate.toString())
 
@@ -112,9 +112,9 @@ class CalendarFragment : Fragment(), AddEventListener {
         addEventDialog.show(parentFragmentManager, ADD_EVENT_DIALOG_TAG)
     }
 
-    override fun onSaveEvent(event: Event) {
-        updateCell(event)
-        viewModel.addNewData(event)
+    override fun onSaveData(data: Event) {
+        updateCell(data)
+        viewModel.addNewData(data)
     }
 
     private fun updateCell(event: Event?) {

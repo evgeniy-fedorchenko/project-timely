@@ -12,16 +12,15 @@ import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.FragmentSummaryCardBinding
 import com.efedorchenko.timely.fragment.dialog.AddFineDialog
 import com.efedorchenko.timely.fragment.dialog.FinesDialogFragment
-import com.efedorchenko.timely.fragment.support.AddFineListener
+import com.efedorchenko.timely.fragment.support.AddAbstractDataListener
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.Fine
 import dagger.hilt.android.AndroidEntryPoint
 import org.threeten.bp.LocalDate
-import org.threeten.bp.YearMonth
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class SummaryFragment : Fragment(), AddFineListener {
+class SummaryFragment : Fragment(), AddAbstractDataListener<Fine> {
 
     companion object {
         private const val ADD_FINE_DIALOG_TAG = "add_fine_dialog"
@@ -62,7 +61,7 @@ class SummaryFragment : Fragment(), AddFineListener {
             addFineButton.visibility = View.VISIBLE
             addFineButton.setOnClickListener {
                 val monthOffset = viewModel.monthOffset.value?.toLong() ?: 0
-                showAddFineDialog(YearMonth.from(LocalDate.now().plusMonths(monthOffset)))
+                showAddDataDialog(LocalDate.now().plusMonths(monthOffset))
             }
         }
 
@@ -75,13 +74,13 @@ class SummaryFragment : Fragment(), AddFineListener {
         _binding = null
     }
 
-    override fun showAddFineDialog(targetYearMonth: YearMonth) {
-        AddFineDialog.newInstance(this, targetYearMonth)
+    override fun showAddDataDialog(targetDate: LocalDate) {
+        AddFineDialog.newInstance(this, targetDate)
             .show(parentFragmentManager, ADD_FINE_DIALOG_TAG)
     }
 
-    override fun onSaveFine(newFine: Fine) {
-        viewModel.addNewData(newFine)
+    override fun onSaveData(data: Fine) {
+        viewModel.addNewData(data)
     }
 
     private fun setupDataObservers() {

@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.efedorchenko.timely.databinding.DialogEventAddBinding
-import com.efedorchenko.timely.fragment.support.AddEventListener
+import com.efedorchenko.timely.fragment.support.AddAbstractDataListener
 import com.efedorchenko.timely.fragment.support.FragmentUtils
 import com.efedorchenko.timely.input.AddEventDialogFieldsWatcher
 import com.efedorchenko.timely.input.CommentInputFilter
@@ -26,7 +26,7 @@ class AddEventDialog : BottomSheetDialogFragment() {
         private val MIN_WORK_DURATION = Duration.ofHours(8)
         const val SELECTED_DATE_KEY = "selected_date"
 
-        fun newInstance(listener: AddEventListener): AddEventDialog {
+        fun newInstance(listener: AddAbstractDataListener<Event>): AddEventDialog {
             return AddEventDialog().apply { setListener(listener) }
         }
     }
@@ -34,9 +34,9 @@ class AddEventDialog : BottomSheetDialogFragment() {
     private var _binding: DialogEventAddBinding? = null
     private val binding get() = _binding!!
 
-    private var addEventListener: AddEventListener? = null
+    private var addEventListener: AddAbstractDataListener<Event>? = null
 
-    private fun setListener(listener: AddEventListener) {
+    private fun setListener(listener: AddAbstractDataListener<Event>) {
         this.addEventListener = listener
     }
 
@@ -79,7 +79,7 @@ class AddEventDialog : BottomSheetDialogFragment() {
                     workDuration = workDuration,
                     comment = comment
                 )
-                addEventListener?.onSaveEvent(event)
+                addEventListener?.onSaveData(event)
                 dismiss()
             }
         }

@@ -61,7 +61,7 @@ class CalendarCellBuilder(private val context: Context) {
                 when {
                     LocalDate.now().isAfter(date) -> ToastHelper.datePassed(context)
                     event != null -> ToastHelper.cannotEditPlaned(context)
-                    else -> fragment!!.showAddEventDialog(date)
+                    else -> fragment!!.showAddDataDialog(date)
                 }
             }
         }

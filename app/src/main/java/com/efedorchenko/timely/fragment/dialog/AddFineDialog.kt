@@ -5,8 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.efedorchenko.timely.databinding.DialogFineAddBinding
-import com.efedorchenko.timely.fragment.SummaryFragment
-import com.efedorchenko.timely.fragment.support.AddFineListener
+import com.efedorchenko.timely.fragment.support.AddAbstractDataListener
 import com.efedorchenko.timely.fragment.support.FragmentUtils
 import com.efedorchenko.timely.input.CommentInputFilter
 import com.efedorchenko.timely.input.FineAmountFilter
@@ -19,8 +18,8 @@ import org.threeten.bp.YearMonth
 class AddFineDialog : BottomSheetDialogFragment() {
 
     companion object {
-        fun newInstance(listener: SummaryFragment, targetYearMonth: YearMonth): AddFineDialog {
-            return AddFineDialog().apply { setContext(listener, targetYearMonth) }
+        fun newInstance(listener: AddAbstractDataListener<Fine>, targetDate: LocalDate): AddFineDialog {
+            return AddFineDialog().apply { setContext(listener, YearMonth.from(targetDate)) }
         }
     }
 
@@ -28,9 +27,9 @@ class AddFineDialog : BottomSheetDialogFragment() {
     private val binding get() = _binding!!
 
     private var targetYearMonth: YearMonth = YearMonth.now()
-    private var addFineListener: AddFineListener? = null
+    private var addFineListener: AddAbstractDataListener<Fine>? = null
 
-    private fun setContext(listener: SummaryFragment, targetYearMonth: YearMonth) {
+    private fun setContext(listener: AddAbstractDataListener<Fine>, targetYearMonth: YearMonth) {
         this.targetYearMonth = targetYearMonth
         this.addFineListener = listener
     }
@@ -70,7 +69,7 @@ class AddFineDialog : BottomSheetDialogFragment() {
                     description = fineCommentField.text.toString(),
                     amount = fineAmount,
                 )
-                addFineListener?.onSaveFine(fine)
+                addFineListener?.onSaveData(fine)
                 dismiss()
             }
         }
