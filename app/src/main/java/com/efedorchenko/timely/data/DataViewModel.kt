@@ -1,6 +1,7 @@
 package com.efedorchenko.timely.data
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -40,7 +41,7 @@ import javax.inject.Inject
 *    - Потому что нет гарантий, что к моменту взятия данные там будут лежать уже новые готовые данные. Есть вероятность,
 *      что поле не успеет обновиться и будут взяты новые данные
 *
-* 2. При добавлении нового события руками юзера в календарь)
+* 2. При добавлении нового события руками юзера в календарь
 *    Выполнение исходит из AddEventDialog или AddFineDialog, который принимает на вход слушатель кнопки сохранения,
 *    который реализован прямо на соответствующем фрагменте. Соотвтетствеено при сохранении выполнение переходит во
 *    фрагмент, где происходит обновление ячейки (CalendarFragment.updateCell), данные смены рисуются на соответсвующей
@@ -102,6 +103,14 @@ class DataViewModel @Inject constructor(
         val monthUID = MonthUID.create()
         _events.value = eventRepository.findByMonth(monthUID, false)
         _fines.value = fineRepository.findByMonth(monthUID, true)
+    }
+
+    @Suppress("unchecked_cast")
+    fun <T : AbstractData> get(dataType: DataType, userUuid: String? = null): List<T>? {
+        return when (dataType) {
+            EVENT -> if (userUuid == null) events.value as? List<T> else memberEvents.value as? List<T>
+            FINE -> if (userUuid == null) fines.value as? List<T> else membersFines.value as? List<T>
+        }
     }
 
     fun addNewData(data: AbstractData) {
@@ -178,6 +187,7 @@ class DataViewModel @Inject constructor(
     }
 
     fun updateLiveData(position: Int, userUuid: String?) {
+        Log.e("check_update_by_position", "pos: $position, userUuid: $userUuid, stack: ${Throwable().stackTrace.joinToString("\n")}")
         viewModelScope.launch {
             val monthOffset = CalendarAdapter.calculateMonthOffset(position)
             val monthUID = MonthUID.create(LocalDate.now().plusMonths(monthOffset.toLong()))
@@ -187,6 +197,7 @@ class DataViewModel @Inject constructor(
     }
 
     fun updateLiveData(dataType: DataType? = null, userUuid: String? = null) {
+        Log.e("check_update", "type: $dataType, userUuid: $userUuid, stack: ${Throwable().stackTrace.joinToString("\n")}")
         viewModelScope.launch {
             val yearMonth = YearMonth.now().plusMonths(monthOffset.value?.toLong() ?: 0)
             val monthUID = MonthUID.create(yearMonth)

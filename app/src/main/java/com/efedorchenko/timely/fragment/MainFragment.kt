@@ -116,11 +116,6 @@ class MainFragment : Fragment() {
         childFragmentManager.commit {
             setReorderingAllowed(true)
             replace(R.id.summary_card, SummaryFragment())
-            if (userUuid != null) {
-                runOnCommit {
-                    viewModel.updateLiveData(userUuid = userUuid)
-                }
-            }
         }
     }
 

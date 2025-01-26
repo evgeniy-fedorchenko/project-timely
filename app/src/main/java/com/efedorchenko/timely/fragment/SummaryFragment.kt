@@ -13,6 +13,7 @@ import com.efedorchenko.timely.databinding.FragmentSummaryCardBinding
 import com.efedorchenko.timely.fragment.dialog.AddFineDialog
 import com.efedorchenko.timely.fragment.dialog.FinesDialogFragment
 import com.efedorchenko.timely.fragment.support.AddAbstractDataListener
+import com.efedorchenko.timely.model.DataType
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.Fine
 import dagger.hilt.android.AndroidEntryPoint
@@ -65,6 +66,8 @@ class SummaryFragment : Fragment(), AddAbstractDataListener<Fine> {
             }
         }
 
+        updateEvents(viewModel.get(DataType.EVENT, userUuid))
+        updateFines(viewModel.get(DataType.FINE, userUuid))
         setupDataObservers()
     }
 
@@ -93,7 +96,7 @@ class SummaryFragment : Fragment(), AddAbstractDataListener<Fine> {
             if (userUuid != null) {
                 // Закоментировано для более легкого тестирования отобрражения чужих штрафов
 //                if (encProfileStorage.isPrivileged()) {
-                    updateFines(it)
+                updateFines(it)
 //                } else {
 //                    binding.finesCount.visibility = View.INVISIBLE
 //                    binding.finesAmount.visibility = View.INVISIBLE
