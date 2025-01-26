@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
+import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.DialogConnectToSpaceBinding
 import com.efedorchenko.timely.fragment.support.FragmentUtils
 import com.efedorchenko.timely.input.AuthInputWatcher
@@ -28,6 +29,9 @@ class ConnectSpaceDialogFragment : DialogFragment() {
 
     @Inject
     lateinit var spaceService: SpaceService
+
+    @Inject
+    lateinit var spaceViewModel: SpaceViewModel
 
     private var _binding: DialogConnectToSpaceBinding? = null
     private val binding get() = _binding!!
@@ -59,6 +63,7 @@ class ConnectSpaceDialogFragment : DialogFragment() {
                         when (val result = authService.connectToSpace(key)) {
                             is Resource.Success -> {
                                 dismiss()
+                                spaceViewModel.needSwitchSpaceItemsInSideMenu()
                                 ToastHelper.connectToSpaceSuccess(context)
                                 if (!spaceService.initMembers()) {
                                     ToastHelper.failDownloadMembers(context)
