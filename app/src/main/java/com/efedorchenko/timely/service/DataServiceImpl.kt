@@ -43,7 +43,6 @@ class DataServiceImpl @Inject constructor(
             return getAndSaveData(userUuid)
         }
         CoroutineScope(Dispatchers.IO).launch {
-            viewModel.updateLiveData(userUuid = userUuid)
             if (!updateData(userUuid)) {
                 viewModel.emitNotSynced.invoke()
             }
