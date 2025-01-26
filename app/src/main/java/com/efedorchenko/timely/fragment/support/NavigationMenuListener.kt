@@ -18,6 +18,7 @@ import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.data.EncProfileStorageImpl
 import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.data.ProfileStorageImpl
+import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.DialogAccessKeysBinding
 import com.efedorchenko.timely.fragment.dialog.ConnectSpaceDialogFragment
 import com.efedorchenko.timely.fragment.dialog.LeaveSpaceDialogFragment
@@ -86,12 +87,12 @@ class NavigationMenuListener(
         binding.workerKey.text = keys?.workerKey
         binding.bossKey.text = keys?.bossKey
 
-        FragmentUtils.setupButtonAnimationAndClick(binding.workerKeyCopyButton, context) {
+        FragmentUtils.setupButtonAnimationAndClick(binding.workerKeyCopyButton, context, {
             copyToClipboard(context, "worker_key", binding.workerKey.text.toString())
-        }
-        FragmentUtils.setupButtonAnimationAndClick(binding.bossKeyCopyButton, context) {
+        })
+        FragmentUtils.setupButtonAnimationAndClick(binding.bossKeyCopyButton, context, {
             copyToClipboard(context, "boss_key", binding.bossKey.text.toString())
-        }
+        })
         dialog.show()
     }
 

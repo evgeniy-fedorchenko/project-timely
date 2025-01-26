@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">project-timely</string>
     <string name="menu_desc">Menu</string>
+    <string name="home_desc">to home</string>
 
     <!-- Строки в summary_card внизу главного экрана -->
     <string name="days_worked_text">Отработано дней: %s</string>
@@ -18,5 +19,5 @@
     <string name="nav_menu_header_position">Должность: %1$s</string>
     <string name="nav_menu_header_space">Компания: %1$s</string>
     <string name="nav_menu_header_rate">Ставка: %1$d руб./ч.</string>
-    <string name="selected_user_position">Должность %1$s</string>
+    <string name="selected_user_position">Должность: %1$s</string>
 </resources>

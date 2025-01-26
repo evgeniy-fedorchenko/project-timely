@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
@@ -70,7 +71,7 @@ class MainFragment : Fragment() {
 
         setupViewPager(null)   // Calendar scroller
         setupSummaryCard(null)   // Summary card at the bottom of screen
-        setupSideMenu()   // Side navigation menu
+        setupSideMenu(context)   // Side navigation menu
 
         lifecycleScope.launch {
             spaceViewModel.selectedMember.collect {
@@ -78,6 +79,10 @@ class MainFragment : Fragment() {
                     setupMemberCard(it, context)
                     setupSummaryCard(it.userUuid)
                     setupViewPager(it.userUuid)
+                } ?: run {
+                    binding.selectedUserInfo.visibility = View.GONE
+                    setupSummaryCard(null)
+                    setupViewPager(null)
                 }
             }
         }
@@ -117,11 +122,15 @@ class MainFragment : Fragment() {
         }
     }
 
-    private fun setupSideMenu() {
+    private fun setupSideMenu(context: Context) {
         val drawerLayout = binding.mainContent
         binding.headerLayout.menuButton.setOnClickListener {
             drawerLayout.openDrawer(GravityCompat.START)
         }
+        FragmentUtils.setupButtonAnimationAndClick(binding.headerLayout.homeButton, context, {
+            spaceViewModel.resetSelectedMember()
+            binding.headerLayout.homeButton.visibility = View.GONE
+        }, ContextCompat.getColor(context, R.color.orange))
 
         val navigationView: NavigationView = binding.navView
         val headerView = navigationView.getHeaderView(0)
@@ -194,7 +203,7 @@ class MainFragment : Fragment() {
             selectedUserPosition.text = getString(R.string.selected_user_position, member.position)
             selectedUserInfo.visibility = View.VISIBLE
             if (encProfileStorage.isPrivileged()) {
-                FragmentUtils.setupButtonAnimationAndClick(selectedUserSettingsButton, context) { showUserSettings() }
+                FragmentUtils.setupButtonAnimationAndClick(selectedUserSettingsButton, context, { showUserSettings() })
                 selectedUserSettingsButton.visibility = View.VISIBLE
             }
         }

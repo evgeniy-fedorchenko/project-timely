@@ -8,7 +8,7 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageButton
 import android.widget.ProgressBar
-import androidx.core.animation.doOnStart
+import androidx.core.animation.doOnEnd
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import com.efedorchenko.timely.R
@@ -50,8 +50,12 @@ class FragmentUtils {
             }
         }
 
-         fun setupButtonAnimationAndClick(button: ImageButton, context: Context, onClick: () -> Unit) {
-            val whiteColor = ContextCompat.getColor(context, R.color.weekend_gray)
+         fun setupButtonAnimationAndClick(
+             button: ImageButton,
+             context: Context,
+             onClick: () -> Unit,
+             mainColor: Int = ContextCompat.getColor(context, R.color.weekend_gray)
+         ) {
             val blackColor = ContextCompat.getColor(context, R.color.dark_gray)
 
             button.setOnClickListener {
@@ -59,12 +63,12 @@ class FragmentUtils {
                     button.animate().scaleX(1f).scaleY(1f).setDuration(150).start()
                 }.start()
 
-                ValueAnimator.ofArgb(whiteColor, blackColor, whiteColor).apply {
+                ValueAnimator.ofArgb(mainColor, blackColor, mainColor).apply {
                     duration = 300
                     addUpdateListener { animator ->
                         button.imageTintList = ColorStateList.valueOf(animator.animatedValue as Int)
                     }
-                    doOnStart { onClick() }
+                    doOnEnd { onClick() }
                     start()
                 }
             }
