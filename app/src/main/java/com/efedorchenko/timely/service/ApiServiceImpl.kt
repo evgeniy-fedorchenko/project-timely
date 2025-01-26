@@ -47,7 +47,7 @@ class ApiServiceImpl @Inject constructor(
         private const val KICK_PATH = "$BASE_URL/spaces/kick"
 
         /* Query parameters */
-        private const val USER_ID_QPARAM_NAME = "userId"
+        private const val USER_ID_QPARAM_NAME = "targetUserId"
         private const val SINCE_QPARAM_NAME = "since"
         private const val KEY_QPARAM_NAME = "key"
     }
