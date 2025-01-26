@@ -153,7 +153,8 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
     }
 
     fun clean() {
-        dbHelper.writableDatabase.delete(getTableName(), null, null)
+        dbHelper.writableDatabase.delete(getTableName(true), null, null)
+        dbHelper.writableDatabase.delete(getTableName(false), null, null)
     }
 
     /**
