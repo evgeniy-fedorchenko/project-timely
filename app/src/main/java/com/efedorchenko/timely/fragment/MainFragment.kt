@@ -14,7 +14,9 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.viewpager2.widget.ViewPager2
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
@@ -167,11 +169,14 @@ class MainFragment : Fragment() {
             headerView.findViewById<TextView>(R.id.rate).text = preparedHeaderLine
         }
 
-        lifecycleScope.launch {
-            spaceViewModel.selectedMember.collect {
-                binding.headerLayout.homeButton.visibility = if (it == null) View.GONE else View.VISIBLE
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                spaceViewModel.selectedMember.collect {
+                    binding.headerLayout.homeButton.visibility = if (it == null) View.GONE else View.VISIBLE
+                }
             }
         }
+
         lifecycleScope.launch {
             spaceViewModel.needSwitchSpaceItemsInSideMenu.collect { needsSwitch ->
                 if (needsSwitch) {
