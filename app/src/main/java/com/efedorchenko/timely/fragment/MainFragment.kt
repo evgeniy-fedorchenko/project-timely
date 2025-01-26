@@ -159,6 +159,11 @@ class MainFragment : Fragment() {
         }
 
         lifecycleScope.launch {
+            spaceViewModel.selectedMember.collect {
+                binding.headerLayout.homeButton.visibility = if (it == null) View.GONE else View.VISIBLE
+            }
+        }
+        lifecycleScope.launch {
             spaceViewModel.needSwitchSpaceItemsInSideMenu.collect { needsSwitch ->
                 if (needsSwitch) {
                     if (mySpaceItem.isVisible && !connectToSpaceItem.isVisible) {
@@ -179,7 +184,7 @@ class MainFragment : Fragment() {
         }
         // TODO: добавить кнопку "покуинуть пространство"
         navigationView.setNavigationItemSelectedListener(
-            NavigationMenuListener(drawerLayout, viewModel, this)
+            NavigationMenuListener(drawerLayout, viewModel, spaceViewModel, this)
         )
     }
 
