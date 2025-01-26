@@ -12,10 +12,13 @@ import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.EncProfileStorageImpl
 import com.efedorchenko.timely.data.ProfileStorageImpl
+import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.DialogFinesShowBinding
 import com.efedorchenko.timely.fragment.MainFragment
 import com.efedorchenko.timely.fragment.support.FinesAdapter
 import com.efedorchenko.timely.fragment.support.RecyclerItemDecoration
+import com.efedorchenko.timely.model.DataType
+import com.efedorchenko.timely.model.Fine
 import dagger.hilt.android.AndroidEntryPoint
 import org.threeten.bp.LocalDate
 import javax.inject.Inject
@@ -42,6 +45,9 @@ class FinesDialogFragment : DialogFragment() {
     lateinit var viewModel: DataViewModel
 
     @Inject
+    lateinit var spaceViewModel: SpaceViewModel
+
+    @Inject
     lateinit var encProfileStorageImpl: EncProfileStorageImpl
 
     @Inject
@@ -59,10 +65,9 @@ class FinesDialogFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.finesRecyclerView.layoutManager = LinearLayoutManager(context)
+        val selectedMember = spaceViewModel.selectedMember.value
 
-        profileStorageImpl.getName()?.let {
-            binding.headerUserName.text = it
-        }
+        binding.headerUserName.text = selectedMember?.name ?: profileStorageImpl.getName()
 
         viewModel.monthOffset.value?.let {
             val targetDate = LocalDate.now().plusMonths(it.toLong())
@@ -71,11 +76,12 @@ class FinesDialogFragment : DialogFragment() {
             binding.headerDate.text = headerDateText
         }
 
-        if (viewModel.fines.value.isNullOrEmpty()) {
+        val fines = viewModel.get<Fine>(DataType.FINE, selectedMember?.userUuid)?.toMutableList()
+        if (fines.isNullOrEmpty()) {
             binding.emptyFinesText.visibility = View.VISIBLE
             binding.finesRecyclerView.visibility = View.GONE
         } else {
-            binding.finesRecyclerView.adapter = FinesAdapter(viewModel, encProfileStorageImpl.isPrivileged())
+            binding.finesRecyclerView.adapter = FinesAdapter(fines, viewModel, encProfileStorageImpl.isPrivileged())
         }
 
         val spaceInPixels = resources.getDimensionPixelSize(R.dimen.item_spacing_horizontal)

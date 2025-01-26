@@ -18,6 +18,7 @@ import java.text.DecimalFormat
 import java.util.Locale
 
 class FinesAdapter(
+    private val fines: MutableList<Fine>?,
     private val viewModel: DataViewModel,
     private val isUserPrivileged: Boolean
 ) : RecyclerView.Adapter<FinesAdapter.FineViewHolder>() {
@@ -26,8 +27,6 @@ class FinesAdapter(
         private val DATE_FORMATTER = DateTimeFormatter.ofPattern("d MMM", Locale("ru"))
         private val DECIMAL_FORMATTER = DecimalFormat("#,###")
     }
-
-    private val fines: MutableList<Fine>? = viewModel.fines.value?.toMutableList()
 
     inner class FineViewHolder(val binding: DialogFinesShowItemBinding) : RecyclerView.ViewHolder(binding.root)
 
