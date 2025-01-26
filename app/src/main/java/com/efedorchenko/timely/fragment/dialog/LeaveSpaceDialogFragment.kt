@@ -51,7 +51,7 @@ class LeaveSpaceDialogFragment : DialogFragment() {
                 lifecycleScope.launch {
                     try {
                         if (spaceService.leaveSpace()) {
-                            spaceViewModel.clean()
+                            spaceViewModel.cleanAll()
                             profileStorage.deleteSpace()
                             spaceViewModel.needSwitchSpaceItemsInSideMenu()
                             dismiss()

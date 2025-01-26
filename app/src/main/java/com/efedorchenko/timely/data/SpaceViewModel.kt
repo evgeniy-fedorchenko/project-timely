@@ -44,10 +44,11 @@ class SpaceViewModel @Inject constructor(
         _members.value = memberRepository.getMembersList()
     }
 
-    fun clean() {
+    fun cleanAll() {
         viewModelScope.launch {
             _members.value = emptyList()
             memberRepository.clean()
+            resetSelectedMember()
         }
     }
 

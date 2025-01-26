@@ -71,7 +71,7 @@ class DoSyncButtonListener(
                             parent.dismiss()
                             context?.let { showDialogDetachedFromSpace(it) }
                             profileStorage.deleteSpace()
-                            spaceViewModel.clean()
+                            spaceViewModel.cleanAll()
                             spaceViewModel.needSwitchSpaceItemsInSideMenu()
                             // Удалить всех участников из таблиц events и fines для участников
                         }

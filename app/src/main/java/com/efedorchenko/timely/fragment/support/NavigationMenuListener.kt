@@ -30,6 +30,7 @@ import com.google.android.material.navigation.NavigationView
 class NavigationMenuListener(
     private val drawerLayout: DrawerLayout,
     private val viewModel: DataViewModel,
+    private val spaceViewModel: SpaceViewModel,
     private val parentFragment: Fragment
 ) : NavigationView.OnNavigationItemSelectedListener {
 
@@ -63,6 +64,7 @@ class NavigationMenuListener(
                 profileStorage.deleteUserData()
                 encProfileStorage.deleteAuthData()
                 viewModel.cleanAll()
+                spaceViewModel.cleanAll()
                 parentFragment.findNavController().navigate(R.id.authFragment)
             }
             R.id.access_keys -> {
