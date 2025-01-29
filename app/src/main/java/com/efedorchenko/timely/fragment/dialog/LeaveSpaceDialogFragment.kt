@@ -8,9 +8,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
+import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.DialogLeaveSpaceBinding
+import com.efedorchenko.timely.model.auth.RoleType
 import com.efedorchenko.timely.service.SpaceService
 import com.efedorchenko.timely.service.ToastHelper
 import dagger.hilt.android.AndroidEntryPoint
@@ -25,6 +27,9 @@ class LeaveSpaceDialogFragment : DialogFragment() {
 
     @Inject
     lateinit var profileStorage: ProfileStorage
+
+    @Inject
+    lateinit var encProfileStorage: EncProfileStorage
 
     @Inject
     lateinit var spaceViewModel: SpaceViewModel
@@ -43,6 +48,7 @@ class LeaveSpaceDialogFragment : DialogFragment() {
 
         with(binding) {
             youDetachedHeader.text = youDetachedHeader.text.toString().format(profileStorage.getSpaceName())
+            configureTextAsRole(this, encProfileStorage.getRole())
 
             doLeaveButton.setOnClickListener {
                 doLeaveButton.isEnabled = false
@@ -69,6 +75,33 @@ class LeaveSpaceDialogFragment : DialogFragment() {
 
             cancelLeaveButton.setOnClickListener {
                 dismiss()
+            }
+        }
+    }
+
+    private fun configureTextAsRole(binding: DialogLeaveSpaceBinding, role: RoleType?) {
+        with(binding) {
+            when (role) {
+                RoleType.WORKER -> {
+                    workerCenterFirst.visibility = View.VISIBLE
+                    workerCenterSecond.visibility = View.VISIBLE
+                    secondHeader.visibility = View.VISIBLE
+                    commonLowerBlock.visibility = View.VISIBLE
+                    doLeaveButton.isEnabled = true
+                }
+                RoleType.BOSS -> {
+                    bossCenterFirst.visibility = View.VISIBLE
+                    secondHeader.visibility = View.VISIBLE
+                    commonLowerBlock.visibility = View.VISIBLE
+                    bossLowerBlock.visibility = View.VISIBLE
+                    doLeaveButton.isEnabled = true
+                }
+                RoleType.CREATOR -> {
+                    creatorCenterFirst.visibility = View.VISIBLE
+                    creatorCenterSecond.visibility = View.VISIBLE
+                    doLeaveButton.isEnabled = false
+                }
+                null -> TODO()
             }
         }
     }
