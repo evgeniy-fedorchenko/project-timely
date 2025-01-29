@@ -6,6 +6,7 @@ import com.efedorchenko.timely.model.AbstractData
 import com.efedorchenko.timely.model.DataRangeRequest
 import com.efedorchenko.timely.model.DataType
 import com.efedorchenko.timely.model.MembersResult
+import com.efedorchenko.timely.model.UserDataModifyDto
 import com.efedorchenko.timely.model.api.ApiErrorCode
 import com.efedorchenko.timely.model.api.ApiResponse
 import com.efedorchenko.timely.model.auth.AuthResponse
@@ -84,6 +85,15 @@ class ApiServiceImpl @Inject constructor(
             .build()
 
         return@withContext execute<AbstractData>(request)
+    }
+
+    override suspend fun change(data: UserDataModifyDto): ApiResponse<Unit> = withContext(Dispatchers.IO) {
+        val request = Request.Builder()
+            .url(DATA_PATH)
+            .patch(Json.encodeToString(data).toRequestBody(APPLICATION_JSON_MT))
+            .build()
+
+        return@withContext execute<Unit>(request)
     }
 
     override suspend fun getMembers(since: Instant?): ApiResponse<MembersResult> = withContext(Dispatchers.IO) {

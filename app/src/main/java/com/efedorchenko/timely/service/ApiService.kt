@@ -4,6 +4,7 @@ import com.efedorchenko.timely.model.AbstractData
 import com.efedorchenko.timely.model.DataRangeRequest
 import com.efedorchenko.timely.model.DataType
 import com.efedorchenko.timely.model.MembersResult
+import com.efedorchenko.timely.model.UserDataModifyDto
 import com.efedorchenko.timely.model.api.ApiResponse
 import com.efedorchenko.timely.model.auth.AuthResponse
 import com.efedorchenko.timely.model.auth.Credentials
@@ -18,6 +19,8 @@ interface ApiService {
     suspend fun register(registerRequest: RegisterRequest): ApiResponse<AuthResponse>
 
     suspend fun save(data: AbstractData): ApiResponse<AbstractData>
+
+    suspend fun change(data: UserDataModifyDto): ApiResponse<Unit>
 
     suspend fun getMembers(since: Instant? = null): ApiResponse<MembersResult>
 
