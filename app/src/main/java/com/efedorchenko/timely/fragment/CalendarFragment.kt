@@ -48,7 +48,7 @@ class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
             return CalendarFragment().apply {
                 arguments = Bundle().apply {
                     putInt(MONTH_OFFSET_ARG, monthOffset)
-                    putString(MainFragment.USER_UUID_ARG, userUuid)
+                    putString(MainWorkerFragment.USER_UUID_ARG, userUuid)
                 }
             }
         }

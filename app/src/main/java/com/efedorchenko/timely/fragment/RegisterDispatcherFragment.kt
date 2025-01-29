@@ -31,19 +31,19 @@ class RegisterDispatcherFragment : Fragment() {
         val navController = findNavController()
         binding.buttonWorkerWithSpace.setOnClickListener {
             val action = RegisterDispatcherFragmentDirections
-                .dispatchToRegisterUserFragment(RoleType.WORKER.name)
+                .dispatchToRegisterFragment(RoleType.WORKER.name)
             navController.navigate(action)
         }
 
         binding.buttonWorkerWithoutSpace.setOnClickListener {
             val action = RegisterDispatcherFragmentDirections
-                .dispatchToRegisterUserFragment(RoleType.WORKER.name, false)
+                .dispatchToRegisterFragment(RoleType.WORKER.name, false)
             navController.navigate(action)
         }
 
         binding.buttonBoss.setOnClickListener {
             val action = RegisterDispatcherFragmentDirections
-                .dispatchToRegisterUserFragment(RoleType.BOSS.name)
+                .dispatchToRegisterFragment(RoleType.BOSS.name)
             navController.navigate(action)
         }
 

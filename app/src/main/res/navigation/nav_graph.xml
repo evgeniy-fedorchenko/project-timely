@@ -18,7 +18,7 @@
 
     <fragment
         android:id="@+id/mainFragment"
-        android:name="com.efedorchenko.timely.fragment.MainFragment"
+        android:name="com.efedorchenko.timely.fragment.MainWorkerFragment"
         android:label="MainFragment" />
 
     <fragment
@@ -26,17 +26,17 @@
         android:name="com.efedorchenko.timely.fragment.RegisterDispatcherFragment"
         android:label="MainFragment">
         <action
-            android:id="@+id/dispatch_to_registerUserFragment"
-            app:destination="@id/registerUserFragment" />
+            android:id="@+id/dispatch_to_registerFragment"
+            app:destination="@id/registerFragment" />
         <action
             android:id="@+id/dispatch_to_registerCreatorFragment"
             app:destination="@id/registerCreatorFragment" />
     </fragment>
 
     <fragment
-        android:id="@+id/registerUserFragment"
-        android:name="com.efedorchenko.timely.fragment.RegisterUserFragment"
-        android:label="RegisterWorkerFragment">
+        android:id="@+id/registerFragment"
+        android:name="com.efedorchenko.timely.fragment.RegisterFragment"
+        android:label="RegisterFragment">
         <argument
             android:name="userType"
             app:argType="string" />

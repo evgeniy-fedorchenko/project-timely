@@ -13,7 +13,7 @@ import com.efedorchenko.timely.databinding.DialogRegisterPasswordHelpBinding
 import com.efedorchenko.timely.databinding.DialogRegisterPositionHelpBinding
 import com.efedorchenko.timely.databinding.DialogRegisterRepeatPasswordHelpBinding
 import com.efedorchenko.timely.databinding.DialogRegisterSpaceKeyHelpBinding
-import com.efedorchenko.timely.databinding.FragmentRegisterUserBinding
+import com.efedorchenko.timely.databinding.FragmentRegisterBinding
 import com.efedorchenko.timely.input.AuthInputWatcher
 import com.efedorchenko.timely.model.Model
 import com.efedorchenko.timely.model.auth.RegisterRequest
@@ -23,14 +23,14 @@ import com.efedorchenko.timely.service.ToastHelper
 /**
  * Регистрация для `RoleType.WORKER` (сщ вступлением в пространстово и без) и `RoleType.BOSS`
  */
-class RegisterUserFragment : AbstractRegisterFragment() {
+class RegisterFragment : AbstractRegisterFragment() {
 
-    private val args: RegisterUserFragmentArgs by navArgs()
-    private var _binding: FragmentRegisterUserBinding? = null
+    private val args: RegisterFragmentArgs by navArgs()
+    private var _binding: FragmentRegisterBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = FragmentRegisterUserBinding.inflate(inflater, container, false)
+        _binding = FragmentRegisterBinding.inflate(inflater, container, false)
         return binding.root
     }
 

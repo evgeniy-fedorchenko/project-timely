@@ -23,7 +23,7 @@ import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.data.SpaceViewModel
-import com.efedorchenko.timely.databinding.FragmentMainBinding
+import com.efedorchenko.timely.databinding.FragmentMainWorkerBinding
 import com.efedorchenko.timely.fragment.support.CalendarAdapter
 import com.efedorchenko.timely.fragment.support.FragmentUtils
 import com.efedorchenko.timely.fragment.support.NavigationMenuListener
@@ -35,13 +35,13 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainFragment : Fragment() {
+class MainWorkerFragment : Fragment() {
 
     companion object {
         const val USER_UUID_ARG = "user_uuid"
     }
 
-    private var _binding: FragmentMainBinding? = null
+    private var _binding: FragmentMainWorkerBinding? = null
     private val binding get() = _binding!!
 
     @Inject
@@ -64,7 +64,7 @@ class MainFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentMainBinding.inflate(inflater, container, false)
+        _binding = FragmentMainWorkerBinding.inflate(inflater, container, false)
         return binding.root
     }
 
