@@ -34,6 +34,7 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
         writableDb = dbHelper.writableDatabase,
         tableName = getTableName(userUuid != null),
         data = data,
+        userUuid = userUuid,
         conflictAlgorithm = SQLiteDatabase.CONFLICT_NONE
     )
 
@@ -51,6 +52,7 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
                 writableDb = dbHelper.writableDatabase,
                 tableName = getTableName(userUuid != null),
                 data = data,
+                userUuid = userUuid,
                 conflictAlgorithm = SQLiteDatabase.CONFLICT_REPLACE
             )
         }
@@ -70,6 +72,7 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
                     writableDb = dbHelper.writableDatabase,
                     tableName = tableName,
                     data = it,
+                    userUuid = userUuid,
                     conflictAlgorithm = SQLiteDatabase.CONFLICT_NONE
                 )
             }

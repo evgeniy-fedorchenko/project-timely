@@ -47,6 +47,7 @@ class FineRepository @Inject constructor(application: Application) : DataReposit
                 ?.run {
                     while (moveToNext()) {
                         val id = columnAs(ID_COLUMN_NAME) { idx -> getLong(idx) }
+                        val backendId = columnAs(BACKEND_ID_COLUMN_NAME) { idx -> getLong(idx) }
                         val date = columnAs(DATE_COLUMN_NAME) { idx -> getString(idx) }
                         val amount = columnAs(AMOUNT_COLUMN_NAME) { idx -> getInt(idx) }
                         val description = columnAs(DESCRIPTION_COLUMN_NAME) { idx -> getString(idx) }
@@ -54,6 +55,7 @@ class FineRepository @Inject constructor(application: Application) : DataReposit
                         if (amount != null && description != null) {
                             val fine = Fine(
                                 appId = id,
+                                backendId = backendId,
                                 date = LocalDate.parse(date),
                                 amount = amount,
                                 description = description

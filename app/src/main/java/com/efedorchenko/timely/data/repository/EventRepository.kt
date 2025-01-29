@@ -48,6 +48,7 @@ class EventRepository @Inject constructor(application: Application) : DataReposi
                 ?.run {
                     while (moveToNext()) {
                         val id = columnAs(ID_COLUMN_NAME) { idx -> getLong(idx) }
+                        val backendId = columnAs(BACKEND_ID_COLUMN_NAME) { idx -> getLong(idx) }
                         val date = columnAs(DATE_COLUMN_NAME) { idx -> getString(idx) }
                         val workMinutes = columnAs(WORK_MINUTES_COLUMN_NAME) { idx -> getLong(idx) }
 
@@ -58,6 +59,7 @@ class EventRepository @Inject constructor(application: Application) : DataReposi
                         if (date != null && workMinutes != null) {
                             val event = Event(
                                 appId = id,
+                                backendId = backendId,
                                 date = LocalDate.parse(date),
                                 workDuration = Duration.ofMinutes(workMinutes),
                                 comment = comment,
