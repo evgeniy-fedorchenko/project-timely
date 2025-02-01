@@ -18,7 +18,7 @@
             app:tint="@color/orange" />
 
     <TextView
-            android:id="@+id/month_year_text"
+            android:id="@+id/center_header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
@@ -37,7 +37,7 @@
         android:paddingBottom="8dp"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
-        android:visibility="visible"
+        android:visibility="gone"
         android:background="@android:color/transparent"
         android:contentDescription="@string/home_desc"
         app:srcCompat="@drawable/ic_home"
