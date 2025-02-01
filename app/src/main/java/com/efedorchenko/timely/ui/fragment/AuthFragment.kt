@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.fragment
+package com.efedorchenko.timely.ui.fragment
 
 import android.content.Context
 import android.os.Bundle
@@ -14,7 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.databinding.FragmentLoginBinding
-import com.efedorchenko.timely.fragment.support.FragmentUtils
+import com.efedorchenko.timely.ui.support.FragmentUtils
 import com.efedorchenko.timely.input.AuthInputWatcher
 import com.efedorchenko.timely.model.Model
 import com.efedorchenko.timely.model.api.Resource

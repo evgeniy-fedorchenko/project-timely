@@ -7,7 +7,7 @@
     <!-- AuthFragment -->
     <fragment
         android:id="@+id/authFragment"
-        android:name="com.efedorchenko.timely.fragment.AuthFragment"
+        android:name="com.efedorchenko.timely.ui.fragment.AuthFragment"
         android:label="AuthFragment">
         <action
             android:id="@+id/action_authFragment_to_mainWorkerFragment"
@@ -23,12 +23,12 @@
     <!-- MainBossFragment and MainWorkerFragment -->
     <fragment
         android:id="@+id/mainWorkerFragment"
-        android:name="com.efedorchenko.timely.fragment.MainWorkerFragment"
+        android:name="com.efedorchenko.timely.ui.fragment.MainWorkerFragment"
         android:label="MainWorkerFragment" />
 
     <fragment
         android:id="@+id/mainBossFragment"
-        android:name="com.efedorchenko.timely.fragment.MainBossFragment"
+        android:name="com.efedorchenko.timely.ui.fragment.MainBossFragment"
         android:label="MainBossFragment">
         <action
             android:id="@+id/action_mainBossFragment_to_mainWorkerFragment"
@@ -38,7 +38,7 @@
     <!-- register fragments -->
     <fragment
         android:id="@+id/registerDispatcherFragment"
-        android:name="com.efedorchenko.timely.fragment.RegisterDispatcherFragment"
+        android:name="com.efedorchenko.timely.ui.fragment.RegisterDispatcherFragment"
         android:label="MainFragment">
         <action
             android:id="@+id/dispatch_to_registerFragment"
@@ -50,7 +50,7 @@
 
     <fragment
         android:id="@+id/registerFragment"
-        android:name="com.efedorchenko.timely.fragment.RegisterFragment"
+        android:name="com.efedorchenko.timely.ui.fragment.RegisterFragment"
         android:label="RegisterFragment">
         <argument
             android:name="userType"
@@ -62,7 +62,7 @@
     </fragment>
     <fragment
         android:id="@+id/registerCreatorFragment"
-        android:name="com.efedorchenko.timely.fragment.RegisterCreatorFragment"
+        android:name="com.efedorchenko.timely.ui.fragment.RegisterCreatorFragment"
         android:label="RegisterCreatorFragment" />
 
 </navigation>

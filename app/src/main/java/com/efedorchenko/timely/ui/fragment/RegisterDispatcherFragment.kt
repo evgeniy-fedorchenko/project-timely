@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.fragment
+package com.efedorchenko.timely.ui.fragment
 
 import android.app.AlertDialog
 import android.graphics.Color
@@ -12,7 +12,7 @@ import androidx.navigation.fragment.findNavController
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.databinding.DialogHelpChooseRoleBinding
 import com.efedorchenko.timely.databinding.FragmentRegisterDispatcherBinding
-import com.efedorchenko.timely.fragment.AbstractRegisterFragment.Companion.HELP_DIALOG_WIDTH_RATIO
+import com.efedorchenko.timely.ui.fragment.AbstractRegisterFragment.Companion.HELP_DIALOG_WIDTH_RATIO
 import com.efedorchenko.timely.model.auth.RoleType
 
 class RegisterDispatcherFragment : Fragment() {

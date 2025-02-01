@@ -8,7 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.efedorchenko.timely.data.repository.DataRepository
 import com.efedorchenko.timely.data.repository.RepositoryFactory
-import com.efedorchenko.timely.fragment.support.CalendarAdapter
+import com.efedorchenko.timely.ui.support.CalendarAdapter
 import com.efedorchenko.timely.model.AbstractData
 import com.efedorchenko.timely.model.DataType
 import com.efedorchenko.timely.model.DataType.EVENT

@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.fragment.support
+package com.efedorchenko.timely.ui.support
 
 import android.app.AlertDialog
 import android.content.Context
@@ -17,6 +17,7 @@ import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.DialogDetachedFromSpaceBinding
 import com.efedorchenko.timely.databinding.DialogSyncingDataBinding
 import com.efedorchenko.timely.model.DataType
+import com.efedorchenko.timely.model.SaveResult
 import com.efedorchenko.timely.model.SyncProcess
 import com.efedorchenko.timely.model.SyncProcess.UpdateResult
 import com.efedorchenko.timely.service.DataService
@@ -85,14 +86,14 @@ class DoSyncButtonListener(
         val notSyncedEventsPattern = parent.getString(R.string.found_not_synced_events)
         syncProcess.eventsOutOfSync?.forEach {
             if (!coroutineScope.isActive) return@doSync
-            if (viewModel.sendData(it)) {
+            if (dataService.sendData(it) == SaveResult.Success) {
                 parentBinding.eventsCount.text = String.format(notSyncedEventsPattern, syncProcess.eventsDec())
             }
         }
         val notSyncedFinesPattern = parent.getString(R.string.found_not_synced_fines)
         syncProcess.finesOutOfSync?.forEach {
             if (!coroutineScope.isActive) return@doSync
-            if (viewModel.sendData(it)) {
+            if (dataService.sendData(it) == SaveResult.Success) {
                 parentBinding.finesCount.text = String.format(notSyncedFinesPattern, syncProcess.finesDec())
             }
         }

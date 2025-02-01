@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.fragment.dialog
+package com.efedorchenko.timely.ui.dialog
 
 import android.app.AlertDialog
 import android.graphics.Color
@@ -19,8 +19,8 @@ import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.DialogLoadingBinding
 import com.efedorchenko.timely.databinding.DialogSpaceShowBinding
-import com.efedorchenko.timely.fragment.support.RecyclerItemDecoration
-import com.efedorchenko.timely.fragment.support.SpaceAdapter
+import com.efedorchenko.timely.ui.support.RecyclerItemDecoration
+import com.efedorchenko.timely.ui.support.SpaceAdapter
 import com.efedorchenko.timely.model.SpaceMember
 import com.efedorchenko.timely.service.DataService
 import com.efedorchenko.timely.service.ToastHelper

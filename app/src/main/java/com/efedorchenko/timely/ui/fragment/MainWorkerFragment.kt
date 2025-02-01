@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.fragment
+package com.efedorchenko.timely.ui.fragment
 
 import android.content.Context
 import android.os.Bundle
@@ -14,8 +14,8 @@ import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.FragmentMainWorkerBinding
-import com.efedorchenko.timely.fragment.support.CalendarAdapter
-import com.efedorchenko.timely.fragment.support.FragmentUtils
+import com.efedorchenko.timely.ui.support.CalendarAdapter
+import com.efedorchenko.timely.ui.support.FragmentUtils
 import com.efedorchenko.timely.model.SpaceMember
 import com.efedorchenko.timely.service.ToastHelper
 import dagger.hilt.android.AndroidEntryPoint

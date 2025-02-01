@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.fragment
+package com.efedorchenko.timely.ui.fragment
 
 import android.content.Context
 import android.os.Bundle
@@ -16,8 +16,8 @@ import androidx.lifecycle.lifecycleScope
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.databinding.CalendarGridLayoutBinding
-import com.efedorchenko.timely.fragment.dialog.AddEventDialog
-import com.efedorchenko.timely.fragment.support.AddAbstractDataListener
+import com.efedorchenko.timely.ui.dialog.AddEventDialog
+import com.efedorchenko.timely.ui.support.AddAbstractDataListener
 import com.efedorchenko.timely.model.CalendarCellBuilder
 import com.efedorchenko.timely.model.CalendarCellBuilder.CellType
 import com.efedorchenko.timely.model.Event

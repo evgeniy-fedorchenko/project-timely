@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.fragment.dialog
+package com.efedorchenko.timely.ui.dialog
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable

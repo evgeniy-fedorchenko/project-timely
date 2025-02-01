@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.fragment
+package com.efedorchenko.timely.ui.fragment
 
 import android.app.AlertDialog
 import android.content.Context
@@ -20,8 +20,8 @@ import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.DialogLoadingBinding
 import com.efedorchenko.timely.databinding.FragmentMainBossBinding
-import com.efedorchenko.timely.fragment.support.RecyclerItemDecoration
-import com.efedorchenko.timely.fragment.support.SpaceAdapter
+import com.efedorchenko.timely.ui.support.RecyclerItemDecoration
+import com.efedorchenko.timely.ui.support.SpaceAdapter
 import com.efedorchenko.timely.model.SpaceMember
 import com.efedorchenko.timely.service.DataService
 import com.efedorchenko.timely.service.ToastHelper
@@ -67,7 +67,7 @@ class MainBossFragment : AbstractMainFragment() {
         binding.headerSpaceName.text = profileStorage.getSpaceName()
         binding.headerLayout.centerHeader.text = getString(R.string.boss_panel_header)
 
-        setupRecycler(context)
+        setupRecycler(context)   // Recycler of members list
     }
 
     override fun onDestroyView() {

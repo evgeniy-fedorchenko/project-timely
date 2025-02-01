@@ -1,12 +1,12 @@
-package com.efedorchenko.timely.fragment.dialog
+package com.efedorchenko.timely.ui.dialog
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.efedorchenko.timely.databinding.DialogEventAddBinding
-import com.efedorchenko.timely.fragment.support.AddAbstractDataListener
-import com.efedorchenko.timely.fragment.support.FragmentUtils
+import com.efedorchenko.timely.ui.fragment.CalendarFragment
+import com.efedorchenko.timely.ui.support.FragmentUtils
 import com.efedorchenko.timely.input.AddEventDialogFieldsWatcher
 import com.efedorchenko.timely.input.CommentInputFilter
 import com.efedorchenko.timely.input.HoursInputFilter

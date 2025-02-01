@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.fragment.support
+package com.efedorchenko.timely.ui.support
 
 import com.efedorchenko.timely.model.AbstractData
 import org.threeten.bp.LocalDate

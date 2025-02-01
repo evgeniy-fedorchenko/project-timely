@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.fragment.dialog
+package com.efedorchenko.timely.ui.dialog
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -14,9 +14,9 @@ import com.efedorchenko.timely.data.EncProfileStorageImpl
 import com.efedorchenko.timely.data.ProfileStorageImpl
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.DialogFinesShowBinding
-import com.efedorchenko.timely.fragment.AbstractMainFragment
-import com.efedorchenko.timely.fragment.support.FinesAdapter
-import com.efedorchenko.timely.fragment.support.RecyclerItemDecoration
+import com.efedorchenko.timely.ui.fragment.AbstractMainFragment
+import com.efedorchenko.timely.ui.support.FinesAdapter
+import com.efedorchenko.timely.ui.support.RecyclerItemDecoration
 import com.efedorchenko.timely.model.DataType
 import com.efedorchenko.timely.model.Fine
 import dagger.hilt.android.AndroidEntryPoint

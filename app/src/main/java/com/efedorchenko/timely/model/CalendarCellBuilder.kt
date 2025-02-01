@@ -3,8 +3,7 @@ package com.efedorchenko.timely.model
 import android.content.Context
 import android.view.View.OnClickListener
 import com.efedorchenko.timely.R
-import com.efedorchenko.timely.fragment.CalendarFragment
-import com.efedorchenko.timely.service.ToastHelper
+import com.efedorchenko.timely.ui.fragment.CalendarFragment
 import org.threeten.bp.DayOfWeek.SATURDAY
 import org.threeten.bp.DayOfWeek.SUNDAY
 import org.threeten.bp.LocalDate

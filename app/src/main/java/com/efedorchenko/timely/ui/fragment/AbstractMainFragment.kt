@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.fragment
+package com.efedorchenko.timely.ui.fragment
 
 import android.content.Context
 import android.graphics.Typeface
@@ -20,8 +20,8 @@ import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.HeaderLayoutBinding
-import com.efedorchenko.timely.fragment.support.FragmentUtils
-import com.efedorchenko.timely.fragment.support.NavigationMenuListener
+import com.efedorchenko.timely.ui.support.FragmentUtils
+import com.efedorchenko.timely.ui.support.NavigationMenuListener
 import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.launch
 

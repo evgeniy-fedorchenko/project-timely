@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.fragment.support
+package com.efedorchenko.timely.ui.support
 
 import android.view.LayoutInflater
 import android.view.View

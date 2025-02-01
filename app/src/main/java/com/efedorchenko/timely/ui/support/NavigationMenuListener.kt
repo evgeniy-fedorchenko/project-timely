@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.fragment.support
+package com.efedorchenko.timely.ui.support
 
 import android.app.AlertDialog
 import android.content.ClipData
@@ -20,10 +20,10 @@ import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.data.ProfileStorageImpl
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.DialogAccessKeysBinding
-import com.efedorchenko.timely.fragment.dialog.ConnectSpaceDialogFragment
-import com.efedorchenko.timely.fragment.dialog.LeaveSpaceDialogFragment
-import com.efedorchenko.timely.fragment.dialog.SpaceDialogFragment
-import com.efedorchenko.timely.fragment.dialog.SyncDialogFragment
+import com.efedorchenko.timely.ui.dialog.ConnectSpaceDialogFragment
+import com.efedorchenko.timely.ui.dialog.LeaveSpaceDialogFragment
+import com.efedorchenko.timely.ui.dialog.SpaceDialogFragment
+import com.efedorchenko.timely.ui.dialog.SyncDialogFragment
 import com.efedorchenko.timely.service.ToastHelper
 import com.google.android.material.navigation.NavigationView
 

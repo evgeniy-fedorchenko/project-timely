@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.fragment.dialog
+package com.efedorchenko.timely.ui.dialog
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -10,7 +10,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.DialogConnectToSpaceBinding
-import com.efedorchenko.timely.fragment.support.FragmentUtils
+import com.efedorchenko.timely.ui.support.FragmentUtils
 import com.efedorchenko.timely.input.AuthInputWatcher
 import com.efedorchenko.timely.model.Model
 import com.efedorchenko.timely.model.api.Resource

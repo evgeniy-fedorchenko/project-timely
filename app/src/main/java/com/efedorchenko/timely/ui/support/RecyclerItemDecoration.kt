@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.fragment.support
+package com.efedorchenko.timely.ui.support
 
 import android.graphics.Rect
 import android.view.View

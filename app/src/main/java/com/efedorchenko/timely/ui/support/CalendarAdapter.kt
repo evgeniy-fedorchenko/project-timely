@@ -1,9 +1,9 @@
-package com.efedorchenko.timely.fragment.support
+package com.efedorchenko.timely.ui.support
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.efedorchenko.timely.fragment.CalendarFragment
+import com.efedorchenko.timely.ui.fragment.CalendarFragment
 
 class CalendarAdapter(fa: FragmentActivity, private val userUuid: String?) : FragmentStateAdapter(fa) {
 

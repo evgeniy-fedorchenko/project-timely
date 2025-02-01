@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.fragment
+package com.efedorchenko.timely.ui.fragment
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,9 +10,9 @@ import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.FragmentSummaryCardBinding
-import com.efedorchenko.timely.fragment.dialog.AddFineDialog
-import com.efedorchenko.timely.fragment.dialog.FinesDialogFragment
-import com.efedorchenko.timely.fragment.support.AddAbstractDataListener
+import com.efedorchenko.timely.ui.dialog.AddFineDialog
+import com.efedorchenko.timely.ui.dialog.FinesDialogFragment
+import com.efedorchenko.timely.ui.support.AddAbstractDataListener
 import com.efedorchenko.timely.model.DataType
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.Fine

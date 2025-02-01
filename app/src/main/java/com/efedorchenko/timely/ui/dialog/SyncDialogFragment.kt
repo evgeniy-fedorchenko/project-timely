@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.fragment.dialog
+package com.efedorchenko.timely.ui.dialog
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -13,7 +13,7 @@ import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.DialogSyncingDataBinding
-import com.efedorchenko.timely.fragment.support.DoSyncButtonListener
+import com.efedorchenko.timely.ui.support.DoSyncButtonListener
 import com.efedorchenko.timely.model.DataType
 import com.efedorchenko.timely.service.DataService
 import com.efedorchenko.timely.service.SpaceService
