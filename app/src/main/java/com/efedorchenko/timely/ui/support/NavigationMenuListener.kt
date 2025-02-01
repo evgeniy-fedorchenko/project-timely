@@ -20,11 +20,11 @@ import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.data.ProfileStorageImpl
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.DialogAccessKeysBinding
+import com.efedorchenko.timely.service.ToastHelper
 import com.efedorchenko.timely.ui.dialog.ConnectSpaceDialogFragment
 import com.efedorchenko.timely.ui.dialog.LeaveSpaceDialogFragment
 import com.efedorchenko.timely.ui.dialog.SpaceDialogFragment
 import com.efedorchenko.timely.ui.dialog.SyncDialogFragment
-import com.efedorchenko.timely.service.ToastHelper
 import com.google.android.material.navigation.NavigationView
 
 // FIXME: подумать, как отдать сборку на di
@@ -67,11 +67,6 @@ class NavigationMenuListener(
                 viewModel.cleanAll()
                 spaceViewModel.cleanAll()
                 parentFragment.findNavController().navigate(R.id.authFragment)
-            }
-            R.id.access_keys -> {
-                if (item.isVisible) {
-                    showAccessKeysDialog(context)
-                }
             }
         }
         drawerLayout.closeDrawer(GravityCompat.START)

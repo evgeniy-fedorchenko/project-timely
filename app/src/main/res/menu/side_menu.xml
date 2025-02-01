@@ -1,7 +1,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/fill_period"
-        android:title="Заполнить период" />
+        android:title="Заполнить период"
+        android:visible="false"/>
     <item
         android:id="@+id/my_space"
         android:title="Моя команда"
@@ -16,11 +17,8 @@
         android:visible="false" />
     <item
         android:id="@+id/do_sync"
-        android:title="Обновить данные" />
-    <item
-        android:id="@+id/access_keys"
-        android:title="Ключи доступа"
-        android:visible="false" />
+        android:title="Обновить данные"
+        android:visible="false"/>
     <item
         android:id="@+id/exit"
         android:title="Выход" />
