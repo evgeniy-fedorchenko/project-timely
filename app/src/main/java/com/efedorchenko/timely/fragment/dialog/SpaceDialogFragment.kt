@@ -23,11 +23,9 @@ import com.efedorchenko.timely.fragment.support.RecyclerItemDecoration
 import com.efedorchenko.timely.fragment.support.SpaceAdapter
 import com.efedorchenko.timely.model.SpaceMember
 import com.efedorchenko.timely.service.DataService
-import com.efedorchenko.timely.service.SpaceService
 import com.efedorchenko.timely.service.ToastHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import javax.inject.Inject
@@ -42,9 +40,6 @@ class SpaceDialogFragment : DialogFragment() {
 
     @Inject
     lateinit var spaceViewModel: SpaceViewModel
-
-    @Inject
-    lateinit var spaceService: SpaceService
 
     @Inject
     lateinit var dataService: DataService
@@ -72,7 +67,7 @@ class SpaceDialogFragment : DialogFragment() {
 
         binding.membersRecyclerView.layoutManager = LinearLayoutManager(context)
         val members = spaceViewModel.members.value
-        binding.membersRecyclerView.adapter = SpaceAdapter(members, spaceService, showMemberFunc)
+        binding.membersRecyclerView.adapter = SpaceAdapter(members, showMemberFunc)
 
         val spaceInPixels = resources.getDimensionPixelSize(R.dimen.item_spacing_horizontal)
         binding.membersRecyclerView.addItemDecoration(RecyclerItemDecoration(spaceInPixels))
@@ -99,31 +94,31 @@ class SpaceDialogFragment : DialogFragment() {
     private fun showMember(member: SpaceMember) {
         val context = context ?: return
 
-        val binding = DialogLoadingBinding.inflate(layoutInflater)
-        val dialog = AlertDialog.Builder(context).setView(binding.root).create()
-        dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        binding.memberName.text = member.name
+        val loadingBinding = DialogLoadingBinding.inflate(layoutInflater)
+        val loadingDialog = AlertDialog.Builder(context).setView(loadingBinding.root).create()
+        loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        loadingBinding.memberName.text = member.name
+        loadingDialog.show()
 
         var getMemberDataJob: Job? = null
-        binding.buttonCancel.setOnClickListener {
+        loadingBinding.buttonCancel.setOnClickListener {
             getMemberDataJob?.cancel()
-            dialog.dismiss()
+            loadingDialog.dismiss()
         }
 
         getMemberDataJob = viewLifecycleOwner.lifecycleScope.launch {
             val weakFragment = WeakReference(this@SpaceDialogFragment)
-            delay(3000)  // TODO: test delay удалить
             if (!dataService.loadData(member.userUuid)) {
                 ToastHelper.errorGetMember(context)
-                dialog.dismiss()
+                loadingDialog.dismiss()
                 return@launch
             }
+
             spaceViewModel.switchTo(member)
-            dialog.dismiss()
+            loadingDialog.dismiss()
             if (isAdded) {
                 weakFragment.get()?.dismiss()
             }
         }
-        dialog.show()
     }
 }

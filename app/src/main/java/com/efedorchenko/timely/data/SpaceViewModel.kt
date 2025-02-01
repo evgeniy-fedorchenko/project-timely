@@ -89,14 +89,14 @@ class SpaceViewModel @Inject constructor(
     }
 
     /**
-     * Переключиться на юзера из команды - отображение, если роль позволяет - редактирование.
+     * Переключиться на юзера из команды - отображение, если роль позволяет - редактирование
      */
     fun switchTo(spaceMember: SpaceMember) {
         _selectedMember.value = spaceMember
     }
 
     /**
-     * Переключиться на авторизованного юзера - "вернуться домой".
+     * Переключиться на авторизованного юзера - "вернуться домой"
      */
     fun resetSelectedMember() {
         _selectedMember.value = null

@@ -1,16 +1,16 @@
 package com.efedorchenko.timely.fragment.support
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.efedorchenko.timely.databinding.DialogSpaceShowItemBinding
 import com.efedorchenko.timely.model.SpaceMember
-import com.efedorchenko.timely.service.SpaceService
 
 class SpaceAdapter(
     private val members: List<SpaceMember>?,
-    private val spaceService: SpaceService,
-    private val showMemberFunc: (member: SpaceMember) -> Unit
+    private val showMemberFunc: (member: SpaceMember) -> Unit,
+    private val serviceMemberFunc: ((member: SpaceMember) -> Unit)? = null
 ) : RecyclerView.Adapter<SpaceAdapter.MemberViewHolder>() {
 
     inner class MemberViewHolder(val binding: DialogSpaceShowItemBinding) : RecyclerView.ViewHolder(binding.root)
@@ -30,6 +30,15 @@ class SpaceAdapter(
         holder.itemView.setOnLongClickListener {
             showMemberFunc.invoke(member)
             true
+        }
+
+        if (serviceMemberFunc != null) {
+            with(holder.binding.icon) {
+                visibility = View.VISIBLE
+                setOnClickListener {
+                    FragmentUtils.setupButtonAnimationAndClick(this, context, { serviceMemberFunc.invoke(member) })
+                }
+            }
         }
     }
 
