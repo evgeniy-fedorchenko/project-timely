@@ -4,23 +4,38 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/authFragment">
 
+    <!-- AuthFragment -->
     <fragment
         android:id="@+id/authFragment"
         android:name="com.efedorchenko.timely.fragment.AuthFragment"
         android:label="AuthFragment">
         <action
-            android:id="@+id/action_authFragment_to_mainFragment"
-            app:destination="@id/mainFragment" />
+            android:id="@+id/action_authFragment_to_mainWorkerFragment"
+            app:destination="@id/mainWorkerFragment" />
+        <action
+            android:id="@+id/action_authFragment_to_mainBossFragment"
+            app:destination="@id/mainWorkerFragment" />
         <action
             android:id="@+id/action_authFragment_to_registerDispatcherFragment"
             app:destination="@id/registerDispatcherFragment" />
     </fragment>
 
+    <!-- MainBossFragment and MainWorkerFragment -->
     <fragment
-        android:id="@+id/mainFragment"
+        android:id="@+id/mainWorkerFragment"
         android:name="com.efedorchenko.timely.fragment.MainWorkerFragment"
-        android:label="MainFragment" />
+        android:label="MainWorkerFragment" />
 
+    <fragment
+        android:id="@+id/mainBossFragment"
+        android:name="com.efedorchenko.timely.fragment.MainBossFragment"
+        android:label="MainBossFragment">
+        <action
+            android:id="@+id/action_mainBossFragment_to_mainWorkerFragment"
+            app:destination="@id/registerDispatcherFragment" />
+    </fragment>
+
+    <!-- register fragments -->
     <fragment
         android:id="@+id/registerDispatcherFragment"
         android:name="com.efedorchenko.timely.fragment.RegisterDispatcherFragment"
