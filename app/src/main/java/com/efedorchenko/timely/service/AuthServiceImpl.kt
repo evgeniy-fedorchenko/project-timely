@@ -28,7 +28,7 @@ class AuthServiceImpl @Inject constructor(
                     } else {
                         profileStorage.saveUserData(it.userData)
                         encProfileStorage.saveAuthData(it.authData)
-                        Resource.Success(it.userData.spaceName != null)
+                        Resource.Success(it.userData.spaceName != null, it.authData.role)
                     }
                 } ?: Resource.Error("Network error")
             }
@@ -54,7 +54,7 @@ class AuthServiceImpl @Inject constructor(
                     } else {
                         profileStorage.saveUserData(it.userData)
                         encProfileStorage.saveAuthData(it.authData)
-                        Resource.Success(it.userData.spaceName != null)
+                        Resource.Success(it.userData.spaceName != null, it.authData.role)
                     }
                 } ?: Resource.Error("Network error")
             }
@@ -79,7 +79,7 @@ class AuthServiceImpl @Inject constructor(
                     } else {
                         it.space?.let { space -> profileStorage.saveSpace(space) }
                         it.newRole?.let { role -> encProfileStorage.saveRole(role) }
-                        Resource.Success(true)
+                        Resource.Success(true, it.newRole)
                     }
                 } ?: Resource.Error(ToastHelper.CONNECT_TO_SPACE_FILED_UNKNOWN)
             }

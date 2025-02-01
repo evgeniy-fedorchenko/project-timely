@@ -97,7 +97,11 @@ class AuthFragment : Fragment() {
                 val credentials = Credentials(login, password)
                 when (val result = authService.tryLogin(credentials)) {
                     is Resource.Success -> {
-                        findNavController().navigate(R.id.mainFragment)
+                        when (result.role?.isPrivileged()) {
+                            true -> findNavController().navigate(R.id.mainBossFragment)
+                            false -> findNavController().navigate(R.id.mainWorkerFragment)
+                            else -> ToastHelper.message("role not accept", context) // FIXME
+                        }
                         if (!dataService.loadData()) {
                             ToastHelper.failDownloadData(context)
                         }

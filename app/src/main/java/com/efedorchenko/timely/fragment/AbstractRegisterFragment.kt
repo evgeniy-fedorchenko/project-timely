@@ -104,7 +104,8 @@ abstract class AbstractRegisterFragment : Fragment() {
             try {
                 when (val result = authService.tryRegister(registerRequest)) {
                     is Resource.Success -> {
-                        findNavController().navigate(R.id.mainFragment)
+                        // TODO: сначала переводить юзеров просто на экран одиночки и ждать решения по заявке от руководителей
+                        findNavController().navigate(R.id.mainWorkerFragment)
                         if (result.spacePresent && !spaceService.initMembers()) {   // Все равно пытаемся, хотя бы чтобы показать тост
                             ToastHelper.failDownloadMembers(context)
                         }

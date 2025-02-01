@@ -14,7 +14,7 @@ import com.efedorchenko.timely.data.EncProfileStorageImpl
 import com.efedorchenko.timely.data.ProfileStorageImpl
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.DialogFinesShowBinding
-import com.efedorchenko.timely.fragment.MainWorkerFragment
+import com.efedorchenko.timely.fragment.AbstractMainFragment
 import com.efedorchenko.timely.fragment.support.FinesAdapter
 import com.efedorchenko.timely.fragment.support.RecyclerItemDecoration
 import com.efedorchenko.timely.model.DataType
@@ -32,7 +32,7 @@ class FinesDialogFragment : DialogFragment() {
         fun newInstance(someParam: String): FinesDialogFragment {
             val fragment = FinesDialogFragment()
             val args = Bundle()
-            args.putString(MainWorkerFragment.USER_UUID_ARG, someParam)
+            args.putString(AbstractMainFragment.USER_UUID_ARG, someParam)
             fragment.arguments = args
             return fragment
         }

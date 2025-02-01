@@ -8,6 +8,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.efedorchenko.timely.data.EncProfileStorage
+import com.efedorchenko.timely.model.auth.RoleType
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -28,10 +29,15 @@ class MainActivity : AppCompatActivity() {
         val navHost = supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment
         navController = navHost.navController
 
-        if (encProfileStorage.isAuthenticated()) {
-            navController.navigate(R.id.mainFragment)
-        } else {
-            navController.navigate(R.id.authFragment)
+        if (isUserAuthenticated()) navigateToMain() else navController.navigate(R.id.authFragment)
+    }
+
+    private fun navigateToMain() {
+        val userRole = encProfileStorage.getRole()
+        when (userRole) {
+            RoleType.WORKER -> navController.navigate(R.id.mainWorkerFragment)
+            RoleType.BOSS, RoleType.CREATOR -> navController.navigate(R.id.mainBossFragment)
+            null -> navController.navigate(R.id.authFragment)
         }
     }
 
@@ -42,4 +48,6 @@ class MainActivity : AppCompatActivity() {
             insets
         }
     }
+
+    private fun isUserAuthenticated() = encProfileStorage.isAuthenticated()
 }
