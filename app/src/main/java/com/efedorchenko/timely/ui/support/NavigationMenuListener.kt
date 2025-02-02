@@ -1,12 +1,5 @@
 package com.efedorchenko.timely.ui.support
 
-import android.app.AlertDialog
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import android.view.LayoutInflater.from
 import android.view.MenuItem
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -19,8 +12,6 @@ import com.efedorchenko.timely.data.EncProfileStorageImpl
 import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.data.ProfileStorageImpl
 import com.efedorchenko.timely.data.SpaceViewModel
-import com.efedorchenko.timely.databinding.DialogAccessKeysBinding
-import com.efedorchenko.timely.service.ToastHelper
 import com.efedorchenko.timely.ui.dialog.ConnectSpaceDialogFragment
 import com.efedorchenko.timely.ui.dialog.LeaveSpaceDialogFragment
 import com.efedorchenko.timely.ui.dialog.SpaceDialogFragment
@@ -46,7 +37,6 @@ class NavigationMenuListener(
     private val encProfileStorage: EncProfileStorage = EncProfileStorageImpl(parentFragment.requireContext())
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        val context = parentFragment.requireContext()
         when (item.itemId) {
             R.id.fill_period -> {}
             R.id.do_sync -> SyncDialogFragment().show(parentFragment.childFragmentManager, SYNC_DIALOG_TAG)
@@ -71,30 +61,5 @@ class NavigationMenuListener(
         }
         drawerLayout.closeDrawer(GravityCompat.START)
         return true
-    }
-
-    private fun showAccessKeysDialog(context: Context) {
-        val binding = DialogAccessKeysBinding.inflate(from(context))
-        val dialog = AlertDialog.Builder(context).setView(binding.root).create()
-        dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-
-        val keys = encProfileStorage.getSpaceKeys()
-        binding.workerKey.text = keys?.workerKey
-        binding.bossKey.text = keys?.bossKey
-
-        FragmentUtils.setupButtonAnimationAndClick(binding.workerKeyCopyButton, context, {
-            copyToClipboard(context, "worker_key", binding.workerKey.text.toString())
-        })
-        FragmentUtils.setupButtonAnimationAndClick(binding.bossKeyCopyButton, context, {
-            copyToClipboard(context, "boss_key", binding.bossKey.text.toString())
-        })
-        dialog.show()
-    }
-
-    private fun copyToClipboard(context: Context, label: String, text: String) {
-        ToastHelper.keyCopied(context)
-        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText(label, text)
-        clipboard.setPrimaryClip(clip)
     }
 }

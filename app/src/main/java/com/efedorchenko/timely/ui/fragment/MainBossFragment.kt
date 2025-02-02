@@ -1,12 +1,15 @@
 package com.efedorchenko.timely.ui.fragment
 
 import android.app.AlertDialog
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Outline
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.LayoutInflater.from
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
@@ -18,13 +21,15 @@ import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.data.SpaceViewModel
+import com.efedorchenko.timely.databinding.DialogAccessKeysBinding
 import com.efedorchenko.timely.databinding.DialogLoadingBinding
 import com.efedorchenko.timely.databinding.FragmentMainBossBinding
-import com.efedorchenko.timely.ui.support.RecyclerItemDecoration
-import com.efedorchenko.timely.ui.support.SpaceAdapter
 import com.efedorchenko.timely.model.SpaceMember
 import com.efedorchenko.timely.service.DataService
 import com.efedorchenko.timely.service.ToastHelper
+import com.efedorchenko.timely.ui.support.FragmentUtils
+import com.efedorchenko.timely.ui.support.RecyclerItemDecoration
+import com.efedorchenko.timely.ui.support.SpaceAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -66,6 +71,7 @@ class MainBossFragment : AbstractMainFragment() {
 
         binding.headerSpaceName.text = profileStorage.getSpaceName()
         binding.headerLayout.centerHeader.text = getString(R.string.boss_panel_header)
+        binding.keysButton.setOnClickListener { showAccessKeysDialog(context) }
 
         setupRecycler(context)   // Recycler of members list
     }
@@ -126,5 +132,30 @@ class MainBossFragment : AbstractMainFragment() {
 
     private fun serviceMember(member: SpaceMember) {
         ToastHelper.message(member.userUuid, context)
+    }
+
+    private fun showAccessKeysDialog(context: Context) {
+        val binding = DialogAccessKeysBinding.inflate(from(context))
+        val dialog = AlertDialog.Builder(context).setView(binding.root).create()
+        dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+        val keys = encProfileStorage.getSpaceKeys()
+        binding.workerKey.text = keys?.workerKey
+        binding.bossKey.text = keys?.bossKey
+
+        FragmentUtils.setupButtonAnimationAndClick(binding.workerKeyCopyButton, context, {
+            copyToClipboard(context, "worker_key", binding.workerKey.text.toString())
+        })
+        FragmentUtils.setupButtonAnimationAndClick(binding.bossKeyCopyButton, context, {
+            copyToClipboard(context, "boss_key", binding.bossKey.text.toString())
+        })
+        dialog.show()
+    }
+
+    private fun copyToClipboard(context: Context, label: String, text: String) {
+        ToastHelper.keyCopied(context)
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText(label, text)
+        clipboard.setPrimaryClip(clip)
     }
 }
