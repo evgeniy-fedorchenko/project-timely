@@ -109,9 +109,9 @@ class MainBossFragment : AbstractMainFragment() {
                 return@launch
             }
 
+            spaceViewModel.switchTo(member)
             findNavController().navigate(R.id.mainWorkerFragment)
             loadingDialog.dismiss()
-            spaceViewModel.switchTo(member)
         }
     }
 

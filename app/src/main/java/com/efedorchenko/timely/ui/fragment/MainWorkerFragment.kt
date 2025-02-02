@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.viewpager2.widget.ViewPager2
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
@@ -14,10 +15,10 @@ import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.FragmentMainWorkerBinding
-import com.efedorchenko.timely.ui.support.CalendarAdapter
-import com.efedorchenko.timely.ui.support.FragmentUtils
 import com.efedorchenko.timely.model.SpaceMember
 import com.efedorchenko.timely.service.ToastHelper
+import com.efedorchenko.timely.ui.support.CalendarAdapter
+import com.efedorchenko.timely.ui.support.FragmentUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -56,22 +57,31 @@ class MainWorkerFragment : AbstractMainFragment() {
         super.onViewCreated(view, savedInstanceState)
         val context = requireContext()
 
-        setupViewPager(null)   // Calendar scroller
-        setupSummaryCard()   // Summary card at the bottom of screen
-        super.setupSideMenu(context)   // Side navigation menu
+        if (spaceViewModel.selectedMember.value != null) {
+            setupViewPager(null)   // Calendar scroller
+            setupSummaryCard()   // Summary card at the bottom of screen
+            super.setupSideMenu(context)   // Side navigation menu
+        }
 
-        lifecycleScope.launch {
-            spaceViewModel.selectedMember.collect {
-                it?.let {
-                    setupMemberCard(it, context)
-                    setupSummaryCard()
-                    setupViewPager(it.userUuid)
-                } ?: run {
-                    binding.selectedUserInfo.visibility = View.GONE
-                    setupSummaryCard()
-                    setupViewPager(null)
+        viewLifecycleOwner.lifecycleScope.launch {
+//            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                spaceViewModel.selectedMember.collect {
+                    it?.let {
+                        setupMemberCard(it, context)
+                        setupSummaryCard()
+                        setupViewPager(it.userUuid)
+                    } ?: run {
+//                    При сбросе юзера админов отправляем обратно на свой экран
+                        if (encProfileStorage.isPrivileged()) {
+                            findNavController().navigate(R.id.mainBossFragment)
+                            return@collect
+                        }
+                        binding.selectedUserInfo.visibility = View.GONE
+                        setupSummaryCard()
+                        setupViewPager(null)
+                    }
                 }
-            }
+//            }
         }
         lifecycleScope.launch {
             viewModel.alert.collect { ToastHelper.message(it, context) }
