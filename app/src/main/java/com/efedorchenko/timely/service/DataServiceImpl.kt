@@ -62,29 +62,29 @@ class DataServiceImpl @Inject constructor(
     // TODO: Объединить loadData и updateData - пусть всегда запрашивать since, если его нет - делать обычный getRange
     override suspend fun updateData(userUuid: String?): Boolean {
         val eventsSince = repositoryFactory.get(DataType.EVENT).getMaxChangedAt()
-        if (!downloadData(userUuid) { apiService.getUpdates(userUuid, DataType.EVENT, eventsSince) }) {
+        if (!downloadData(userUuid, DataType.EVENT) { apiService.getUpdates(userUuid, DataType.EVENT, eventsSince) }) {
             return false
         }
         if (!encProfileStorage.isPrivileged() && userUuid != null) {
             return true
         }
         val finesSince = repositoryFactory.get(DataType.FINE).getMaxChangedAt()
-        return downloadData(userUuid) { apiService.getUpdates(userUuid, DataType.FINE, finesSince) }
+        return downloadData(userUuid, DataType.FINE) { apiService.getUpdates(userUuid, DataType.FINE, finesSince) }
     }
 
     private suspend fun getAndSaveData(userUuid: String?): Boolean {
         val requestBody = DataRangeRequest.createFirst(userUuid)
-        if (!downloadData(userUuid) { apiService.getRange(requestBody, DataType.EVENT) }) {
+        if (!downloadData(userUuid, DataType.EVENT, ) { apiService.getRange(requestBody, DataType.EVENT) }) {
             return false
         }
         if (!encProfileStorage.isPrivileged() && userUuid != null) {
             return true
         }
-        return downloadData(userUuid) { apiService.getRange(requestBody, DataType.FINE) }
+        return downloadData(userUuid, DataType.FINE) { apiService.getRange(requestBody, DataType.FINE) }
     }
 
     private suspend fun downloadData(
-        userUuid: String?, requestFunc: suspend () -> ApiResponse<List<AbstractData>>
+        userUuid: String?, dataType: DataType, requestFunc: suspend () -> ApiResponse<List<AbstractData>>
     ): Boolean {
 
         when (val response = requestFunc.invoke()) {
@@ -92,8 +92,8 @@ class DataServiceImpl @Inject constructor(
                 response.data?.let {
                     if (it.isNotEmpty()) {
                         repositoryFactory.getRepository(it[0]).upsertBatch(it, userUuid)
-                        viewModel.updateLiveData(it[0].getType(), userUuid)
                     }
+                    viewModel.updateLiveData(dataType, userUuid)
                     return true
                 }
                 return false

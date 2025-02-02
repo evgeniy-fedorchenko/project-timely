@@ -45,7 +45,7 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
      */
     fun upsert(data: T, userUuid: String? = null): T? {
         return if (data.deletedAt != null) {
-            delete(data)
+            delete(data, userUuid)
             return data
         } else {
             saveOne(
@@ -93,7 +93,7 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
             val tableName = getTableName(userUuid != null)
             dataBatch.forEach {
                 if (it.deletedAt != null) {
-                        delete(it)
+                        delete(it, userUuid)
                 } else {
                     saveOne(db, tableName, it, userUuid, SQLiteDatabase.CONFLICT_REPLACE)
                 }
@@ -133,15 +133,16 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
         }
     }
 
-    fun delete(data: T): Boolean {
+    fun delete(data: T, userUuid: String? = null): Boolean {
         val db = dbHelper.writableDatabase
+        val tableName = getTableName(userUuid != null)
         val deletedRows: Int
 
         if (data.appId != null) {
-            deletedRows = db.delete(getTableName(), "$ID_COLUMN_NAME = ?", arrayOf(data.appId.toString()))
+            deletedRows = db.delete(tableName, "$ID_COLUMN_NAME = ?", arrayOf(data.appId.toString()))
         } else if (data.backendId != null) {
             val whereArgs = arrayOf(data.backendId.toString())
-            deletedRows = db.delete(getTableName(), "$BACKEND_ID_COLUMN_NAME = ?", whereArgs)
+            deletedRows = db.delete(tableName, "$BACKEND_ID_COLUMN_NAME = ?", whereArgs)
         } else {
             Log.e(TAG, "No data was deleted, appId and backendId are null. Data: $data")
             return false
@@ -156,8 +157,9 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
     }
 
     fun clean() {
-        dbHelper.writableDatabase.delete(getTableName(true), null, null)
-        dbHelper.writableDatabase.delete(getTableName(false), null, null)
+        val db = dbHelper.writableDatabase
+        db.delete(getTableName(true), null, null)
+        db.delete(getTableName(false), null, null)
     }
 
     /**
