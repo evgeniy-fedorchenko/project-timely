@@ -5,14 +5,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.efedorchenko.timely.databinding.DialogEventAddBinding
-import com.efedorchenko.timely.ui.fragment.CalendarFragment
-import com.efedorchenko.timely.ui.support.FragmentUtils
 import com.efedorchenko.timely.input.AddEventDialogFieldsWatcher
 import com.efedorchenko.timely.input.CommentInputFilter
 import com.efedorchenko.timely.input.HoursInputFilter
 import com.efedorchenko.timely.input.MinutesInputFilter
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.service.ToastHelper
+import com.efedorchenko.timely.ui.fragment.CalendarFragment
+import com.efedorchenko.timely.ui.support.AddAbstractDataListener
+import com.efedorchenko.timely.ui.support.FragmentUtils
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.threeten.bp.Duration
 import org.threeten.bp.LocalDate
@@ -20,6 +21,7 @@ import org.threeten.bp.format.DateTimeFormatter
 import org.threeten.bp.temporal.ChronoUnit
 import java.util.Locale
 
+// TODO: сделать везде хранение workDuration единообразным - в минутах
 class AddEventDialog : BottomSheetDialogFragment() {
 
     companion object {
@@ -52,6 +54,19 @@ class AddEventDialog : BottomSheetDialogFragment() {
         val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale("ru"))
         binding.textViewSelectedDate.text = targetDate.format(formatter)
 
+        val existingWorkSeconds = arguments?.getLong(CalendarFragment.EXISTING_EVENT_WORK_DURATION) ?: 0
+        if (existingWorkSeconds > 0) {
+            val workedHours = Duration.ofSeconds(existingWorkSeconds).toHours().toString()
+            binding.editTextHours.setText(workedHours)
+
+            val remainsMinutes = ((existingWorkSeconds - (workedHours.toLong() * 60 * 60)) / 60).toString()
+            binding.editTextMinutes.setText(remainsMinutes)
+        }
+
+        val existingComment = arguments?.getString(CalendarFragment.EXISTING_EVENT_COMMENT)
+        if (existingComment != null) {
+            binding.editTextComment.setText(existingComment)
+        }
         val hoursEditText = binding.editTextHours
         val minutesEditText = binding.editTextMinutes
         val commentEditText = binding.editTextComment
@@ -74,12 +89,16 @@ class AddEventDialog : BottomSheetDialogFragment() {
             if (workDuration < MIN_WORK_DURATION) {
                 ToastHelper.workDurationTooShort(requireContext(), MIN_WORK_DURATION)
             } else {
-                val event = Event(
-                    date = targetDate,
-                    workDuration = workDuration,
-                    comment = comment
-                )
-                addEventListener?.onSaveData(event)
+                if (Duration.ofSeconds(existingWorkSeconds) != workDuration || comment != existingComment) {
+                    val appId = arguments?.getLong(CalendarFragment.EXISTING_EVENT_APP_ID) ?: 0
+                    val event = Event(
+                        appId = if (appId > 0) appId else null,
+                        date = targetDate,
+                        workDuration = workDuration,
+                        comment = comment
+                    )
+                    addEventListener?.onSaveData(event)
+                }
                 dismiss()
             }
         }

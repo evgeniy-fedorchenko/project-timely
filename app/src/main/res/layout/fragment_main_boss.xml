@@ -110,7 +110,7 @@
             android:layout_marginHorizontal="16dp"
             android:layout_marginBottom="16dp"
             android:padding="12dp"
-            android:text="Выберите участника из списка выше, чтобы открыть его календарь. Нажмите на иконку справа для изменения настроек"
+            android:text="Выберите участника из списка выше, чтобы открыть его календарь. Нажмите на иконку справа для изменения настроек участника"
             android:textColor="@color/medium_gray"
             android:textSize="14sp"
             app:layout_constraintBottom_toTopOf="@id/management_title"
