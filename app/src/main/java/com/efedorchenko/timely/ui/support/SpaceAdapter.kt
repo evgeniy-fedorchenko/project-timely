@@ -3,17 +3,28 @@ package com.efedorchenko.timely.ui.support
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.efedorchenko.timely.databinding.DialogSpaceShowItemBinding
 import com.efedorchenko.timely.model.SpaceMember
 
 class SpaceAdapter(
-    private val members: List<SpaceMember>?,
     private val showMemberFunc: (member: SpaceMember) -> Unit,
     private val serviceMemberFunc: ((member: SpaceMember) -> Unit)? = null
-) : RecyclerView.Adapter<SpaceAdapter.MemberViewHolder>() {
+) : ListAdapter<SpaceMember, SpaceAdapter.MemberViewHolder>(MemberDiffCallback()) {
 
     inner class MemberViewHolder(val binding: DialogSpaceShowItemBinding) : RecyclerView.ViewHolder(binding.root)
+
+    class MemberDiffCallback : DiffUtil.ItemCallback<SpaceMember>() {
+        override fun areItemsTheSame(oldItem: SpaceMember, newItem: SpaceMember): Boolean {
+            return oldItem.userUuid == newItem.userUuid
+        }
+
+        override fun areContentsTheSame(oldItem: SpaceMember, newItem: SpaceMember): Boolean {
+            return oldItem.changedAt == newItem.changedAt
+        }
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MemberViewHolder {
         val binding = DialogSpaceShowItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -21,7 +32,7 @@ class SpaceAdapter(
     }
 
     override fun onBindViewHolder(holder: MemberViewHolder, position: Int) {
-        val member = members?.getOrNull(position) ?: return
+        val member = getItem(position)
 
         holder.binding.name.text = member.name
         val positionFormatted = "Должность: ${member.position}"
@@ -36,14 +47,12 @@ class SpaceAdapter(
             with(holder.binding.icon) {
                 visibility = View.VISIBLE
                 setOnClickListener {
-                    FragmentUtils.setupButtonAnimationAndClick(this, context, { serviceMemberFunc.invoke(member) })
+                    val onClick = { serviceMemberFunc.invoke(member) }
+                    FragmentUtils.setupButtonAnimationAndClick(this, context, onClick)
                 }
             }
         }
     }
-
-    override fun getItemCount(): Int = members?.size ?: 0
-
 }
 
         /*

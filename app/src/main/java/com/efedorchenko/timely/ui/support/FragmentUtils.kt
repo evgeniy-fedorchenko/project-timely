@@ -53,15 +53,11 @@ class FragmentUtils {
         fun setupButtonAnimationAndClick(
             button: ImageButton,
             context: Context?,
-            onClick: () -> Unit,
-            mainColor: Int? = null
+            onClick: () -> Unit
         ) {
             if (context == null) return
             val blackColor = ContextCompat.getColor(context, R.color.dark_gray)
-
-            val defaultColor = mainColor
-                ?: button.imageTintList?.defaultColor
-                ?: ContextCompat.getColor(context, R.color.light_gray)
+            val defaultColor = button.imageTintList?.defaultColor ?: ContextCompat.getColor(context, R.color.light_gray)
 
             button.setOnClickListener {
                 button.animate().scaleX(0.9f).scaleY(0.9f).setDuration(150).withEndAction {

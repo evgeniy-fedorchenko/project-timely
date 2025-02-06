@@ -16,7 +16,7 @@ import org.threeten.bp.Instant
 import javax.inject.Inject
 
 class MemberRepository @Inject constructor(application: Application) {
-
+    // TODO: использовать rawQuery и columnAs
     private val dbHelper = DatabaseConfigurer.getInstance(application)
 
     fun save(members: List<SpaceMember>) {
@@ -69,12 +69,19 @@ class MemberRepository @Inject constructor(application: Application) {
                     val nameIdx = cursor.getColumnIndex(NAME_COLUMN_NAME)
                     val positionIdx = cursor.getColumnIndex(POSITION_COLUMN_NAME)
                     val userUuidIdx = cursor.getColumnIndex(USER_UUID_COLUMN_NAME)
+                    val changedAtIdx = cursor.getColumnIndex(CHANGED_AT_COLUMN_NAME)
 
                     val name = cursor.getString(nameIdx)
                     val position = cursor.getString(positionIdx)
                     val userUuid = cursor.getString(userUuidIdx)
+                    val changedAt = cursor.getLong(changedAtIdx)
 
-                    val member = SpaceMember(userUuid, name, position)
+                    val member = SpaceMember(
+                        userUuid = userUuid,
+                        name = name,
+                        position = position,
+                        changedAt = Instant.ofEpochMilli(changedAt)
+                    )
                     members.add(member)
                 }
             }

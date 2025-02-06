@@ -66,9 +66,9 @@ class SpaceViewModel @Inject constructor(
     val selectedMember: StateFlow<SpaceMember?> get() = _selectedMember
 
     /**
-     * Эмит необходимости переключить навигационное меню.
-     * Юзер вступил в пространство -> показать кнопки пространства,
-     * юзер вышел из пространства -> убрать эти кнопки и показать кнопку вступления
+     * Эмит необходимости переключить навигационное меню
+     * - Юзер вступил в пространство -> показать кнопки пространства,
+     * - юзер вышел из пространства -> убрать эти кнопки и показать кнопку вступления
      */
     private val _needSwitchSpaceItemsInSideMenu = MutableSharedFlow<Boolean>()
     val needSwitchSpaceItemsInSideMenu = _needSwitchSpaceItemsInSideMenu.asSharedFlow()

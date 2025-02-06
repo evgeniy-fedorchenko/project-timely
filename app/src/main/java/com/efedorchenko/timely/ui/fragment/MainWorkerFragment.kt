@@ -1,6 +1,5 @@
 package com.efedorchenko.timely.ui.fragment
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -18,7 +17,6 @@ import com.efedorchenko.timely.databinding.FragmentMainWorkerBinding
 import com.efedorchenko.timely.model.SpaceMember
 import com.efedorchenko.timely.service.ToastHelper
 import com.efedorchenko.timely.ui.support.CalendarAdapter
-import com.efedorchenko.timely.ui.support.FragmentUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -60,14 +58,14 @@ class MainWorkerFragment : AbstractMainFragment() {
         if (spaceViewModel.selectedMember.value != null) {
             setupViewPager(null)   // Calendar scroller
             setupSummaryCard()   // Summary card at the bottom of screen
-            super.setupSideMenu(context)   // Side navigation menu
         }
+        super.setupSideMenu(context)   // Side navigation menu
 
         viewLifecycleOwner.lifecycleScope.launch {
 //            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 spaceViewModel.selectedMember.collect {
                     it?.let {
-                        setupMemberCard(it, context)
+                        setupMemberCard(it)
                         setupSummaryCard()
                         setupViewPager(it.userUuid)
                     } ?: run {
@@ -125,20 +123,11 @@ class MainWorkerFragment : AbstractMainFragment() {
         }
     }
 
-    private fun setupMemberCard(member: SpaceMember, context: Context) {
+    private fun setupMemberCard(member: SpaceMember) {
         with(binding) {
             selectedUserName.text = member.name
             selectedUserPosition.text = getString(R.string.selected_user_position, member.position)
             selectedUserInfo.visibility = View.VISIBLE
-            if (encProfileStorage.isPrivileged()) {
-                FragmentUtils.setupButtonAnimationAndClick(selectedUserSettingsButton, context, { showUserSettings() })
-                selectedUserSettingsButton.visibility = View.VISIBLE
-            }
         }
-    }
-
-    private fun showUserSettings() {
-        // Что происходит при нажатии на кнопку настроек просматриваемого юзера
-        // binding.selectedUserSettingsButton
     }
 }

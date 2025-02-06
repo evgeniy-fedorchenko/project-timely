@@ -19,11 +19,11 @@ import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.DialogLoadingBinding
 import com.efedorchenko.timely.databinding.DialogSpaceShowBinding
-import com.efedorchenko.timely.ui.support.RecyclerItemDecoration
-import com.efedorchenko.timely.ui.support.SpaceAdapter
 import com.efedorchenko.timely.model.SpaceMember
 import com.efedorchenko.timely.service.DataService
 import com.efedorchenko.timely.service.ToastHelper
+import com.efedorchenko.timely.ui.support.RecyclerItemDecoration
+import com.efedorchenko.timely.ui.support.SpaceAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -36,7 +36,7 @@ class SpaceDialogFragment : DialogFragment() {
     private var _binding: DialogSpaceShowBinding? = null
     private val binding get() = _binding!!
 
-    private val showMemberFunc = { member: SpaceMember -> showMember(member) }
+    private val spaceAdapter = SpaceAdapter({ member: SpaceMember -> showMember(member) })
 
     @Inject
     lateinit var spaceViewModel: SpaceViewModel
@@ -65,9 +65,17 @@ class SpaceDialogFragment : DialogFragment() {
             binding.spaceName.text = spannablePositionText
         }
 
+        setupRecycler()
+        viewLifecycleOwner.lifecycleScope.launch {
+            spaceViewModel.members.collect { members ->
+                spaceAdapter.submitList(members)
+            }
+        }
+    }
+
+    private fun setupRecycler() {
         binding.membersRecyclerView.layoutManager = LinearLayoutManager(context)
-        val members = spaceViewModel.members.value
-        binding.membersRecyclerView.adapter = SpaceAdapter(members, showMemberFunc)
+        binding.membersRecyclerView.adapter = spaceAdapter
 
         val spaceInPixels = resources.getDimensionPixelSize(R.dimen.item_spacing_horizontal)
         binding.membersRecyclerView.addItemDecoration(RecyclerItemDecoration(spaceInPixels))

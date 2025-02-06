@@ -60,7 +60,7 @@
         android:id="@+id/empty_fines_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="У вас нет штрафов за указанный период"
+        android:text="Нет штрафов за указанный период"
         android:textColor="@color/light_gray"
         android:textSize="16sp"
         android:visibility="gone"

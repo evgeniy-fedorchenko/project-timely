@@ -41,8 +41,10 @@ class MainBossFragment : AbstractMainFragment() {
     private var _binding: FragmentMainBossBinding? = null
     private val binding get() = _binding!!
 
-    private val showMemberFunc = { member: SpaceMember -> showMember(member) }
-    private val serviceMemberFunc = { member: SpaceMember -> serviceMember(member) }
+    private val spaceAdapter = SpaceAdapter(
+        showMemberFunc = { member: SpaceMember -> showMember(member) },
+        serviceMemberFunc = { member: SpaceMember -> serviceMember(member) }
+    )
 
     @Inject
     override lateinit var viewModel: DataViewModel
@@ -68,12 +70,23 @@ class MainBossFragment : AbstractMainFragment() {
         super.onViewCreated(view, savedInstanceState)
         val context = requireContext()
         super.setupSideMenu(context)   // Side navigation menu
+        setupRecycler(context)   // Recycler of members list
+        viewLifecycleOwner.lifecycleScope.launch {
+            spaceViewModel.members.collect { members ->
+                spaceAdapter.submitList(members)
+            }
+        }
 
         binding.headerSpaceName.text = profileStorage.getSpaceName()
         binding.headerLayout.centerHeader.text = getString(R.string.boss_panel_header)
         binding.keysButton.setOnClickListener { showAccessKeysDialog(context) }
 
-        setupRecycler(context)   // Recycler of members list
+        viewLifecycleOwner.lifecycleScope.launch {
+            spaceViewModel.members.collect {
+
+            }
+        }
+
     }
 
     override fun onDestroyView() {
@@ -124,8 +137,7 @@ class MainBossFragment : AbstractMainFragment() {
         binding.membersRecyclerView.clipToOutline = true
 
         binding.membersRecyclerView.layoutManager = LinearLayoutManager(context)
-        val members = spaceViewModel.members.value
-        binding.membersRecyclerView.adapter = SpaceAdapter(members, showMemberFunc, serviceMemberFunc)
+        binding.membersRecyclerView.adapter = spaceAdapter
         val spaceInPixels = resources.getDimensionPixelSize(R.dimen.item_spacing_horizontal)
         binding.membersRecyclerView.addItemDecoration(RecyclerItemDecoration(spaceInPixels))
     }
@@ -143,12 +155,12 @@ class MainBossFragment : AbstractMainFragment() {
         binding.workerKey.text = keys?.workerKey
         binding.bossKey.text = keys?.bossKey
 
-        FragmentUtils.setupButtonAnimationAndClick(binding.workerKeyCopyButton, context, {
+        FragmentUtils.setupButtonAnimationAndClick(binding.workerKeyCopyButton, context) {
             copyToClipboard(context, "worker_key", binding.workerKey.text.toString())
-        })
-        FragmentUtils.setupButtonAnimationAndClick(binding.bossKeyCopyButton, context, {
+        }
+        FragmentUtils.setupButtonAnimationAndClick(binding.bossKeyCopyButton, context) {
             copyToClipboard(context, "boss_key", binding.bossKey.text.toString())
-        })
+        }
         dialog.show()
     }
 
