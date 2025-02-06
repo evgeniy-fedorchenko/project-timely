@@ -11,6 +11,10 @@ import com.efedorchenko.timely.R
 import org.threeten.bp.LocalDate
 import java.util.Locale
 
+
+private const val TEXT_CELL_TAG_PREFIX = "text_"
+private const val MARKER_CELL_TAG_PREFIX = "square_"
+
 fun List<Event>.toEventMap(): MutableMap<LocalDate, Event> {
     val map = HashMap<LocalDate, Event>()
     for (event in this) {
@@ -23,19 +27,19 @@ fun Event.applyTo(parentLayout: ConstraintLayout, cellIdx: Int, needReplace: Boo
     val context = parentLayout.context
     val resources = parentLayout.resources
 
-    val squareView = View(context)
-    squareView.tag = "square_$cellIdx"
+    val markerView = View(context)
+    markerView.tag = "$MARKER_CELL_TAG_PREFIX$cellIdx"
 
-    squareView.layoutParams = cellColorMarkParams(resources)
+    markerView.layoutParams = cellColorMarkParams(resources)
     val color = when {
         date.isBefore(LocalDate.now()) -> Color.GREEN.getColorValue(context)
         else -> Color.ORANGE.getColorValue(context)
     }
-    squareView.setBackgroundColor(color)
-    squareView.alpha = 0.5f
+    markerView.setBackgroundColor(color)
+    markerView.alpha = 0.5f
 
     val textView = TextView(context)
-    textView.tag = "text_$cellIdx"
+    textView.tag = "$TEXT_CELL_TAG_PREFIX$cellIdx"
     val minutesCount = workDuration.toMinutes()
     val minutes = minutesCount / 60
     val hours = minutesCount % 60
@@ -46,17 +50,28 @@ fun Event.applyTo(parentLayout: ConstraintLayout, cellIdx: Int, needReplace: Boo
     TextViewCompat.setTextAppearance(textView, R.style.work_duration)
 
     if (needReplace) {
-        val existingSquareView = parentLayout.findViewWithTag<View>("square_$cellIdx")
-        val existingTextView = parentLayout.findViewWithTag<View>("text_$cellIdx")
+        val existingMarkerView = parentLayout.findViewWithTag<View>("$MARKER_CELL_TAG_PREFIX$cellIdx")
+        val existingTextView = parentLayout.findViewWithTag<View>("$TEXT_CELL_TAG_PREFIX$cellIdx")
         if (existingTextView != null) {
             parentLayout.removeView(existingTextView)
         }
-        if (existingSquareView != null) {
-            parentLayout.removeView(existingSquareView)
+        if (existingMarkerView != null) {
+            parentLayout.removeView(existingMarkerView)
         }
     }
     parentLayout.addView(textView)
-    parentLayout.addView(squareView)
+    parentLayout.addView(markerView)
+}
+
+fun Event.deleteFrom(parentLayout: ConstraintLayout, cellIdx: Int) {
+    val existingMarkerView = parentLayout.findViewWithTag<View>("$MARKER_CELL_TAG_PREFIX$cellIdx")
+    val existingTextView = parentLayout.findViewWithTag<View>("$TEXT_CELL_TAG_PREFIX$cellIdx")
+    if (existingTextView != null) {
+        parentLayout.removeView(existingTextView)
+    }
+    if (existingMarkerView != null) {
+        parentLayout.removeView(existingMarkerView)
+    }
 }
 
 private fun cellColorMarkParams(resources: Resources): ViewGroup.LayoutParams {

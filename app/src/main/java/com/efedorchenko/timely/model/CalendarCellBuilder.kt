@@ -56,13 +56,7 @@ class CalendarCellBuilder(private val context: Context) {
             }
         }
         val onClickListener = OnClickListener {
-            if (fragment != null) {
-                when {
-                    LocalDate.now().isAfter(date) -> ToastHelper.datePassed(context)
-                    event != null -> ToastHelper.cannotEditPlaned(context)
-                    else -> fragment!!.showAddDataDialog(date)
-                }
-            }
+            fragment?.let { it.showAddDataDialog(date, it.context, event) }
         }
         return CalendarCell(text, textStyle, parentBackground, onClickListener, event)
     }

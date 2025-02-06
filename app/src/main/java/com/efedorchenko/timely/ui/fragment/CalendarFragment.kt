@@ -15,14 +15,18 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
+import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.databinding.CalendarGridLayoutBinding
-import com.efedorchenko.timely.ui.dialog.AddEventDialog
-import com.efedorchenko.timely.ui.support.AddAbstractDataListener
 import com.efedorchenko.timely.model.CalendarCellBuilder
 import com.efedorchenko.timely.model.CalendarCellBuilder.CellType
 import com.efedorchenko.timely.model.Event
+import com.efedorchenko.timely.model.SaveResult
 import com.efedorchenko.timely.model.applyTo
+import com.efedorchenko.timely.model.deleteFrom
+import com.efedorchenko.timely.service.DataService
 import com.efedorchenko.timely.service.ToastHelper
+import com.efedorchenko.timely.ui.dialog.AddEventDialog
+import com.efedorchenko.timely.ui.support.AddAbstractDataListener
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.launch
@@ -38,8 +42,12 @@ import javax.inject.Inject
 class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
 
     companion object {
+        // FIXME: SELECTED_DATE_KEY дублируется в AddEventDialog
         private const val MONTH_OFFSET_ARG = "month_offset"
-        private const val SELECTED_DATE_KEY = "selected_date"
+        const val SELECTED_DATE_KEY = "selected_date"
+        const val EXISTING_EVENT_WORK_DURATION = "existing_work_duration"
+        const val EXISTING_EVENT_COMMENT = "existing_comment"
+        const val EXISTING_EVENT_APP_ID = "existing_app_id"
         private const val ADD_EVENT_DIALOG_TAG = "add_event_dialog"
 
         private val DATE_FORMATTER = SimpleDateFormat("LLLL yyyy", Locale("ru"))
@@ -48,7 +56,7 @@ class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
             return CalendarFragment().apply {
                 arguments = Bundle().apply {
                     putInt(MONTH_OFFSET_ARG, monthOffset)
-                    putString(MainWorkerFragment.USER_UUID_ARG, userUuid)
+                    putString(AbstractMainFragment.USER_UUID_ARG, userUuid)
                 }
             }
         }
@@ -60,6 +68,12 @@ class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
     @Inject
     lateinit var viewModel: DataViewModel
 
+    @Inject
+    lateinit var encProfileStorage: EncProfileStorage
+
+    @Inject
+    lateinit var dataService: DataService
+
     private var monthOffset: Int = 0
     private lateinit var monthEventsDef: Deferred<Map<LocalDate, Event>>
     private lateinit var monthEvents: Map<LocalDate, Event>
@@ -68,7 +82,7 @@ class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         monthOffset = arguments?.getInt(MONTH_OFFSET_ARG) ?: 0
-        monthEventsDef = viewModel.getEventsAsync(monthOffset, arguments?.getString(MainFragment.USER_UUID_ARG))
+        monthEventsDef = viewModel.getEventsAsync(monthOffset, getUserUuidArgument())
 
         super.onCreate(savedInstanceState)
     }
@@ -91,7 +105,8 @@ class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
         lifecycleScope.launch {
             viewModel.needUpdateData.collect { needsUpdate ->
                 if (needsUpdate) {
-                    monthEventsDef = viewModel.getEventsAsync(monthOffset, arguments?.getString(MainFragment.USER_UUID_ARG))
+                    monthEventsDef =
+                        viewModel.getEventsAsync(monthOffset, getUserUuidArgument())
                     updateCalendar()
                 }
             }
@@ -103,9 +118,34 @@ class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
         _binding = null
     }
 
-    override fun showAddDataDialog(targetDate: LocalDate) {
+    /*
+    * Если календарь чужой и ты не админ - игнор
+    * Если календарь свой и дата прошла - datePassed
+    * Усли смена уже есть и ты не админ - cannotEditPlaned
+    */
+    override fun showAddDataDialog(targetDate: LocalDate, context: Context?, existedData: Event?) {
+        if (context == null) return
+        val userUuid = getUserUuidArgument()
+
+        if (userUuid != null && !encProfileStorage.isPrivileged()) {
+            return
+        }
+        if (LocalDate.now().isAfter(targetDate)) {
+            ToastHelper.datePassed(context)
+            return
+        }
+        if (existedData != null && !encProfileStorage.isPrivileged()) {
+            ToastHelper.cannotEditPlaned(context)
+            return
+        }
+
         val bundle = Bundle()
         bundle.putString(SELECTED_DATE_KEY, targetDate.toString())
+        existedData?.let {
+            bundle.putLong(EXISTING_EVENT_WORK_DURATION, existedData.workDuration.seconds)
+            bundle.putString(EXISTING_EVENT_COMMENT, existedData.comment)
+            bundle.putLong(EXISTING_EVENT_APP_ID, existedData.appId ?: 0)
+        }
 
         val addEventDialog = AddEventDialog.newInstance(this)
         addEventDialog.arguments = bundle
@@ -114,21 +154,37 @@ class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
 
     override fun onSaveData(data: Event) {
         updateCell(data)
-        viewModel.addNewData(data)
-    }
-
-    private fun updateCell(event: Event?) {
-        if (event != null) {
-            val cellIdx = event.date.dayOfMonth + ((event.date.withDayOfMonth(1).dayOfWeek.value + 6) % 7) - 1
-            val targetCell = calendarGrid.getChildAt(cellIdx) as? ConstraintLayout
-            targetCell?.let {
-                it.setOnClickListener { ToastHelper.cannotEditPlaned(requireContext()) }
-                event.applyTo(targetCell, cellIdx, true)
+        lifecycleScope.launch {
+            when (val result = dataService.saveData(data, getUserUuidArgument())) {
+                is SaveResult.ServerChanged -> updateCell(result.newData as Event)
+                is SaveResult.Error -> cleanCell(data)
+                is SaveResult.Success -> {}
+                is SaveResult.SyncFiled -> viewModel.emitNotSynced.invoke()
             }
         }
     }
 
+    private fun cleanCell(event: Event) {
+        val cellIdx = event.date.dayOfMonth + ((event.date.withDayOfMonth(1).dayOfWeek.value + 6) % 7) - 1
+        val targetCell = calendarGrid.getChildAt(cellIdx) as? ConstraintLayout
+        targetCell?.let { event.deleteFrom(targetCell, cellIdx) }
+    }
+
+    private fun updateCell(event: Event?) {
+        if (event == null) return
+        val cellIdx = event.date.dayOfMonth + ((event.date.withDayOfMonth(1).dayOfWeek.value + 6) % 7) - 1
+        val targetCell = calendarGrid.getChildAt(cellIdx) as? ConstraintLayout
+        targetCell?.let {
+//            it.setOnClickListener { ToastHelper.cannotEditPlaned(requireContext()) }
+            event.applyTo(targetCell, cellIdx, true)
+        }
+    }
+
     private fun updateCalendar() {
+        if (getUserUuidArgument() == null && encProfileStorage.isPrivileged()) {
+
+            return
+        }
         runBlocking {
             monthEvents = withTimeoutOrNull(1000) { monthEventsDef.await() } ?: emptyMap()
         }
@@ -179,7 +235,7 @@ class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
     }
 
     private fun updateMonthTextView(monthOffset: Int) {
-        activity?.findViewById<TextView>(R.id.month_year_text)?.let {
+        activity?.findViewById<TextView>(R.id.center_header)?.let {
             val calendar = Calendar.getInstance(Locale("ru"))
             calendar.add(Calendar.MONTH, monthOffset)
 
@@ -218,4 +274,5 @@ class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
         return constraintLayout
     }
 
+    private fun getUserUuidArgument() = arguments?.getString(AbstractMainFragment.USER_UUID_ARG)
 }

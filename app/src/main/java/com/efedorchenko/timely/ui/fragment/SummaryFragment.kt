@@ -1,22 +1,26 @@
 package com.efedorchenko.timely.ui.fragment
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.FragmentSummaryCardBinding
-import com.efedorchenko.timely.ui.dialog.AddFineDialog
-import com.efedorchenko.timely.ui.dialog.FinesDialogFragment
-import com.efedorchenko.timely.ui.support.AddAbstractDataListener
 import com.efedorchenko.timely.model.DataType
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.Fine
+import com.efedorchenko.timely.service.DataService
+import com.efedorchenko.timely.ui.dialog.AddFineDialog
+import com.efedorchenko.timely.ui.dialog.FinesDialogFragment
+import com.efedorchenko.timely.ui.support.AddAbstractDataListener
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDate
 import javax.inject.Inject
 
@@ -37,6 +41,9 @@ class SummaryFragment : Fragment(), AddAbstractDataListener<Fine> {
 
     @Inject
     lateinit var spaceViewModel: SpaceViewModel
+
+    @Inject
+    lateinit var dataService: DataService
 
     @Inject
     lateinit var encProfileStorage: EncProfileStorage
@@ -62,7 +69,7 @@ class SummaryFragment : Fragment(), AddAbstractDataListener<Fine> {
             addFineButton.visibility = View.VISIBLE
             addFineButton.setOnClickListener {
                 val monthOffset = viewModel.monthOffset.value?.toLong() ?: 0
-                showAddDataDialog(LocalDate.now().plusMonths(monthOffset))
+                showAddDataDialog(LocalDate.now().plusMonths(monthOffset), context, null)
             }
         }
 
@@ -77,13 +84,16 @@ class SummaryFragment : Fragment(), AddAbstractDataListener<Fine> {
         _binding = null
     }
 
-    override fun showAddDataDialog(targetDate: LocalDate) {
+    override fun showAddDataDialog(targetDate: LocalDate, context: Context?, existedData: Fine?) {
         AddFineDialog.newInstance(this, targetDate)
             .show(parentFragmentManager, ADD_FINE_DIALOG_TAG)
     }
 
     override fun onSaveData(data: Fine) {
-        viewModel.addNewData(data)
+        lifecycleScope.launch {
+            dataService.saveData(data, userUuid)
+            updateFines(viewModel.get(DataType.FINE, userUuid))
+        }
     }
 
     private fun setupDataObservers() {
@@ -94,15 +104,14 @@ class SummaryFragment : Fragment(), AddAbstractDataListener<Fine> {
         }
         viewModel.membersFines.observe(viewLifecycleOwner) {
             if (userUuid != null) {
-                // Закоментировано для более легкого тестирования отобрражения чужих штрафов
-//                if (encProfileStorage.isPrivileged()) {
+                if (encProfileStorage.isPrivileged()) {
                 updateFines(it)
-//                } else {
-//                    binding.finesCount.visibility = View.INVISIBLE
-//                    binding.finesAmount.visibility = View.INVISIBLE
-//                    binding.showFinesButton.visibility = View.INVISIBLE
-//                    binding.showFinesButton.isEnabled = false
-//                }
+                } else {
+                    binding.finesCount.visibility = View.INVISIBLE
+                    binding.finesAmount.visibility = View.INVISIBLE
+                    binding.showFinesButton.visibility = View.INVISIBLE
+                    binding.showFinesButton.isEnabled = false
+                }
             }
         }
 
@@ -119,15 +128,15 @@ class SummaryFragment : Fragment(), AddAbstractDataListener<Fine> {
     }
 
     private fun updateEvents(events: List<Event>?) {
-        val daysWorked = events?.count().toString()
-        val hoursWorked = events?.sumOf { it.workDuration.toHours() }.toString()
+        val daysWorked = (events?.count() ?: 0).toString()
+        val hoursWorked = (events?.sumOf { it.workDuration.toHours() } ?: 0).toString()
         binding.daysWorked.text = resources.getString(R.string.days_worked_text, daysWorked)
         binding.hoursWorked.text = resources.getString(R.string.hours_worked_text, hoursWorked)
     }
 
     private fun updateFines(fines: List<Fine>?) {
-        val finesCount = fines?.count().toString()
-        val finesAmount = fines?.sumOf { it.amount }.toString()
+        val finesCount = (fines?.count() ?: 0).toString()
+        val finesAmount = (fines?.sumOf { it.amount } ?: 0).toString()
         binding.finesCount.text = resources.getString(R.string.fines_count_text, finesCount)
         binding.finesAmount.text = resources.getString(R.string.fines_amount_text, finesAmount)
     }
