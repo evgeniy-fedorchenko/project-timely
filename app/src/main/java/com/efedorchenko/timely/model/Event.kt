@@ -40,4 +40,18 @@ data class Event(
     override fun getType(): DataType {
         return DataType.EVENT
     }
+
+    override fun logicEquals(other: Any): Boolean {
+        if (this == other) return true
+        return when (other) {
+            is Fine -> false
+            is Event -> {
+                this.date == other.date
+                        && this.workDuration == other.workDuration
+                        && this.comment == other.comment
+            }
+
+            else -> return false
+        }
+    }
 }

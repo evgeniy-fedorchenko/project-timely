@@ -34,4 +34,19 @@ data class Fine(
     override fun getType(): DataType {
         return DataType.FINE
     }
+
+    override fun logicEquals(other: Any): Boolean {
+        if (this == other) return true
+        return when (other) {
+            is Event -> false
+            is Fine -> {
+                this.date == other.date
+                        && this.description == other.description
+                        && this.amount == other.amount
+                        && this.appId == other.appId   // тк может сущетсвовать два одинаковых Fine -> сравниваем appId
+            }
+
+            else -> return false
+        }
+    }
 }

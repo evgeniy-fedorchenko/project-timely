@@ -50,7 +50,7 @@ object ToastHelper {
     const val INVALID_DATA_ON_REG =                "Упс! Некорректные данные, смотри подсказки справа"
 
 
-    fun message(message: String, c: Context) =    doShow(message, c, LENGTH_SHORT)
+    fun message(message: String, c: Context?) =   doShow(message, c, LENGTH_SHORT)
     fun keyCopied(c: Context) =                   doShow(KEY_COPIED, c, LENGTH_SHORT)
     fun datePassed(c: Context) =                  doShow(DATE_PASSED, c, LENGTH_SHORT)
     fun networkError(c: Context) =                doShow(NETWORK_ERROR, c, LENGTH_SHORT)
@@ -62,13 +62,13 @@ object ToastHelper {
     /* Space operations */
     fun connectToSpaceSuccess(c: Context) =       doShow(CONNECT_TO_SPACE_SUCCESS, c, LENGTH_SHORT)
     fun leaveSpaceSuccess(c: Context) =           doShow(LEAVE_SPACE_SUCCESS, c, LENGTH_LONG)
-    fun leaveSpaceFiled(c: Context) =             doShow(LEAVE_SPACE_FILED, c, LENGTH_LONG)
 
+    fun leaveSpaceFiled(c: Context) =             doShow(LEAVE_SPACE_FILED, c, LENGTH_LONG)
     /* Download data */
     fun failDownloadData(c: Context) =            doShow(ERROR_DOWNLOAD_DATA, c, LENGTH_LONG)
     fun failDownloadMembers(c: Context) =         doShow(ERROR_DOWNLOAD_MEMBERS, c, LENGTH_SHORT)
-    fun errorGetMember(c: Context) =              doShow(ERROR_GET_MEMBER, c, LENGTH_SHORT)
 
+    fun errorGetMember(c: Context) =              doShow(ERROR_GET_MEMBER, c, LENGTH_SHORT)
     /* Registration */
     fun invalidNameOnReg(c: Context) =            doShow(INVALID_NAME_ON_REG, c, LENGTH_LONG)
     fun invalidEmailOnReg(c: Context) =           doShow(INVALID_EMAIL_ON_REG, c, LENGTH_LONG)
@@ -76,6 +76,7 @@ object ToastHelper {
     fun passwordsAreDifferentOnReg(c: Context) =  doShow(DIFFERENT_PASSWORDS_ON_REG, c, LENGTH_LONG)
     fun invalidSpaceKey(c: Context) =             doShow(INVALID_SPACE_KEY, c, LENGTH_LONG)
     fun invalidSpaceNameOnReg(c: Context) =       doShow(INVALID_SPACE_NAME_ON_REG, c, LENGTH_LONG)
+
     fun invalidPositionOnReg(c: Context) =        doShow(INVALID_POSITION_ON_REG, c, LENGTH_LONG)
 
     fun workDurationTooShort(c: Context, minWorkDuration: Duration) {

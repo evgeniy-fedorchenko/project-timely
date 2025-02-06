@@ -1,14 +1,12 @@
 package com.efedorchenko.timely.data
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.efedorchenko.timely.data.repository.DataRepository
 import com.efedorchenko.timely.data.repository.RepositoryFactory
-import com.efedorchenko.timely.ui.support.CalendarAdapter
 import com.efedorchenko.timely.model.AbstractData
 import com.efedorchenko.timely.model.DataType
 import com.efedorchenko.timely.model.DataType.EVENT
@@ -16,15 +14,14 @@ import com.efedorchenko.timely.model.DataType.FINE
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.Fine
 import com.efedorchenko.timely.model.MonthUID
-import com.efedorchenko.timely.model.api.ApiResponse
 import com.efedorchenko.timely.model.toEventMap
 import com.efedorchenko.timely.service.ApiService
 import com.efedorchenko.timely.service.ToastHelper
+import com.efedorchenko.timely.ui.support.CalendarAdapter
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import okio.IOException
 import org.threeten.bp.LocalDate
 import org.threeten.bp.YearMonth
 import javax.inject.Inject
@@ -113,15 +110,28 @@ class DataViewModel @Inject constructor(
         }
     }
 
-    fun addNewData(data: AbstractData) {
-        viewModelScope.launch {
-            val savedData = repositoryFactory.getRepository(data).save(data)
-            when (data.getType()) {
-                EVENT -> _events.value = (_events.value ?: emptyList()) + savedData as Event
-                FINE -> _fines.value = (_fines.value ?: emptyList()) + savedData as Fine
+    fun add(data: AbstractData, userUuid: String?) {
+        when (data.getType()) {
+            EVENT -> {
+                if (userUuid == null) {
+                    when {
+                        _events.value.isNullOrEmpty() -> _events.value = mutableListOf(data as Event)
+                        data.appId != null -> _events.value =
+                            eventRepository.findByMonth(MonthUID.create(data.date), true)
+                        else -> _events.value = _events.value!! + data as Event
+                    }
+                } else {
+                    when {
+                        _membersEvents.value.isNullOrEmpty() -> _membersEvents.value = mutableListOf(data as Event)
+                        data.appId != null -> _membersEvents.value =
+                            eventRepository.findByMonth(MonthUID.create(data.date), true, userUuid)
+                        else -> _membersEvents.value = _membersEvents.value!! + data as Event
+                    }
+                }
             }
-            if (!sendData(data)) {
-                emitNotSynced.invoke()
+            FINE -> {
+                userUuid?.let { _membersFines.value = (_membersFines.value ?: emptyList()) + data as Fine }
+                    ?: run { _fines.value = (_fines.value ?: emptyList()) + data as Fine }
             }
         }
     }
@@ -134,33 +144,9 @@ class DataViewModel @Inject constructor(
         // TODO: not implemented
     }
 
-    /**
-     * При конфликте (на ту же дату отправили другие данные) сервер вернет старые данные -> локальные данные
-     * перезапишуться, чтобы юзер не создал данные, которые конфликтуют с теми, что уже сохранены на сервре
-     */
-    suspend fun sendData(data: AbstractData): Boolean {
-        var success = false
-        try {
-            // TODO: если данные с сервера другие - надо обновлять UI
-            when (val response = apiService.save(data)) {
-                is ApiResponse.Success -> response.data?.let {
-                    it.appId = data.appId
-                    repositoryFactory.getRepository(data).upsert(it)
-                    success = true
-                } ?: run { success = false }
-
-                is ApiResponse.Error -> success = false
-            }
-
-        } catch (ex: IOException) {
-            success = false
-        }
-        return success
-    }
-
     fun getEventsAsync(monthOffset: Int, userUuid: String?) = viewModelScope.async {
         val monthUID = MonthUID.create(LocalDate.now().plusMonths(monthOffset.toLong()))
-        return@async eventRepository.findByMonth(monthUID, false, userUuid).toEventMap()
+        return@async eventRepository.findByMonth(monthUID, true, userUuid).toEventMap()
     }
 
     fun updateMonthOffset(position: Int) {
@@ -187,7 +173,6 @@ class DataViewModel @Inject constructor(
     }
 
     fun updateLiveData(position: Int, userUuid: String?) {
-        Log.e("check_update_by_position", "pos: $position, userUuid: $userUuid, stack: ${Throwable().stackTrace.joinToString("\n")}")
         viewModelScope.launch {
             val monthOffset = CalendarAdapter.calculateMonthOffset(position)
             val monthUID = MonthUID.create(LocalDate.now().plusMonths(monthOffset.toLong()))
@@ -197,7 +182,6 @@ class DataViewModel @Inject constructor(
     }
 
     fun updateLiveData(dataType: DataType? = null, userUuid: String? = null) {
-        Log.e("check_update", "type: $dataType, userUuid: $userUuid, stack: ${Throwable().stackTrace.joinToString("\n")}")
         viewModelScope.launch {
             val yearMonth = YearMonth.now().plusMonths(monthOffset.value?.toLong() ?: 0)
             val monthUID = MonthUID.create(yearMonth)
@@ -210,7 +194,6 @@ class DataViewModel @Inject constructor(
                 doUpdateEventsLiveData(monthUID, userUuid)
                 doUpdateFinesLiveData(monthUID, userUuid)
             }
-            emitNeedUpdateData.invoke()
         }
     }
 
@@ -222,12 +205,13 @@ class DataViewModel @Inject constructor(
         }
     }
 
-    private fun doUpdateEventsLiveData(monthUID: MonthUID, userUuid: String? = null) {
+    private suspend fun doUpdateEventsLiveData(monthUID: MonthUID, userUuid: String? = null) {
         if (userUuid == null) {
             _events.value = eventRepository.findByMonth(monthUID, false)
         } else {
             _membersEvents.value = eventRepository.findByMonth(monthUID, false, userUuid)
         }
+        emitNeedUpdateData.invoke()
     }
 
     fun cleanAll() {

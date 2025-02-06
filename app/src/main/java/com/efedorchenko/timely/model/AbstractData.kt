@@ -24,6 +24,7 @@ sealed class AbstractData {
 
     abstract fun getType(): DataType
 
-    @Suppress("unchecked_cast")
-    fun <T : AbstractData> toInheritor(): T = this as T
+    var toUserId: String? = null
+
+    abstract fun logicEquals(other: Any): Boolean
 }

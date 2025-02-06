@@ -9,6 +9,8 @@ import com.efedorchenko.timely.model.DataRangeRequest
 import com.efedorchenko.timely.model.DataType
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.Fine
+import com.efedorchenko.timely.model.SaveResult
+import com.efedorchenko.timely.model.UserDataModifyDto
 import com.efedorchenko.timely.model.api.ApiResponse
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -70,6 +72,45 @@ class DataServiceImpl @Inject constructor(
         }
         val finesSince = repositoryFactory.get(DataType.FINE).getMaxChangedAt()
         return downloadData(userUuid, DataType.FINE) { apiService.getUpdates(userUuid, DataType.FINE, finesSince) }
+    }
+
+    override suspend fun saveData(data: AbstractData, userUuid: String?): SaveResult {
+        val savedData = repositoryFactory.getRepository(data).upsert(data, userUuid) ?: return SaveResult.Error
+        viewModel.add(savedData, userUuid)
+        return sendData(savedData, userUuid)
+    }
+
+    override suspend fun sendData(data: AbstractData, userUuid: String?): SaveResult {
+        val reqFunc = if (data.backendId == null) {
+            data.toUserId = userUuid
+            suspend { apiService.save(data) }
+        } else {
+            val modifyingData = UserDataModifyDto(userUuid, data)
+            suspend { apiService.change(modifyingData) }
+        }
+
+        when (val response = reqFunc.invoke()) {
+            is ApiResponse.Success -> response.data?.let {
+                return when (it) {
+                    is AbstractData -> {
+                        it.appId = data.appId
+                        val upsertedData = repositoryFactory.getRepository(data).upsert(it)
+                            ?: return SaveResult.SyncFiled
+                        if (data.logicEquals(upsertedData)) SaveResult.Success
+                        else SaveResult.ServerChanged(upsertedData)
+                    }
+
+                    is Unit -> SaveResult.Success
+                    else -> SaveResult.SyncFiled
+                }
+
+            } ?: run { return SaveResult.SyncFiled }
+
+            is ApiResponse.Error -> {
+                logNetworkError("Cannot send new data. Rquid: ${response.rqUid}, data: $data", response)
+                return SaveResult.SyncFiled
+            }
+        }
     }
 
     private suspend fun getAndSaveData(userUuid: String?): Boolean {
