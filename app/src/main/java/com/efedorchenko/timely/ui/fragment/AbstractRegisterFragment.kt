@@ -14,15 +14,16 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.viewbinding.ViewBinding
 import com.efedorchenko.timely.R
-import com.efedorchenko.timely.ui.support.FragmentUtils
 import com.efedorchenko.timely.model.api.Resource
 import com.efedorchenko.timely.model.auth.RegisterRequest
 import com.efedorchenko.timely.service.AuthService
 import com.efedorchenko.timely.service.SpaceService
 import com.efedorchenko.timely.service.ToastHelper
+import com.efedorchenko.timely.ui.support.FragmentUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -105,7 +106,8 @@ abstract class AbstractRegisterFragment : Fragment() {
                 when (val result = authService.tryRegister(registerRequest)) {
                     is Resource.Success -> {
                         // TODO: сначала переводить юзеров просто на экран одиночки и ждать решения по заявке от руководителей
-                        findNavController().navigate(R.id.mainWorkerFragment)
+                        val navOptions = NavOptions.Builder().setPopUpTo(R.id.nav_graph, true).build()
+                        findNavController().navigate(R.id.mainWorkerFragment, null, navOptions)
                         if (result.spacePresent && !spaceService.initMembers()) {   // Все равно пытаемся, хотя бы чтобы показать тост
                             ToastHelper.failDownloadMembers(context)
                         }

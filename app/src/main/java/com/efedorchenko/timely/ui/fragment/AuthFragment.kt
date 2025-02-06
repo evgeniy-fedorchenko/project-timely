@@ -11,10 +11,10 @@ import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.databinding.FragmentLoginBinding
-import com.efedorchenko.timely.ui.support.FragmentUtils
 import com.efedorchenko.timely.input.AuthInputWatcher
 import com.efedorchenko.timely.model.Model
 import com.efedorchenko.timely.model.api.Resource
@@ -23,6 +23,7 @@ import com.efedorchenko.timely.service.AuthService
 import com.efedorchenko.timely.service.DataService
 import com.efedorchenko.timely.service.SpaceService
 import com.efedorchenko.timely.service.ToastHelper
+import com.efedorchenko.timely.ui.support.FragmentUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -98,12 +99,14 @@ class AuthFragment : Fragment() {
                 when (val result = authService.tryLogin(credentials)) {
                     is Resource.Success -> {
                         when (result.role?.isPrivileged()) {
-                            true -> findNavController().navigate(R.id.mainBossFragment)
-                            false -> findNavController().navigate(R.id.mainWorkerFragment)
+                            true -> navigateTo(R.id.mainBossFragment)
+                            false -> navigateTo(R.id.mainWorkerFragment)
                             else -> ToastHelper.message("role not accept", context) // FIXME
                         }
-                        if (!dataService.loadData()) {
-                            ToastHelper.failDownloadData(context)
+                        if (result.role?.isPrivileged() == false) {
+                            if (!dataService.loadData()) {
+                                ToastHelper.failDownloadData(context)
+                            }
                         }
                         if (result.spacePresent && !spaceService.initMembers()) {   // Все равно пытаемся, хотя бы чтобы показать тост
                             ToastHelper.failDownloadMembers(context)
@@ -118,6 +121,12 @@ class AuthFragment : Fragment() {
                 FragmentUtils.hideLoading(binding.loadingProgressBar)
             }
         }
+    }
+
+//    Удаляем экраны логина и остальные, чтобы нельзя было вернуться через backPressed
+    private fun navigateTo(fragmentId: Int) {
+        val navOptions = NavOptions.Builder().setPopUpTo(R.id.authFragment, true).build()
+        findNavController().navigate(fragmentId, null, navOptions)
     }
 
     private fun setupImeInsets() {
