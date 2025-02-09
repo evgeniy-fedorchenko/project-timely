@@ -67,11 +67,12 @@
 
                 <ImageButton
                     android:id="@+id/nameHelpButton"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_gravity="end|center_vertical"
-                    android:layout_marginEnd="8dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:background="@android:color/transparent"
+                    android:clickable="true"
+                    android:focusable="true"
                     android:src="@drawable/ic_reg_field_help"
                     app:tint="#808080" />
             </FrameLayout>
@@ -101,11 +102,12 @@
 
                 <ImageButton
                     android:id="@+id/positionHelpButton"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_gravity="end|center_vertical"
-                    android:layout_marginEnd="8dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:background="@android:color/transparent"
+                    android:clickable="true"
+                    android:focusable="true"
                     android:src="@drawable/ic_reg_field_help"
                     app:tint="#808080" />
             </FrameLayout>
@@ -136,11 +138,12 @@
 
                 <ImageButton
                     android:id="@+id/emailHelpButton"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_gravity="end|center_vertical"
-                    android:layout_marginEnd="8dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:background="@android:color/transparent"
+                    android:clickable="true"
+                    android:focusable="true"
                     android:src="@drawable/ic_reg_field_help"
                     app:tint="#808080" />
             </FrameLayout>
@@ -171,11 +174,12 @@
 
                 <ImageButton
                     android:id="@+id/passwordHelpButton"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_gravity="end|center_vertical"
-                    android:layout_marginEnd="8dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:background="@android:color/transparent"
+                    android:clickable="true"
+                    android:focusable="true"
                     android:src="@drawable/ic_reg_field_help"
                     app:tint="#808080" />
             </FrameLayout>
@@ -206,11 +210,12 @@
 
                 <ImageButton
                     android:id="@+id/repeatPasswordHelpButton"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_gravity="end|center_vertical"
-                    android:layout_marginEnd="8dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:background="@android:color/transparent"
+                    android:clickable="true"
+                    android:focusable="true"
                     android:src="@drawable/ic_reg_field_help"
                     app:tint="#808080" />
             </FrameLayout>
@@ -219,9 +224,9 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
                 android:gravity="start"
                 android:text="Создание компании"
-                android:layout_marginTop="5dp"
                 android:textColor="#666666"
                 android:textSize="16sp" />
 
@@ -251,11 +256,12 @@
 
                 <ImageButton
                     android:id="@+id/spaceNameHelpButton"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_gravity="end|center_vertical"
-                    android:layout_marginEnd="8dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:background="@android:color/transparent"
+                    android:clickable="true"
+                    android:focusable="true"
                     android:src="@drawable/ic_reg_field_help"
                     app:tint="#808080" />
             </FrameLayout>
