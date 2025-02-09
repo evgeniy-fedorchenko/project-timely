@@ -23,7 +23,10 @@ import com.efedorchenko.timely.model.auth.RegisterRequest
 import com.efedorchenko.timely.service.AuthService
 import com.efedorchenko.timely.service.SpaceService
 import com.efedorchenko.timely.service.ToastHelper
-import com.efedorchenko.timely.ui.support.FragmentUtils
+import com.efedorchenko.timely.ui.support.applicationScope
+import com.efedorchenko.timely.ui.support.hide
+import com.efedorchenko.timely.ui.support.hideKeyboard
+import com.efedorchenko.timely.ui.support.show
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -58,7 +61,7 @@ abstract class AbstractRegisterFragment : Fragment() {
 
     protected fun setHideKeyboardListener(targetLayout: LinearLayout) {
         targetLayout.setOnClickListener {
-           FragmentUtils.hideKeyboard(activity)
+            activity?.hideKeyboard()
         }
     }
 
@@ -68,11 +71,9 @@ abstract class AbstractRegisterFragment : Fragment() {
         }
     }
 
-    protected fun setRegisterButtonListener(
-        registerButton: Button, context: Context, loadingProgressBar: ProgressBar
-    ) {
+    protected fun setRegisterButtonListener(registerButton: Button, context: Context, progressBar: ProgressBar) {
         registerButton.setOnClickListener {
-            doRegister(registerButton, context, loadingProgressBar)
+            doRegister(registerButton, context, progressBar)
         }
     }
 
@@ -88,11 +89,9 @@ abstract class AbstractRegisterFragment : Fragment() {
         dialog.show()
     }
 
-    private fun doRegister(
-        registerButton: Button, context: Context, loadingProgressBar: ProgressBar
-    ) {
+    private fun doRegister(registerButton: Button, context: Context, progressBar: ProgressBar) {
         registerButton.isEnabled = false
-        FragmentUtils.hideKeyboard(activity)
+        activity?.hideKeyboard()
 
         val registerRequest = validateAndCreateDto(context)
         if (registerRequest == null) {
@@ -101,24 +100,29 @@ abstract class AbstractRegisterFragment : Fragment() {
         }
 
         lifecycleScope.launch {
-            FragmentUtils.showLoading(loadingProgressBar)
+            progressBar.show()
             try {
                 when (val result = authService.tryRegister(registerRequest)) {
-                    is Resource.Success -> {
-                        // TODO: сначала переводить юзеров просто на экран одиночки и ждать решения по заявке от руководителей
-                        val navOptions = NavOptions.Builder().setPopUpTo(R.id.nav_graph, true).build()
-                        findNavController().navigate(R.id.mainWorkerFragment, null, navOptions)
-                        if (result.spacePresent && !spaceService.initMembers()) {   // Все равно пытаемся, хотя бы чтобы показать тост
-                            ToastHelper.failDownloadMembers(context)
-                        }
-                    }
-
+                    is Resource.Success -> handleSuccess(context, result)
                     is Resource.Error -> ToastHelper.message(result.message, context)
                 }
 
             } finally {
                 registerButton.isEnabled = true
-                FragmentUtils.hideLoading(loadingProgressBar)
+                progressBar.hide()
+            }
+        }
+    }
+
+    private fun handleSuccess(context: Context, result: Resource.Success<Unit>) {
+
+        // TODO: сначала переводить юзеров просто на экран одиночки и ждать решения по заявке от руководителей
+        val navOptions = NavOptions.Builder().setPopUpTo(R.id.nav_graph, true).build()
+        findNavController().navigate(R.id.mainWorkerFragment, null, navOptions)
+
+        context.applicationScope().launch {
+            if (result.spacePresent && !spaceService.initMembers()) {   // Все равно пытаемся, хотя бы чтобы показать тост
+                ToastHelper.failDownloadMembers(context)
             }
         }
     }

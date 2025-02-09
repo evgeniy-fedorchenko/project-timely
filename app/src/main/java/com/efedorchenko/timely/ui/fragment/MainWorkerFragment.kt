@@ -59,7 +59,7 @@ class MainWorkerFragment : AbstractMainFragment() {
             setupViewPager(null)   // Calendar scroller
             setupSummaryCard()   // Summary card at the bottom of screen
         }
-        super.setupSideMenu(context)   // Side navigation menu
+        super.setupSideMenu()   // Side navigation menu
 
         viewLifecycleOwner.lifecycleScope.launch {
 //            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {

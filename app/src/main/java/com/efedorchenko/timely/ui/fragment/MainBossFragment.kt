@@ -13,6 +13,7 @@ import android.view.LayoutInflater.from
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
+import android.widget.TextView
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -27,9 +28,9 @@ import com.efedorchenko.timely.databinding.FragmentMainBossBinding
 import com.efedorchenko.timely.model.SpaceMember
 import com.efedorchenko.timely.service.DataService
 import com.efedorchenko.timely.service.ToastHelper
-import com.efedorchenko.timely.ui.support.FragmentUtils
 import com.efedorchenko.timely.ui.support.RecyclerItemDecoration
 import com.efedorchenko.timely.ui.support.SpaceAdapter
+import com.efedorchenko.timely.ui.support.animClickListener
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -69,7 +70,7 @@ class MainBossFragment : AbstractMainFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val context = requireContext()
-        super.setupSideMenu(context)   // Side navigation menu
+        super.setupSideMenu()   // Side navigation menu
         setupRecycler(context)   // Recycler of members list
         viewLifecycleOwner.lifecycleScope.launch {
             spaceViewModel.members.collect { members ->
@@ -155,19 +156,15 @@ class MainBossFragment : AbstractMainFragment() {
         binding.workerKey.text = keys?.workerKey
         binding.bossKey.text = keys?.bossKey
 
-        FragmentUtils.setupButtonAnimationAndClick(binding.workerKeyCopyButton, context) {
-            copyToClipboard(context, "worker_key", binding.workerKey.text.toString())
-        }
-        FragmentUtils.setupButtonAnimationAndClick(binding.bossKeyCopyButton, context) {
-            copyToClipboard(context, "boss_key", binding.bossKey.text.toString())
-        }
+        binding.workerKeyCopyButton.animClickListener { copy(context, binding.workerKey) }
+        binding.bossKeyCopyButton.animClickListener { copy(context, binding.bossKey) }
         dialog.show()
     }
 
-    private fun copyToClipboard(context: Context, label: String, text: String) {
+    private fun copy(context: Context, bossKey: TextView) {
         ToastHelper.keyCopied(context)
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText(label, text)
+        val clip = ClipData.newPlainText(bossKey.id.toString(), bossKey.text.toString())
         clipboard.setPrimaryClip(clip)
     }
 }

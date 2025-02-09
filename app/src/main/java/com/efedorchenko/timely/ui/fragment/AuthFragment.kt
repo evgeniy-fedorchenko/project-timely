@@ -23,7 +23,10 @@ import com.efedorchenko.timely.service.AuthService
 import com.efedorchenko.timely.service.DataService
 import com.efedorchenko.timely.service.SpaceService
 import com.efedorchenko.timely.service.ToastHelper
-import com.efedorchenko.timely.ui.support.FragmentUtils
+import com.efedorchenko.timely.ui.support.applicationScope
+import com.efedorchenko.timely.ui.support.hide
+import com.efedorchenko.timely.ui.support.hideKeyboard
+import com.efedorchenko.timely.ui.support.show
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -61,7 +64,7 @@ class AuthFragment : Fragment() {
         setupImeInsets()
 
         view.setOnClickListener {
-            FragmentUtils.hideKeyboard(activity)
+            activity?.hideKeyboard()
         }
 
         binding.loginEditText.addTextChangedListener(
@@ -81,7 +84,7 @@ class AuthFragment : Fragment() {
 
     private fun doLogin(context: Context, activity: FragmentActivity?) {
         binding.loginButton.isEnabled = false
-        FragmentUtils.hideKeyboard(activity)
+        activity?.hideKeyboard()
         val login = binding.loginEditText.text.toString()
         val password = binding.passwordEditText.text.toString()
         val loginPair = Pair(login, password)
@@ -93,7 +96,7 @@ class AuthFragment : Fragment() {
         }
 
         lifecycleScope.launch {
-            FragmentUtils.showLoading(binding.loadingProgressBar)
+            binding.loadingProgressBar.show()
             try {
                 val credentials = Credentials(login, password)
                 when (val result = authService.tryLogin(credentials)) {
@@ -118,7 +121,7 @@ class AuthFragment : Fragment() {
 
             } finally {
                 binding.loginButton.isEnabled = true
-                FragmentUtils.hideLoading(binding.loadingProgressBar)
+                binding.loadingProgressBar.hide()
             }
         }
     }

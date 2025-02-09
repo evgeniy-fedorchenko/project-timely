@@ -23,6 +23,7 @@ import com.efedorchenko.timely.model.auth.RegisterRequest
 import com.efedorchenko.timely.model.auth.RoleType
 import com.efedorchenko.timely.model.auth.SpaceDto
 import com.efedorchenko.timely.service.ToastHelper
+import com.efedorchenko.timely.ui.support.animClickListener
 
 /**
  * Регистрация для `RoleType.CREATOR`
@@ -87,23 +88,23 @@ class RegisterCreatorFragment : AbstractRegisterFragment() {
 
     override fun setHelpButtonListeners(c: Context) {
         with(binding) {
-            nameHelpButton.setOnClickListener {
-                showHint(DialogRegisterNameHelpBinding.inflate(from(c)), c)
+            nameHelpButton.animClickListener {
+                    showHint(DialogRegisterNameHelpBinding.inflate(from(c)), c)
             }
-            positionHelpButton.setOnClickListener {
-                showHint(DialogRegisterPositionHelpBinding.inflate(from(c)), c)
+            positionHelpButton.animClickListener {
+                    showHint(DialogRegisterPositionHelpBinding.inflate(from(c)), c)
             }
-            emailHelpButton.setOnClickListener {
-                showHint(DialogRegisterEmailHelpBinding.inflate(from(c)), c)
+            emailHelpButton.animClickListener {
+                    showHint(DialogRegisterEmailHelpBinding.inflate(from(c)), c)
             }
-            passwordHelpButton.setOnClickListener {
-                showHint(DialogRegisterPasswordHelpBinding.inflate(from(c)), c)
+            passwordHelpButton.animClickListener {
+                    showHint(DialogRegisterPasswordHelpBinding.inflate(from(c)), c)
             }
-            repeatPasswordHelpButton.setOnClickListener {
-                showHint(DialogRegisterRepeatPasswordHelpBinding.inflate(from(c)), c)
+            repeatPasswordHelpButton.animClickListener {
+                    showHint(DialogRegisterRepeatPasswordHelpBinding.inflate(from(c)), c)
             }
-            spaceNameHelpButton.setOnClickListener {
-                showHint(DialogRegisterSpaceNameHelpBinding.inflate(from(c)), c)
+            spaceNameHelpButton.animClickListener {
+                    showHint(DialogRegisterSpaceNameHelpBinding.inflate(from(c)), c)
             }
         }
     }

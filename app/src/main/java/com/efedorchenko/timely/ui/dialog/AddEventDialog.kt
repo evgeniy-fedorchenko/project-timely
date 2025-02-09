@@ -13,7 +13,7 @@ import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.service.ToastHelper
 import com.efedorchenko.timely.ui.fragment.CalendarFragment
 import com.efedorchenko.timely.ui.support.AddAbstractDataListener
-import com.efedorchenko.timely.ui.support.FragmentUtils
+import com.efedorchenko.timely.ui.support.setupAsExpandedBottomSheet
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.threeten.bp.Duration
 import org.threeten.bp.LocalDate
@@ -106,7 +106,7 @@ class AddEventDialog : BottomSheetDialogFragment() {
 
     override fun onStart() {
         super.onStart()
-        FragmentUtils.setUpDialogListener(dialog)
+        dialog?.setupAsExpandedBottomSheet()
     }
 
     override fun onDestroyView() {

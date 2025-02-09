@@ -43,13 +43,10 @@ class SpaceAdapter(
             true
         }
 
-        if (serviceMemberFunc != null) {
+        serviceMemberFunc?.let {
             with(holder.binding.icon) {
                 visibility = View.VISIBLE
-                setOnClickListener {
-                    val onClick = { serviceMemberFunc.invoke(member) }
-                    FragmentUtils.setupButtonAnimationAndClick(this, context, onClick)
-                }
+                animClickListener { it.invoke(member) }
             }
         }
     }

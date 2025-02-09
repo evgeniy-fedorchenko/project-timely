@@ -19,6 +19,7 @@ import com.efedorchenko.timely.model.Model
 import com.efedorchenko.timely.model.auth.RegisterRequest
 import com.efedorchenko.timely.model.auth.RoleType
 import com.efedorchenko.timely.service.ToastHelper
+import com.efedorchenko.timely.ui.support.animClickListener
 
 /**
  * Регистрация для `RoleType.WORKER` (сщ вступлением в пространстово и без) и `RoleType.BOSS`
@@ -85,23 +86,23 @@ class RegisterFragment : AbstractRegisterFragment() {
 
     override fun setHelpButtonListeners(c: Context) {
         with(binding) {
-            nameHelpButton.setOnClickListener {
+            nameHelpButton.animClickListener {
                 showHint(DialogRegisterNameHelpBinding.inflate(from(c)), c)
             }
-            positionHelpButton.setOnClickListener {
+            positionHelpButton.animClickListener {
                 showHint(DialogRegisterPositionHelpBinding.inflate(from(c)), c)
             }
-            emailHelpButton.setOnClickListener {
+            emailHelpButton.animClickListener {
                 showHint(DialogRegisterEmailHelpBinding.inflate(from(c)), c)
             }
-            passwordHelpButton.setOnClickListener {
+            passwordHelpButton.animClickListener {
                 showHint(DialogRegisterPasswordHelpBinding.inflate(from(c)), c)
             }
-            repeatPasswordHelpButton.setOnClickListener {
+            repeatPasswordHelpButton.animClickListener {
                 showHint(DialogRegisterRepeatPasswordHelpBinding.inflate(from(c)), c)
             }
             if (args.withSpace) {
-                spaceKeyHelpButton.setOnClickListener {
+                spaceKeyHelpButton.animClickListener {
                     showHint(DialogRegisterSpaceKeyHelpBinding.inflate(from(c)), c)
                 }
             }

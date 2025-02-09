@@ -1,6 +1,5 @@
 package com.efedorchenko.timely.ui.fragment
 
-import android.content.Context
 import android.graphics.Typeface
 import android.text.Spannable
 import android.text.SpannableString
@@ -18,8 +17,8 @@ import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.HeaderLayoutBinding
-import com.efedorchenko.timely.ui.support.FragmentUtils
 import com.efedorchenko.timely.ui.support.NavigationMenuListener
+import com.efedorchenko.timely.ui.support.animClickListener
 import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.launch
 
@@ -38,15 +37,14 @@ abstract class AbstractMainFragment : Fragment() {
     protected abstract val encProfileStorage: EncProfileStorage
     protected abstract val profileStorage: ProfileStorage
 
-    fun setupSideMenu(context: Context) {
+    fun setupSideMenu() {
         getHeaderLayout().menuButton.setOnClickListener {
             getDrawerLayout().openDrawer(GravityCompat.START)
         }
-        FragmentUtils.setupButtonAnimationAndClick(getHeaderLayout().homeButton, context) {
+        getHeaderLayout().homeButton.animClickListener {
             spaceViewModel.resetSelectedMember()
             getHeaderLayout().homeButton.visibility = View.GONE
         }
-
         val headerView = getNavigationView().getHeaderView(0)
 
         val userData = profileStorage.getUserData()

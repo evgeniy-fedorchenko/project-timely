@@ -5,12 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.efedorchenko.timely.databinding.DialogFineAddBinding
-import com.efedorchenko.timely.ui.support.AddAbstractDataListener
-import com.efedorchenko.timely.ui.support.FragmentUtils
 import com.efedorchenko.timely.input.CommentInputFilter
 import com.efedorchenko.timely.input.FineAmountFilter
 import com.efedorchenko.timely.model.Fine
 import com.efedorchenko.timely.service.ToastHelper
+import com.efedorchenko.timely.ui.support.AddAbstractDataListener
+import com.efedorchenko.timely.ui.support.setupAsExpandedBottomSheet
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.threeten.bp.LocalDate
 import org.threeten.bp.YearMonth
@@ -77,7 +77,7 @@ class AddFineDialog : BottomSheetDialogFragment() {
 
     override fun onStart() {
         super.onStart()
-        FragmentUtils.setUpDialogListener(dialog)
+        dialog?.setupAsExpandedBottomSheet()
     }
 
     override fun onDestroyView() {

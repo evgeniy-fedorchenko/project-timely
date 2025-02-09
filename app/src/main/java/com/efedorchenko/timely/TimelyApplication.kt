@@ -1,19 +1,41 @@
 package com.efedorchenko.timely
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 
 @HiltAndroidApp
 class TimelyApplication : Application(), ViewModelStoreOwner {
 
+    private val coroutineExHandler = CoroutineExceptionHandler { _, throwable ->
+        Log.e("TimelyApplication", "Coroutine error: ", throwable)
+    }
+
+    val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main + coroutineExHandler)
     override val viewModelStore = ViewModelStore()
+
+    companion object {
+        lateinit var instance: TimelyApplication
+            private set
+    }
 
     override fun onCreate() {
         super.onCreate()
         AndroidThreeTen.init(this)
+        instance = this
+    }
+
+    override fun onTerminate() {
+        super.onTerminate()
+        applicationScope.cancel()
     }
 
 }
@@ -26,3 +48,9 @@ class TimelyApplication : Application(), ViewModelStoreOwner {
 // TODO: отправлять новый ивент и штраф на бек при сохранении его. Если не получилось отправить - показывать алерт и выводить кнопку синхронизации (отправки)
 // TODO: Добавить вкладку "Заявки на вступление в команду"
 // TODO: Сделать progressBarы везде одинаковые
+// TODO: Добавить алерт при выходе из учетки и при смене просматриваемого человека, что есть неотправленные данные и они потеряются
+
+
+// TODO:
+//  - добавить настройки для юзеров (доступны только админам),
+//  - добавить принятие юзеров в пространство по решению админов, а не сразу
