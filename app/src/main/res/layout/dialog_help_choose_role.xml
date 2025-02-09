@@ -63,6 +63,15 @@
         android:text="Для планирования своего рабочего времени под контролем руководителя, выберете первую роль"
         android:textColor="@color/light_gray"
         android:textSize="14sp" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start"
+        android:paddingStart="20dp"
+        android:paddingTop="5dp"
+        android:text="Для работы без команды и руководителей выберете вторую роль. Вы сможете присоединиться к компании в любой момент"
+        android:textColor="@color/light_gray"
+        android:textSize="14sp" />
 
     <TextView
         android:layout_width="match_parent"

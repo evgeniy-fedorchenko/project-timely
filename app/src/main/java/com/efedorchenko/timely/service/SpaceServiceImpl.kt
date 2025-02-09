@@ -5,7 +5,7 @@ import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.data.repository.MemberRepository
 import com.efedorchenko.timely.model.MembersResult
-import com.efedorchenko.timely.model.SyncProcess
+import com.efedorchenko.timely.model.SyncProcess.UpdateResult
 import com.efedorchenko.timely.model.api.ApiResponse
 import com.efedorchenko.timely.model.auth.RoleType
 import javax.inject.Inject
@@ -18,7 +18,7 @@ class SpaceServiceImpl @Inject constructor(
 ) : SpaceService {
 
     override suspend fun initMembers() =
-        doUpdateMembers { apiService.getMembers() } == SyncProcess.UpdateResult.SUCCESS
+        doUpdateMembers { apiService.getMembers() } == UpdateResult.SUCCESS
 
     override suspend fun updateMembers() =
         doUpdateMembers { apiService.getMembers(memberRepository.getMaxChangedAt()) }
@@ -40,12 +40,12 @@ class SpaceServiceImpl @Inject constructor(
         }
     }
 
-    private suspend fun doUpdateMembers(requestFunc: suspend () -> ApiResponse<MembersResult>): SyncProcess.UpdateResult {
+    private suspend fun doUpdateMembers(requestFunc: suspend () -> ApiResponse<MembersResult>): UpdateResult {
         when (val response = requestFunc.invoke()) {
             is ApiResponse.Success -> {
                 response.data?.let {
                     if (!it.youConsistInSpace) {
-                        return SyncProcess.UpdateResult.NOT_CONSIST_IN_SPACE
+                        return UpdateResult.NOT_CONSIST_IN_SPACE
                     }
                     if (it.members.isNotEmpty()) {
 
@@ -58,12 +58,11 @@ class SpaceServiceImpl @Inject constructor(
                         }
                         memberRepository.save(it.members)
                         memberRepository.deleteIfNotContains(it.actualIds)
-//                        spaceViewModel.needSwitchSpaceItemsInSideMenu()
                         spaceViewModel.updateMembers()
                     }
-                    return SyncProcess.UpdateResult.SUCCESS
+                    return UpdateResult.SUCCESS
                 }
-                return SyncProcess.UpdateResult.FAIL
+                return UpdateResult.FAIL
             }
             is ApiResponse.Error -> {
                 Log.e("Network error", "Cannot get members from server." +
@@ -71,7 +70,7 @@ class SpaceServiceImpl @Inject constructor(
                         "error message: ${response.errorMessage}, " +
                         "error data: ${response.errorData}"
                 )
-                return SyncProcess.UpdateResult.FAIL
+                return UpdateResult.FAIL
             }
         }
     }

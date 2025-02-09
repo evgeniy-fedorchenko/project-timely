@@ -48,13 +48,9 @@ class SummaryFragment : Fragment(), AddAbstractDataListener<Fine> {
     @Inject
     lateinit var encProfileStorage: EncProfileStorage
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        userUuid = spaceViewModel.selectedMember.value?.userUuid
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentSummaryCardBinding.inflate(inflater, container, false)
+        userUuid = spaceViewModel.selectedMember.value?.userUuid
         return binding.root
     }
 

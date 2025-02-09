@@ -5,7 +5,6 @@ import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.data.repository.MemberRepository
 import com.efedorchenko.timely.data.repository.RepositoryFactory
-import com.efedorchenko.timely.service.ApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,12 +17,8 @@ object ViewModelModule {
 
     @Provides
     @Singleton
-    fun provideDataViewModel(
-        application: Application,
-        repositoryFactory: RepositoryFactory,
-        apiService: ApiService
-    ): DataViewModel {
-        return DataViewModel(application, repositoryFactory, apiService)
+    fun provideDataViewModel(application: Application, repositoryFactory: RepositoryFactory, ): DataViewModel {
+        return DataViewModel(application, repositoryFactory)
     }
 
     @Provides

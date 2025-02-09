@@ -14,8 +14,7 @@ import com.efedorchenko.timely.model.DataType.FINE
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.Fine
 import com.efedorchenko.timely.model.MonthUID
-import com.efedorchenko.timely.model.toEventMap
-import com.efedorchenko.timely.service.ApiService
+import com.efedorchenko.timely.model.calendar.toEventMap
 import com.efedorchenko.timely.service.ToastHelper
 import com.efedorchenko.timely.ui.support.CalendarAdapter
 import kotlinx.coroutines.async
@@ -57,7 +56,6 @@ import javax.inject.Inject
 class DataViewModel @Inject constructor(
     application: Application,
     private val repositoryFactory: RepositoryFactory,
-    private val apiService: ApiService
 ) : AndroidViewModel(application) {
 
     private val eventRepository: DataRepository<Event> = repositoryFactory.getRepository(EVENT)
@@ -136,15 +134,7 @@ class DataViewModel @Inject constructor(
         }
     }
 
-    fun deleteData(data: AbstractData) {
-        // TODO: not implemented
-    }
-
-    fun changeData(data: AbstractData) {
-        // TODO: not implemented
-    }
-
-    fun getEventsAsync(monthOffset: Int, userUuid: String?) = viewModelScope.async {
+    fun getEventsAsyncStart(monthOffset: Int, userUuid: String?) = viewModelScope.async {
         val monthUID = MonthUID.create(LocalDate.now().plusMonths(monthOffset.toLong()))
         return@async eventRepository.findByMonth(monthUID, true, userUuid).toEventMap()
     }
@@ -154,8 +144,6 @@ class DataViewModel @Inject constructor(
         _monthOffset.value = monthOffset
     }
 
-    // FIXME: заменить на deleteData(data: AbstractData)
-    // TODO: при удалении штрафа обновлять сумму в summary
     fun delete(position: Int) {
         val currentList = _fines.value?.toMutableList() ?: return
 

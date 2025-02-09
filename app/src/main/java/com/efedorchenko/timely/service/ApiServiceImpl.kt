@@ -39,7 +39,6 @@ class ApiServiceImpl @Inject constructor(
 
         /* Paths */
         private const val BASE_URL = "http://192.168.1.104:8080/api/v1"
-
         private const val REG_PATH = "$BASE_URL/auth/reg"
         private const val LOGIN_PATH = "$BASE_URL/auth/login"
         private const val DATA_PATH = "$BASE_URL/data"

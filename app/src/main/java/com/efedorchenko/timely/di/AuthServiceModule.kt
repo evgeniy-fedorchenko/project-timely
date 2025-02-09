@@ -18,11 +18,8 @@ object AuthServiceModule {
     @Provides
     @Singleton
     fun provideAuthService(
-        encProfileStorage: EncProfileStorage,
-        profileStorage: ProfileStorage,
-        apiService: ApiService
+        encProfileStorage: EncProfileStorage, profileStorage: ProfileStorage, apiService: ApiService
     ): AuthService {
-
         return AuthServiceImpl(encProfileStorage, profileStorage, apiService)
     }
 }

@@ -2,7 +2,6 @@ package com.efedorchenko.timely.model
 
 object Model {
     private const val LOCAL = "[a-zA-Z0-9][a-zA-Z0-9._-]{0,62}[a-zA-Z0-9]"
-
     private const val SUBDOMAIN = "([a-zA-Z0-9][a-zA-Z0-9_-]{1,14}\\.)"
     private const val TLD = "([a-z]{2,4})"
     private const val EMAIL_REGEX = "^(?!.*[-._]{2})$LOCAL@$SUBDOMAIN{1,2}$TLD$"
