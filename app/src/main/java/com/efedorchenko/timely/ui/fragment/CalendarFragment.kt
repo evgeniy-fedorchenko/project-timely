@@ -17,12 +17,13 @@ import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
 import com.efedorchenko.timely.data.EncProfileStorage
 import com.efedorchenko.timely.databinding.CalendarGridLayoutBinding
-import com.efedorchenko.timely.model.CalendarCellBuilder
-import com.efedorchenko.timely.model.CalendarCellBuilder.CellType
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.SaveResult
-import com.efedorchenko.timely.model.applyTo
-import com.efedorchenko.timely.model.deleteFrom
+import com.efedorchenko.timely.model.calendar.CalendarBuilder
+import com.efedorchenko.timely.model.calendar.CalendarCell
+import com.efedorchenko.timely.model.calendar.applyTo
+import com.efedorchenko.timely.model.calendar.calcCellIdx
+import com.efedorchenko.timely.model.calendar.deleteFrom
 import com.efedorchenko.timely.service.DataService
 import com.efedorchenko.timely.service.ToastHelper
 import com.efedorchenko.timely.ui.dialog.AddEventDialog
@@ -30,11 +31,9 @@ import com.efedorchenko.timely.ui.support.AddAbstractDataListener
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeoutOrNull
 import org.threeten.bp.LocalDate
-import java.text.SimpleDateFormat
-import java.util.Calendar
+import org.threeten.bp.ZoneId
+import org.threeten.bp.format.DateTimeFormatter
 import java.util.Locale
 import javax.inject.Inject
 
@@ -42,15 +41,13 @@ import javax.inject.Inject
 class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
 
     companion object {
-        // FIXME: SELECTED_DATE_KEY дублируется в AddEventDialog
-        private const val MONTH_OFFSET_ARG = "month_offset"
         const val SELECTED_DATE_KEY = "selected_date"
-        const val EXISTING_EVENT_WORK_DURATION = "existing_work_duration"
-        const val EXISTING_EVENT_COMMENT = "existing_comment"
-        const val EXISTING_EVENT_APP_ID = "existing_app_id"
+        const val IS_WATCHER_ADMIN = "is_watcher_admin"
+        const val NEEDS_BLOCK_INPUT = "needs_block_input"
+        private const val MONTH_OFFSET_ARG = "month_offset"
         private const val ADD_EVENT_DIALOG_TAG = "add_event_dialog"
 
-        private val DATE_FORMATTER = SimpleDateFormat("LLLL yyyy", Locale("ru"))
+        private val YEAR_MONTH_FORMATTER = DateTimeFormatter.ofPattern("LLLL yyyy", Locale("ru"))
 
         fun newInstance(monthOffset: Int, userUuid: String?): CalendarFragment {
             return CalendarFragment().apply {
@@ -76,14 +73,12 @@ class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
 
     private var monthOffset: Int = 0
     private lateinit var monthEventsDef: Deferred<Map<LocalDate, Event>>
-    private lateinit var monthEvents: Map<LocalDate, Event>
 
     private lateinit var calendarGrid: GridLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         monthOffset = arguments?.getInt(MONTH_OFFSET_ARG) ?: 0
-        monthEventsDef = viewModel.getEventsAsync(monthOffset, getUserUuidArgument())
-
+        monthEventsDef = viewModel.getEventsAsyncStart(monthOffset, getUserUuidArgument())
         super.onCreate(savedInstanceState)
     }
 
@@ -105,8 +100,7 @@ class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
         lifecycleScope.launch {
             viewModel.needUpdateData.collect { needsUpdate ->
                 if (needsUpdate) {
-                    monthEventsDef =
-                        viewModel.getEventsAsync(monthOffset, getUserUuidArgument())
+                    monthEventsDef = viewModel.getEventsAsyncStart(monthOffset, getUserUuidArgument())
                     updateCalendar()
                 }
             }
@@ -118,40 +112,61 @@ class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
         _binding = null
     }
 
-    /*
-    * Если календарь чужой и ты не админ - игнор
-    * Если календарь свой и дата прошла - datePassed
-    * Усли смена уже есть и ты не админ - cannotEditPlaned
-    */
+
+    /**
+     * Установка новых смен (клик на пустую ячейку):
+     * - Работник может ставить смену себе, если дата еще не прошла. Если прошла - показывается тост `datePassed`
+     * - Работник не может ставить смены другим работникам. При попытке - игнор, меню не открывается
+     * - Админ не может ставить смены себе, так как не имеет календаря в принципе
+     * - Админ может ставить смену любому работнику, если дата еще не прошла. Если прошла -  тост `datePassed`
+     *
+     * Редактирование и удаление смен (клик на запоненную ячейку):
+     * - Работник не может изменять свои смены. При открытии смены - доступно только чтение (не зависимо от даты)
+     * - Работник не может изменять чужие смены. При открытии смены - доступно только чтение (не зависимо от даты)
+     * - Админ может редактировать (и удалять) любые смены работников, не зависимо от даты
+     *
+     * Просмотр:
+     * - Работникам доступен просмотр любых своих и чужих смен, не зависимо от даты
+     * - Админу доступно редактирование (и удаление) чужих смен не зависимо от даты.
+     *   Но установка НОВЫХ смен - только если дата еще не прошла
+     */
     override fun showAddDataDialog(targetDate: LocalDate, context: Context?, existedData: Event?) {
         if (context == null) return
-        val userUuid = getUserUuidArgument()
 
-        if (userUuid != null && !encProfileStorage.isPrivileged()) {
+        val isAdmin = encProfileStorage.isPrivileged()
+        val isGuest = getUserUuidArgument() != null
+        val isAfter = LocalDate.now().isAfter(targetDate)
+        val dataPresent = existedData != null
+
+        if (isGuest && !isAdmin && !dataPresent) {
             return
         }
-        if (LocalDate.now().isAfter(targetDate)) {
+        if ((!isGuest && isAfter && !dataPresent) || (isGuest && isAfter && isAdmin && !dataPresent)) {
             ToastHelper.datePassed(context)
             return
         }
-        if (existedData != null && !encProfileStorage.isPrivileged()) {
-            ToastHelper.cannotEditPlaned(context)
-            return
+        val addEventDialog = AddEventDialog.newInstance(this, existedData)
+        addEventDialog.arguments = Bundle().apply {
+            putString(SELECTED_DATE_KEY, targetDate.toString())
+            putBoolean(IS_WATCHER_ADMIN, isAdmin)
+            putBoolean(NEEDS_BLOCK_INPUT, (isGuest && !isAdmin) || (dataPresent && !isAdmin))
         }
-
-        val bundle = Bundle()
-        bundle.putString(SELECTED_DATE_KEY, targetDate.toString())
-        existedData?.let {
-            bundle.putLong(EXISTING_EVENT_WORK_DURATION, existedData.workDuration.seconds)
-            bundle.putString(EXISTING_EVENT_COMMENT, existedData.comment)
-            bundle.putLong(EXISTING_EVENT_APP_ID, existedData.appId ?: 0)
-        }
-
-        val addEventDialog = AddEventDialog.newInstance(this)
-        addEventDialog.arguments = bundle
         addEventDialog.show(parentFragmentManager, ADD_EVENT_DIALOG_TAG)
     }
 
+    /**
+     * Для сохранении новых данных или изменения сущетсвующих.
+     * Обновляется содержимое ячейки в UI, после чего в корутине данные сохраняются в БД и на сервер
+     * - Если отправка на сервер не удалась - показывается тост `ToastHelper.NOT_SYNCED` (есть возможность
+     *   отправить позже через [com.efedorchenko.timely.ui.dialog.SyncDialogFragment])
+     * - Если удалась - есть несколько вариантов:
+     *     - Если отправлял работник, то сервер мог изменить данные, если админ ранее назначил на эту же дату
+     *       другую смену - смена с сервера имеет приоритет, снова обновляется UI и данные в локальной БД
+     *     - Если смену отправлял админ - она перепишет смену на сервере, если роль этого админа старше роли
+     *       юзера, который установил смену изначально, иначе местная смена обновится.
+     *       При паритете веса ролей - приоритет у более старой смены
+     *     - При изменении сущетсвующей смены логика такая же как и с добавлением новой смены админом
+     */
     override fun onSaveData(data: Event) {
         updateCell(data)
         lifecycleScope.launch {
@@ -164,90 +179,57 @@ class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
         }
     }
 
+    /**
+     * Очистить клетку на UI от метки смены
+     */
     private fun cleanCell(event: Event) {
-        val cellIdx = event.date.dayOfMonth + ((event.date.withDayOfMonth(1).dayOfWeek.value + 6) % 7) - 1
+        val cellIdx = event.calcCellIdx()
         val targetCell = calendarGrid.getChildAt(cellIdx) as? ConstraintLayout
         targetCell?.let { event.deleteFrom(targetCell, cellIdx) }
     }
 
+    /**
+     * Нарисовать новую или перерисовать старую метку смены на UI
+     */
     private fun updateCell(event: Event?) {
         if (event == null) return
-        val cellIdx = event.date.dayOfMonth + ((event.date.withDayOfMonth(1).dayOfWeek.value + 6) % 7) - 1
+        val cellIdx = event.calcCellIdx()
         val targetCell = calendarGrid.getChildAt(cellIdx) as? ConstraintLayout
-        targetCell?.let {
-//            it.setOnClickListener { ToastHelper.cannotEditPlaned(requireContext()) }
-            event.applyTo(targetCell, cellIdx, true)
-        }
+        targetCell?.let { event.applyTo(targetCell, cellIdx, true) }
     }
 
+    /**
+     * Нарисовать ячейки календаря заново, стерев предыдущие.
+     * Расположение рассчитывается на основе [monthOffset]. Данные смен этого месяца,
+     * должны загружаться через [monthEventsDef].
+     * Метод будет ожидать их 1 секунду, после чего начнет рисовать календарь без них
+     */
     private fun updateCalendar() {
-        if (getUserUuidArgument() == null && encProfileStorage.isPrivileged()) {
-
-            return
-        }
-        runBlocking {
-            monthEvents = withTimeoutOrNull(1000) { monthEventsDef.await() } ?: emptyMap()
-        }
+        if (getUserUuidArgument() == null && encProfileStorage.isPrivileged()) return
+        val context = context ?: return
         calendarGrid.removeAllViews()
-        val currentMonth = LocalDate.now().plusMonths(monthOffset.toLong())
-        val dayOfWeekOfFirstDay = (currentMonth.withDayOfMonth(1).dayOfWeek.value + 6) % 7
-        val pastMonth = currentMonth.minusMonths(1)
-        val nextMonth = currentMonth.plusMonths(1)
-        val context = requireContext()
+        val cellBuilder = CalendarBuilder(monthOffset).clickListener(this).eventsDef(monthEventsDef)
 
         for (i in 0 until 6 * 7) {
+            val cell = cellBuilder.buildForIndex(i)
 
-            val dayOfMonth = i - dayOfWeekOfFirstDay + 1
-            val cellBuilder = CalendarCellBuilder(context)
-            when {
-                dayOfMonth < 1 -> cellBuilder.setDate(
-                    pastMonth.withDayOfMonth(dayOfMonth + pastMonth.lengthOfMonth())
-                )
-
-                dayOfMonth in 1..currentMonth.lengthOfMonth() -> {
-                    val processDate = currentMonth.withDayOfMonth(dayOfMonth)
-                    cellBuilder
-                        .setDate(processDate)
-                        .setType(CellType.CURRENT_MONTH)
-                        .setOnClickListenerFor(this)
-                        .setEvent(monthEvents[processDate])
-                }
-
-                else -> cellBuilder.setDate(
-                    nextMonth.withDayOfMonth(dayOfMonth - currentMonth.lengthOfMonth())
-                )
-            }
-            val cell = cellBuilder.build()
-
-            val textView = createTextView()
-            textView.text = cell.text
-            TextViewCompat.setTextAppearance(textView, cell.textStyle)
-
-            val parentLayout = createConstraintLayout(context)
-            parentLayout.setOnClickListener(cell.onClickListener)
-            parentLayout.background =
-                ContextCompat.getDrawable(context, cell.parentBackground)
-
+            val textView = createTextView(context, cell)
+            val parentLayout = createConstraintLayout(context, cell)
             cell.event?.applyTo(parentLayout, i, false)
+
             parentLayout.addView(textView)
             calendarGrid.addView(parentLayout)
         }
     }
 
     private fun updateMonthTextView(monthOffset: Int) {
-        activity?.findViewById<TextView>(R.id.center_header)?.let {
-            val calendar = Calendar.getInstance(Locale("ru"))
-            calendar.add(Calendar.MONTH, monthOffset)
-
-            var monthName = DATE_FORMATTER.format(calendar.time)
-            monthName = monthName.substring(0, 1)
-                .uppercase(Locale.getDefault()) + monthName.substring(1)
-
-            it.text = monthName
+        activity?.findViewById<TextView>(R.id.center_header)?.let { view ->
+            val offset = LocalDate.now(ZoneId.systemDefault()).plusMonths(monthOffset.toLong())
+            view.text = offset.format(YEAR_MONTH_FORMATTER).replaceFirstChar { it.uppercase() }
         }
     }
 
-    private fun createTextView(): TextView {
+    private fun createTextView(context: Context, cell: CalendarCell): TextView {
         val textView = TextView(context)
         val topPadding = resources.getDimensionPixelSize(R.dimen.calendar_date_padding_top)
         val rightPadding = resources.getDimensionPixelSize(R.dimen.calendar_date_padding_end)
@@ -258,11 +240,13 @@ class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
         layoutParams.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
         textView.layoutParams = layoutParams
 
+        textView.text = cell.text
+        TextViewCompat.setTextAppearance(textView, cell.textStyle)
         return textView
     }
 
     // TODO: посмотреть, может быстрее создать схему и инфлейтить ее
-    private fun createConstraintLayout(context: Context): ConstraintLayout {
+    private fun createConstraintLayout(context: Context, cell: CalendarCell): ConstraintLayout {
         val constraintLayout = ConstraintLayout(context)
         val params = GridLayout.LayoutParams()
 
@@ -271,6 +255,9 @@ class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
         params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
         params.rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
         constraintLayout.layoutParams = params
+
+        cell.onClickListener?.let { constraintLayout.setOnClickListener(it) }
+        constraintLayout.background = ContextCompat.getDrawable(context, cell.background)
         return constraintLayout
     }
 

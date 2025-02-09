@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.model
+package com.efedorchenko.timely.model.calendar
 
 import android.content.Context
 import androidx.core.content.ContextCompat

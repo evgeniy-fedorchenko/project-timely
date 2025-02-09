@@ -21,15 +21,17 @@ import org.threeten.bp.format.DateTimeFormatter
 import org.threeten.bp.temporal.ChronoUnit
 import java.util.Locale
 
-// TODO: сделать везде хранение workDuration единообразным - в минутах
 class AddEventDialog : BottomSheetDialogFragment() {
 
     companion object {
+        private const val DATE_FORMATTER = "dd MMMM yyyy"
         private val MIN_WORK_DURATION = Duration.ofHours(8)
-        const val SELECTED_DATE_KEY = "selected_date"
 
-        fun newInstance(listener: AddAbstractDataListener<Event>): AddEventDialog {
-            return AddEventDialog().apply { setListener(listener) }
+        fun newInstance(listener: AddAbstractDataListener<Event>, existedData: Event?): AddEventDialog {
+            return AddEventDialog().apply {
+                this.addEventListener = listener
+                this.existedData = existedData
+            }
         }
     }
 
@@ -37,10 +39,7 @@ class AddEventDialog : BottomSheetDialogFragment() {
     private val binding get() = _binding!!
 
     private var addEventListener: AddAbstractDataListener<Event>? = null
-
-    private fun setListener(listener: AddAbstractDataListener<Event>) {
-        this.addEventListener = listener
-    }
+    private var existedData: Event? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = DialogEventAddBinding.inflate(inflater, container, false)
@@ -50,56 +49,59 @@ class AddEventDialog : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val targetDate = LocalDate.parse(arguments?.getString(SELECTED_DATE_KEY))
-        val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale("ru"))
-        binding.textViewSelectedDate.text = targetDate.format(formatter)
+        val targetDate = LocalDate.parse(arguments?.getString(CalendarFragment.SELECTED_DATE_KEY))
+        val formatter = DateTimeFormatter.ofPattern(DATE_FORMATTER, Locale("ru"))
+        with(binding) {
+            textViewSelectedDate.text = targetDate.format(formatter)
 
-        val existingWorkSeconds = arguments?.getLong(CalendarFragment.EXISTING_EVENT_WORK_DURATION) ?: 0
-        if (existingWorkSeconds > 0) {
-            val workedHours = Duration.ofSeconds(existingWorkSeconds).toHours().toString()
-            binding.editTextHours.setText(workedHours)
+            existedData?.let {
+                editTextHours.setText(String.format(it.workDuration.toHours().toString()))
+                editTextMinutes.setText(String.format(it.workDuration.toMinutesPart().toString()))
+                editTextComment.setText(it.comment)
+            }
 
-            val remainsMinutes = ((existingWorkSeconds - (workedHours.toLong() * 60 * 60)) / 60).toString()
-            binding.editTextMinutes.setText(remainsMinutes)
-        }
+            val hoursEditText = editTextHours
+            val minutesEditText = editTextMinutes
+            val commentEditText = editTextComment
 
-        val existingComment = arguments?.getString(CalendarFragment.EXISTING_EVENT_COMMENT)
-        if (existingComment != null) {
-            binding.editTextComment.setText(existingComment)
-        }
-        val hoursEditText = binding.editTextHours
-        val minutesEditText = binding.editTextMinutes
-        val commentEditText = binding.editTextComment
+            if (arguments?.getBoolean(CalendarFragment.NEEDS_BLOCK_INPUT) == true) {
+                hoursEditText.isEnabled = false
+                minutesEditText.isEnabled = false
+                commentEditText.isEnabled = false
+            }
+            hoursEditText.nextFocusDownId = minutesEditText.id
+            minutesEditText.nextFocusDownId = commentEditText.id
+            hoursEditText.addTextChangedListener(AddEventDialogFieldsWatcher(2, minutesEditText))
+            minutesEditText.addTextChangedListener(AddEventDialogFieldsWatcher(2, commentEditText))
 
-        hoursEditText.nextFocusDownId = minutesEditText.id
-        minutesEditText.nextFocusDownId = commentEditText.id
-        hoursEditText.addTextChangedListener(AddEventDialogFieldsWatcher(2, minutesEditText))
-        minutesEditText.addTextChangedListener(AddEventDialogFieldsWatcher(2, commentEditText))
+            hoursEditText.filters = arrayOf(HoursInputFilter())
+            minutesEditText.filters = arrayOf(MinutesInputFilter())
+            commentEditText.filters = arrayOf(CommentInputFilter())
 
-        hoursEditText.filters = arrayOf(HoursInputFilter())
-        minutesEditText.filters = arrayOf(MinutesInputFilter())
-        commentEditText.filters = arrayOf(CommentInputFilter())
+            buttonSave.setOnClickListener {
+                val newHours = hoursEditText.text.toString().toLongOrNull() ?: 0
+                val newMinutes = minutesEditText.text.toString().toLongOrNull() ?: 0
+                val newComment = commentEditText.text.toString()
+                val newWorkDuration = Duration.of(newHours * 60 + newMinutes, ChronoUnit.MINUTES)
 
-        binding.buttonSave.setOnClickListener {
-            val hours = hoursEditText.text.toString().toLongOrNull() ?: 0
-            val minutes = minutesEditText.text.toString().toLongOrNull() ?: 0
-            val comment = commentEditText.text.toString()
-            val workDuration = Duration.of(hours * 60 + minutes, ChronoUnit.MINUTES)
-
-            if (workDuration < MIN_WORK_DURATION) {
-                ToastHelper.workDurationTooShort(requireContext(), MIN_WORK_DURATION)
-            } else {
-                if (Duration.ofSeconds(existingWorkSeconds) != workDuration || comment != existingComment) {
-                    val appId = arguments?.getLong(CalendarFragment.EXISTING_EVENT_APP_ID) ?: 0
-                    val event = Event(
-                        appId = if (appId > 0) appId else null,
-                        date = targetDate,
-                        workDuration = workDuration,
-                        comment = comment
-                    )
-                    addEventListener?.onSaveData(event)
+                if (newWorkDuration < MIN_WORK_DURATION) {
+                    ToastHelper.workDurationTooShort(requireContext(), MIN_WORK_DURATION)
+                } else {
+                    if (existedData == null
+                        || existedData?.workDuration != newWorkDuration
+                        || existedData?.comment != newComment
+                    ) {
+                        val appId = existedData?.appId
+                        val event = Event(
+                            appId = appId,
+                            date = targetDate,
+                            workDuration = newWorkDuration,
+                            comment = newComment
+                        )
+                        addEventListener?.onSaveData(event)
+                    }
+                    dismiss()
                 }
-                dismiss()
             }
         }
     }

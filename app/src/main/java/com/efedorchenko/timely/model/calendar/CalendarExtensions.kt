@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.model
+package com.efedorchenko.timely.model.calendar
 
 import android.content.res.Resources
 import android.view.View
@@ -8,12 +8,14 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.WRAP_CONTENT
 import androidx.core.widget.TextViewCompat
 import com.efedorchenko.timely.R
+import com.efedorchenko.timely.model.Event
 import org.threeten.bp.LocalDate
 import java.util.Locale
 
 
-private const val TEXT_CELL_TAG_PREFIX = "text_"
-private const val MARKER_CELL_TAG_PREFIX = "square_"
+private const val TEXT_VIEW_TAG_PREFIX = "wrk_drn_"
+private const val MARKER_VIEW_TAG_PREFIX = "clr_mkr_"
+private const val WORK_DURATION_FORMAT = "%02d:%02d"
 
 fun List<Event>.toEventMap(): MutableMap<LocalDate, Event> {
     val map = HashMap<LocalDate, Event>()
@@ -23,12 +25,14 @@ fun List<Event>.toEventMap(): MutableMap<LocalDate, Event> {
     return map
 }
 
+fun Event.calcCellIdx() = date.dayOfMonth + ((date.withDayOfMonth(1).dayOfWeek.value + 6) % 7) - 1
+
 fun Event.applyTo(parentLayout: ConstraintLayout, cellIdx: Int, needReplace: Boolean) {
     val context = parentLayout.context
     val resources = parentLayout.resources
 
-    val markerView = View(context)
-    markerView.tag = "$MARKER_CELL_TAG_PREFIX$cellIdx"
+    val markerView = View(context)   // Цветной маркер смены
+    markerView.tag = "$MARKER_VIEW_TAG_PREFIX$cellIdx"
 
     markerView.layoutParams = cellColorMarkParams(resources)
     val color = when {
@@ -38,20 +42,20 @@ fun Event.applyTo(parentLayout: ConstraintLayout, cellIdx: Int, needReplace: Boo
     markerView.setBackgroundColor(color)
     markerView.alpha = 0.5f
 
-    val textView = TextView(context)
-    textView.tag = "$TEXT_CELL_TAG_PREFIX$cellIdx"
+    val textView = TextView(context)   // Количество часов
+    textView.tag = "$TEXT_VIEW_TAG_PREFIX$cellIdx"
     val minutesCount = workDuration.toMinutes()
     val minutes = minutesCount / 60
     val hours = minutesCount % 60
 
-    textView.text = String.format(Locale("ru"), "%02d:%02d", minutes, hours)
+    textView.text = String.format(Locale("ru"), WORK_DURATION_FORMAT, minutes, hours)
     textView.textSize = 18F
     textView.layoutParams = cellHoursTextParams(resources)
     TextViewCompat.setTextAppearance(textView, R.style.work_duration)
 
     if (needReplace) {
-        val existingMarkerView = parentLayout.findViewWithTag<View>("$MARKER_CELL_TAG_PREFIX$cellIdx")
-        val existingTextView = parentLayout.findViewWithTag<View>("$TEXT_CELL_TAG_PREFIX$cellIdx")
+        val existingMarkerView = parentLayout.findViewWithTag<View>("$MARKER_VIEW_TAG_PREFIX$cellIdx")
+        val existingTextView = parentLayout.findViewWithTag<View>("$TEXT_VIEW_TAG_PREFIX$cellIdx")
         if (existingTextView != null) {
             parentLayout.removeView(existingTextView)
         }
@@ -63,9 +67,10 @@ fun Event.applyTo(parentLayout: ConstraintLayout, cellIdx: Int, needReplace: Boo
     parentLayout.addView(markerView)
 }
 
+// Расширяет Event только для понимания контектса выполнения
 fun Event.deleteFrom(parentLayout: ConstraintLayout, cellIdx: Int) {
-    val existingMarkerView = parentLayout.findViewWithTag<View>("$MARKER_CELL_TAG_PREFIX$cellIdx")
-    val existingTextView = parentLayout.findViewWithTag<View>("$TEXT_CELL_TAG_PREFIX$cellIdx")
+    val existingMarkerView = parentLayout.findViewWithTag<View>("$MARKER_VIEW_TAG_PREFIX$cellIdx")
+    val existingTextView = parentLayout.findViewWithTag<View>("$TEXT_VIEW_TAG_PREFIX$cellIdx")
     if (existingTextView != null) {
         parentLayout.removeView(existingTextView)
     }
