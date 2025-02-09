@@ -67,20 +67,6 @@ class EncProfileStorageImpl @Inject constructor(@ApplicationContext context: Con
         }
     }
 
-    override fun saveApiToken(token: String) {
-        with(encSharedPref.edit()) {
-            putString(API_TOKEN_KEY, token)
-            apply()
-        }
-    }
-
-    override fun deleteApiToken() {
-        with(encSharedPref.edit()) {
-            remove(API_TOKEN_KEY)
-            apply()
-        }
-    }
-
     override fun getApiToken(): String? = encSharedPref.getString(API_TOKEN_KEY, null)
 
     override fun saveRole(role: RoleType) {
@@ -90,32 +76,9 @@ class EncProfileStorageImpl @Inject constructor(@ApplicationContext context: Con
         }
     }
 
-    override fun deleteRole() {
-        with(encSharedPref.edit()) {
-            remove(ROLE_KEY)
-            apply()
-        }
-    }
-
     override fun getRole(): RoleType? {
         val userRoleStr = encSharedPref.getString(ROLE_KEY, null)
         return userRoleStr?.let { RoleType.valueOf(it) }
-    }
-
-    override fun setSpaceKeys(keys: SpaceKeys) {
-        with(encSharedPref.edit()) {
-            putString(SPACE_BOSS_KEY_KEY, keys.bossKey)
-            putString(SPACE_WORKER_KEY_KEY, keys.workerKey)
-            apply()
-        }
-    }
-
-    override fun deleteSpaceKeys() {
-        with(encSharedPref.edit()) {
-            remove(SPACE_BOSS_KEY_KEY)
-            remove(SPACE_WORKER_KEY_KEY)
-            apply()
-        }
     }
 
     override fun getSpaceKeys(): SpaceKeys? {
@@ -126,27 +89,6 @@ class EncProfileStorageImpl @Inject constructor(@ApplicationContext context: Con
                 return SpaceKeys(workerKey, bossKey)
             }
             return null
-        }
-    }
-
-    override fun getSpaceBossKey(): String? =
-        encSharedPref.getString(SPACE_BOSS_KEY_KEY, null)
-
-    override fun getSpaceWorkerKey(): String? =
-        encSharedPref.getString(SPACE_WORKER_KEY_KEY, null)
-
-
-    override fun saveUserUuid(userUuid: String) {
-        with(encSharedPref.edit()) {
-            putString(USER_ID_KEY, userUuid)
-            apply()
-        }
-    }
-
-    override fun deleteUserUuid() {
-        with(encSharedPref.edit()) {
-            remove(USER_ID_KEY)
-            apply()
         }
     }
 
