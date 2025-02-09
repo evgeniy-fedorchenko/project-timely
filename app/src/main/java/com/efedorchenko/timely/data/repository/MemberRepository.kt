@@ -16,7 +16,12 @@ import org.threeten.bp.Instant
 import javax.inject.Inject
 
 class MemberRepository @Inject constructor(application: Application) {
-    // TODO: использовать rawQuery и columnAs
+
+    companion object {
+        private const val SELECT_ALL_MEMBERS =
+            "SELECT id, member_name, position, user_uuid, changed_at FROM $MEMBERS_TABLE_NAME"
+    }
+
     private val dbHelper = DatabaseConfigurer.getInstance(application)
 
     fun save(members: List<SpaceMember>) {
@@ -24,17 +29,10 @@ class MemberRepository @Inject constructor(application: Application) {
         db.beginTransaction()
         try {
             members.forEach { member ->
-                val contentValues = ContentValues().apply {
-                    put(USER_UUID_COLUMN_NAME, member.userUuid)
-                    put(NAME_COLUMN_NAME, member.name)
-                    put(POSITION_COLUMN_NAME, member.position)
-                    member.changedAt?.let { put(CHANGED_AT_COLUMN_NAME, it.toEpochMilli()) }
-                }
-
                 db.insertWithOnConflict(
                     MEMBERS_TABLE_NAME,
                     null,
-                    contentValues,
+                    extractContentValues(member),
                     SQLiteDatabase.CONFLICT_REPLACE
                 )
             }
@@ -47,59 +45,43 @@ class MemberRepository @Inject constructor(application: Application) {
     }
 
     fun getMembersList(): List<SpaceMember> {
-        val members = mutableListOf<SpaceMember>()
         val db = dbHelper.readableDatabase
+        val members = mutableListOf<SpaceMember>()
         var cursor: Cursor? = null
-
         db.beginTransaction()
+
         try {
-            cursor = db.query(
-                MEMBERS_TABLE_NAME,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null
-            )
+            cursor = db.rawQuery(SELECT_ALL_MEMBERS, null)?.run {
+                while (moveToNext()) {
+                    val name = columnAs(NAME_COLUMN_NAME) { getString(it) }
+                    val position = columnAs(POSITION_COLUMN_NAME) { getString(it) }
+                    val userUuid = columnAs(USER_UUID_COLUMN_NAME) { getString(it) }
+                    val changedAt = columnAs(CHANGED_AT_COLUMN_NAME) { getLong(it) }
 
-            cursor?.let {
-                while (cursor.moveToNext()) {
-
-                    val nameIdx = cursor.getColumnIndex(NAME_COLUMN_NAME)
-                    val positionIdx = cursor.getColumnIndex(POSITION_COLUMN_NAME)
-                    val userUuidIdx = cursor.getColumnIndex(USER_UUID_COLUMN_NAME)
-                    val changedAtIdx = cursor.getColumnIndex(CHANGED_AT_COLUMN_NAME)
-
-                    val name = cursor.getString(nameIdx)
-                    val position = cursor.getString(positionIdx)
-                    val userUuid = cursor.getString(userUuidIdx)
-                    val changedAt = cursor.getLong(changedAtIdx)
-
-                    val member = SpaceMember(
-                        userUuid = userUuid,
-                        name = name,
-                        position = position,
-                        changedAt = Instant.ofEpochMilli(changedAt)
-                    )
-                    members.add(member)
+                    if (userUuid != null && name != null && position != null) {
+                        val member = SpaceMember(
+                            userUuid = userUuid,
+                            name = name,
+                            position = position,
+                            changedAt = changedAt?.let { Instant.ofEpochMilli(changedAt) }
+                        )
+                        members.add(member)
+                    }
                 }
+                this
             }
             db.setTransactionSuccessful()
         } catch (ex: Exception) {
-            Log.e(TAG, "Error when extracting members. Cause: :${ex.message}")
+            Log.e(TAG, "Error when extracting events with nullable backendId. Ex: $ex")
         } finally {
             cursor?.close()
             db.endTransaction()
         }
-
         return members
     }
 
-
     fun clean() {
-        val db = dbHelper.writableDatabase
-        db.delete(MEMBERS_TABLE_NAME, null, null)
+        dbHelper.writableDatabase.delete(MEMBERS_TABLE_NAME, null, null)
     }
 
     // TODO: Проверить, почему-то возвращает не то что нужно, в ответе в этим сайнсом возвращаются все мемберы
@@ -117,5 +99,12 @@ class MemberRepository @Inject constructor(application: Application) {
     fun deleteIfNotContains(userIdsToKeep: List<String>) {
         val whereClause = "$USER_UUID_COLUMN_NAME NOT IN (${userIdsToKeep.joinToString { "'$it'" }})"
         dbHelper.readableDatabase.delete(MEMBERS_TABLE_NAME, whereClause, null)
+    }
+
+    private fun extractContentValues(member: SpaceMember) = ContentValues().apply {
+        put(USER_UUID_COLUMN_NAME, member.userUuid)
+        put(NAME_COLUMN_NAME, member.name)
+        put(POSITION_COLUMN_NAME, member.position)
+        member.changedAt?.let { put(CHANGED_AT_COLUMN_NAME, it.toEpochMilli()) }
     }
 }

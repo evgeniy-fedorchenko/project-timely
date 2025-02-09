@@ -39,23 +39,22 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
     )
 
     /**
-     * Сохранить новое событие через `insertWithOnConflict (CONFLICT_REPLACE)` (защита от перезаписи).
-     * Должен выполняться после синхронизации с сервером
+     * Сохранить новое событие через `insertWithOnConflict(CONFLICT_REPLACE)` (защита от перезаписи).
+     * Должен выполняться после синхронизации с сервером.
      * Если заполнено поле `deletedAt`, то объект будет удален
+     * @return `null` если операция завершилась неудачно
      */
     fun upsert(data: T, userUuid: String? = null): T? {
-        return if (data.deletedAt != null) {
-            delete(data, userUuid)
-            return data
-        } else {
-            saveOne(
-                writableDb = dbHelper.writableDatabase,
-                tableName = getTableName(userUuid != null),
-                data = data,
-                userUuid = userUuid,
-                conflictAlgorithm = SQLiteDatabase.CONFLICT_REPLACE
-            )
-        }
+        return data.deletedAt?.let { delete(data, userUuid) }
+            ?: run {
+                saveOne(
+                    writableDb = dbHelper.writableDatabase,
+                    tableName = getTableName(userUuid != null),
+                    data = data,
+                    userUuid = userUuid,
+                    conflictAlgorithm = SQLiteDatabase.CONFLICT_REPLACE
+                )
+            }
     }
 
     /**
@@ -69,7 +68,7 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
             val tableName = getTableName(userUuid != null)
             dataBatch.forEach {
                 saveOne(
-                    writableDb = dbHelper.writableDatabase,
+                    writableDb = db,
                     tableName = tableName,
                     data = it,
                     userUuid = userUuid,
@@ -91,12 +90,9 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
         db.beginTransaction()
         try {
             val tableName = getTableName(userUuid != null)
-            dataBatch.forEach {
-                if (it.deletedAt != null) {
-                        delete(it, userUuid)
-                } else {
-                    saveOne(db, tableName, it, userUuid, SQLiteDatabase.CONFLICT_REPLACE)
-                }
+            dataBatch.forEach { each ->
+                each.deletedAt?.let { delete(each, userUuid) }
+                    ?: run { saveOne(db, tableName, each, userUuid, SQLiteDatabase.CONFLICT_REPLACE) }
             }
             db.setTransactionSuccessful()
         } finally {
@@ -106,14 +102,12 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
 
     fun exist(userUuid: String): Boolean {
         val sql = "SELECT 1 FROM ${getTableName(true)} WHERE $USER_UUID_COLUMN_NAME = ? LIMIT 1"
-        return dbHelper.readableDatabase.rawQuery(sql, arrayOf(userUuid))
-            .use { cursor -> cursor.moveToFirst() }
+        return dbHelper.readableDatabase.rawQuery(sql, arrayOf(userUuid)).use { it.moveToFirst() }
     }
 
     fun getMaxChangedAt(): Instant? {
         val sql = "SELECT MAX($CHANGED_AT_COLUMN_NAME) FROM ${getTableName()}"
-        return dbHelper.readableDatabase.rawQuery(sql, null)
-            .use { cursor ->
+        return dbHelper.readableDatabase.rawQuery(sql, null).use { cursor ->
                 if (cursor.moveToFirst()) {
                     val maxTime = cursor.getLong(0)
                     if (maxTime > 0) Instant.ofEpochMilli(maxTime) else null
@@ -133,7 +127,7 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
         }
     }
 
-    fun delete(data: T, userUuid: String? = null): Boolean {
+    fun delete(data: T, userUuid: String? = null): T? {
         val db = dbHelper.writableDatabase
         val tableName = getTableName(userUuid != null)
         val deletedRows: Int
@@ -145,14 +139,14 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
             deletedRows = db.delete(tableName, "$BACKEND_ID_COLUMN_NAME = ?", whereArgs)
         } else {
             Log.e(TAG, "No data was deleted, appId and backendId are null. Data: $data")
-            return false
+            return null
         }
 
         if (deletedRows > 0) {
-            return true
+            return data
         } else {
             Log.e(TAG, "No data was deleted. Data: $data")
-            return false
+            return null
         }
     }
 
@@ -170,7 +164,6 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
     private fun saveOne(
         writableDb: SQLiteDatabase, tableName: String, data: T, userUuid: String? = null, conflictAlgorithm: Int
     ): T? {
-
         try {
             val values = extractContentValues(data, userUuid)
             val id = writableDb.insertWithOnConflict(tableName, null, values, conflictAlgorithm)

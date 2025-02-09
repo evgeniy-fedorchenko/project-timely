@@ -82,11 +82,11 @@ class DatabaseConfigurer private constructor(application: Application) :
         private const val FINES_DROP_TABLE =              "DROP TABLE IF EXISTS $FINES_TABLE_NAME"
 
         /* CREATE TABLE members(
-               id         INTEGER PRIMARY KEY AUTOINCREMENT,
-               name       TEXT NOT NULL,
-               position   TEXT NOT NULL,
-               user_uuid  TEXT NOT NULL UNIQUE,
-               changed_at INTEGER
+               id          INTEGER PRIMARY KEY AUTOINCREMENT,
+               member_name TEXT NOT NULL,
+               position    TEXT NOT NULL,
+               user_uuid   TEXT NOT NULL UNIQUE,
+               changed_at  INTEGER
            )*/
         private const val MEMBERS_CREATE_TABLE = "CREATE TABLE $MEMBERS_TABLE_NAME($ID_COLUMN_NAME INTEGER PRIMARY KEY AUTOINCREMENT, $NAME_COLUMN_NAME TEXT NOT NULL, $POSITION_COLUMN_NAME TEXT NOT NULL, $USER_UUID_COLUMN_NAME TEXT NOT NULL UNIQUE, $CHANGED_AT_COLUMN_NAME INTEGER)"
         private const val MEMBERS_DROP_TABLE =   "DROP TABLE IF EXISTS $MEMBERS_TABLE_NAME"
