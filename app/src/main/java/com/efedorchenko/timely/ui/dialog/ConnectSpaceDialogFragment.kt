@@ -57,8 +57,8 @@ class ConnectSpaceDialogFragment : DialogFragment() {
                 }
                 connectButton.isEnabled = false
                 loadingContainer.visibility = View.VISIBLE
-                val activity = activity
-                activity?.lifecycleScope?.launch { //  Скоуп активити, чтобы корутина не умерла без фрагмента
+
+                context.applicationScope().launch { //  Чтобы корутина не умерла без фрагмента
                     try {
                         when (val result = authService.connectToSpace(key)) {
                             is Resource.Success -> {

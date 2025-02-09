@@ -106,13 +106,15 @@ class AuthFragment : Fragment() {
                             false -> navigateTo(R.id.mainWorkerFragment)
                             else -> ToastHelper.message("role not accept", context) // FIXME
                         }
-                        if (result.role?.isPrivileged() == false) {
-                            if (!dataService.loadData()) {
-                                ToastHelper.failDownloadData(context)
+                        context.applicationScope().launch {
+                            if (result.role?.isPrivileged() == false) {
+                                if (!dataService.loadData()) {
+                                    ToastHelper.failDownloadData(context)
+                                }
                             }
-                        }
-                        if (result.spacePresent && !spaceService.initMembers()) {   // Все равно пытаемся, хотя бы чтобы показать тост
-                            ToastHelper.failDownloadMembers(context)
+                            if (result.spacePresent && !spaceService.initMembers()) {   // Все равно пытаемся, хотя бы чтобы показать тост
+                                ToastHelper.failDownloadMembers(context)
+                            }
                         }
                     }
 

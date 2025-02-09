@@ -14,8 +14,14 @@ import androidx.core.animation.doOnStart
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import com.efedorchenko.timely.R
+import com.efedorchenko.timely.TimelyApplication
 import com.google.android.material.R.id.design_bottom_sheet
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import kotlinx.coroutines.CoroutineScope
+
+fun Context.applicationScope(): CoroutineScope {
+    return (applicationContext as TimelyApplication).applicationScope
+}
 
 fun FragmentActivity.hideKeyboard() {
     val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
