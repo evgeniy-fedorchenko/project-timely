@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import com.efedorchenko.timely.databinding.DialogEventAddBinding
 import com.efedorchenko.timely.input.AddEventDialogFieldsWatcher
 import com.efedorchenko.timely.input.CommentInputFilter
@@ -11,7 +12,6 @@ import com.efedorchenko.timely.input.HoursInputFilter
 import com.efedorchenko.timely.input.MinutesInputFilter
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.service.ToastHelper
-import com.efedorchenko.timely.ui.fragment.CalendarFragment
 import com.efedorchenko.timely.ui.support.AddAbstractDataListener
 import com.efedorchenko.timely.ui.support.setupAsExpandedBottomSheet
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -27,10 +27,16 @@ class AddEventDialog : BottomSheetDialogFragment() {
         private const val DATE_FORMATTER = "dd MMMM yyyy"
         private val MIN_WORK_DURATION = Duration.ofHours(8)
 
-        fun newInstance(listener: AddAbstractDataListener<Event>, existedData: Event?): AddEventDialog {
+        // FIXME 15.03.2025 19:56: что-то придумать с передачей свойств через arguments:
+        //  Листенер можно уведомлять через SharedFlow например, existingData через Parcelable
+        fun newInstance(
+            listener: AddAbstractDataListener<Event>, existedData: Event?, readOnly: Boolean, targetDate: LocalDate
+        ): AddEventDialog {
             return AddEventDialog().apply {
                 this.addEventListener = listener
                 this.existedData = existedData
+                this.readOnly = readOnly
+                this.targetDate = targetDate
             }
         }
     }
@@ -40,6 +46,8 @@ class AddEventDialog : BottomSheetDialogFragment() {
 
     private var addEventListener: AddAbstractDataListener<Event>? = null
     private var existedData: Event? = null
+    private var readOnly = true
+    private var targetDate = LocalDate.now()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = DialogEventAddBinding.inflate(inflater, container, false)
@@ -49,7 +57,6 @@ class AddEventDialog : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val targetDate = LocalDate.parse(arguments?.getString(CalendarFragment.SELECTED_DATE_KEY))
         val formatter = DateTimeFormatter.ofPattern(DATE_FORMATTER, Locale("ru"))
         with(binding) {
             textViewSelectedDate.text = targetDate.format(formatter)
@@ -64,19 +71,7 @@ class AddEventDialog : BottomSheetDialogFragment() {
             val minutesEditText = editTextMinutes
             val commentEditText = editTextComment
 
-            if (arguments?.getBoolean(CalendarFragment.NEEDS_BLOCK_INPUT) == true) {
-                hoursEditText.isEnabled = false
-                minutesEditText.isEnabled = false
-                commentEditText.isEnabled = false
-            }
-            hoursEditText.nextFocusDownId = minutesEditText.id
-            minutesEditText.nextFocusDownId = commentEditText.id
-            hoursEditText.addTextChangedListener(AddEventDialogFieldsWatcher(2, minutesEditText))
-            minutesEditText.addTextChangedListener(AddEventDialogFieldsWatcher(2, commentEditText))
-
-            hoursEditText.filters = arrayOf(HoursInputFilter())
-            minutesEditText.filters = arrayOf(MinutesInputFilter())
-            commentEditText.filters = arrayOf(CommentInputFilter())
+            if (!readOnly) configure(hoursEditText, minutesEditText, commentEditText)
 
             buttonSave.setOnClickListener {
                 val newHours = hoursEditText.text.toString().toLongOrNull() ?: 0
@@ -86,22 +81,18 @@ class AddEventDialog : BottomSheetDialogFragment() {
 
                 if (newWorkDuration < MIN_WORK_DURATION) {
                     ToastHelper.workDurationTooShort(requireContext(), MIN_WORK_DURATION)
-                } else {
-                    if (existedData == null
-                        || existedData?.workDuration != newWorkDuration
-                        || existedData?.comment != newComment
-                    ) {
-                        val appId = existedData?.appId
-                        val event = Event(
-                            appId = appId,
-                            date = targetDate,
-                            workDuration = newWorkDuration,
-                            comment = newComment
-                        )
-                        addEventListener?.onSaveData(event)
-                    }
-                    dismiss()
+
+                } else if (dataHasBeenChanged(newWorkDuration, newComment)) {
+                    val appId = existedData?.appId
+                    val event = Event(
+                        appId = appId,
+                        date = targetDate,
+                        workDuration = newWorkDuration,
+                        comment = newComment
+                    )
+                    addEventListener?.onSaveData(event)
                 }
+                dismiss()
             }
         }
     }
@@ -116,4 +107,23 @@ class AddEventDialog : BottomSheetDialogFragment() {
         _binding = null
     }
 
+    private fun configure(hoursEditText: EditText, minutesEditText: EditText, commentEditText: EditText) {
+        hoursEditText.isEnabled = true
+        minutesEditText.isEnabled = true
+        commentEditText.isEnabled = true
+
+        hoursEditText.nextFocusDownId = minutesEditText.id
+        minutesEditText.nextFocusDownId = commentEditText.id
+        hoursEditText.addTextChangedListener(AddEventDialogFieldsWatcher(2, minutesEditText))
+        minutesEditText.addTextChangedListener(AddEventDialogFieldsWatcher(2, commentEditText))
+
+        hoursEditText.filters = arrayOf(HoursInputFilter())
+        minutesEditText.filters = arrayOf(MinutesInputFilter())
+        commentEditText.filters = arrayOf(CommentInputFilter())
+    }
+
+    private fun dataHasBeenChanged(newWorkDuration: Duration?, newComment: String) =
+        existedData == null
+                || existedData?.workDuration != newWorkDuration
+                || existedData?.comment != newComment
 }

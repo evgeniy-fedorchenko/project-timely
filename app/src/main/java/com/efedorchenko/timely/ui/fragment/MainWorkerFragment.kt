@@ -10,11 +10,11 @@ import androidx.navigation.fragment.findNavController
 import androidx.viewpager2.widget.ViewPager2
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
-import com.efedorchenko.timely.data.EncProfileStorage
-import com.efedorchenko.timely.data.ProfileStorage
+import com.efedorchenko.timely.data.EncUserProfile
 import com.efedorchenko.timely.data.SpaceViewModel
+import com.efedorchenko.timely.data.UserProfile
 import com.efedorchenko.timely.databinding.FragmentMainWorkerBinding
-import com.efedorchenko.timely.model.SpaceMember
+import com.efedorchenko.timely.model.member.SpaceMember
 import com.efedorchenko.timely.service.ToastHelper
 import com.efedorchenko.timely.ui.support.CalendarAdapter
 import dagger.hilt.android.AndroidEntryPoint
@@ -34,19 +34,15 @@ class MainWorkerFragment : AbstractMainFragment() {
     override lateinit var spaceViewModel: SpaceViewModel
 
     @Inject
-    override lateinit var encProfileStorage: EncProfileStorage
+    override lateinit var encUserProfile: EncUserProfile
 
     @Inject
-    override lateinit var profileStorage: ProfileStorage
+    override lateinit var userProfile: UserProfile
 
     private lateinit var viewPager: ViewPager2
     private var pageChangeCallback: ViewPager2.OnPageChangeCallback? = null
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentMainWorkerBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -63,22 +59,22 @@ class MainWorkerFragment : AbstractMainFragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
 //            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                spaceViewModel.selectedMember.collect {
-                    it?.let {
-                        setupMemberCard(it)
-                        setupSummaryCard()
-                        setupViewPager(it.userUuid)
-                    } ?: run {
+            spaceViewModel.selectedMember.collect {
+                it?.let {
+                    setupMemberCard(it)
+                    setupSummaryCard()
+                    setupViewPager(it.userUuid)
+                } ?: run {
 //                    При сбросе юзера админов отправляем обратно на свой экран
-                        if (encProfileStorage.isPrivileged()) {
-                            findNavController().navigate(R.id.mainBossFragment)
-                            return@collect
-                        }
-                        binding.selectedUserInfo.visibility = View.GONE
-                        setupSummaryCard()
-                        setupViewPager(null)
+                    if (encUserProfile.isPrivileged()) {
+                        findNavController().navigate(R.id.mainBossFragment)
+                        return@collect
                     }
+                    binding.selectedUserInfo.visibility = View.GONE
+                    setupSummaryCard()
+                    setupViewPager(null)
                 }
+            }
 //            }
         }
         lifecycleScope.launch {

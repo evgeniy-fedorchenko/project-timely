@@ -15,15 +15,22 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.efedorchenko.timely.R
-import com.efedorchenko.timely.data.ProfileStorage
 import com.efedorchenko.timely.data.SpaceViewModel
+import com.efedorchenko.timely.data.UserProfile
 import com.efedorchenko.timely.databinding.DialogLoadingBinding
 import com.efedorchenko.timely.databinding.DialogSpaceShowBinding
-import com.efedorchenko.timely.model.SpaceMember
+import com.efedorchenko.timely.model.auth.RoleType
+import com.efedorchenko.timely.model.member.AcceptMemberResultType
+import com.efedorchenko.timely.model.member.SpaceMember
 import com.efedorchenko.timely.service.DataService
+import com.efedorchenko.timely.service.SpaceService
 import com.efedorchenko.timely.service.ToastHelper
+import com.efedorchenko.timely.ui.dialog.SpaceDialogFragment.Companion.State.JOIN_REQUESTS
+import com.efedorchenko.timely.ui.dialog.SpaceDialogFragment.Companion.State.MEMBERS
+import com.efedorchenko.timely.ui.dialog.SpaceDialogFragment.Companion.State.valueOf
+import com.efedorchenko.timely.ui.support.JoinRequestsAdapter
+import com.efedorchenko.timely.ui.support.MembersAdapter
 import com.efedorchenko.timely.ui.support.RecyclerItemDecoration
-import com.efedorchenko.timely.ui.support.SpaceAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -33,10 +40,32 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class SpaceDialogFragment : DialogFragment() {
 
+    companion object {
+
+        enum class State {
+            MEMBERS, JOIN_REQUESTS
+        }
+
+        private const val STATE_ARG = "state_arg"
+
+        fun newInstance(state: State): SpaceDialogFragment {
+            return SpaceDialogFragment().apply {
+                arguments = Bundle().apply {
+                    putString(STATE_ARG, state.toString())
+                }
+            }
+        }
+    }
+
     private var _binding: DialogSpaceShowBinding? = null
     private val binding get() = _binding!!
 
-    private val spaceAdapter = SpaceAdapter({ member: SpaceMember -> showMember(member) })
+    private val showMemberFunc =   { member: SpaceMember -> showMember(member) }
+    private val acceptMemberFunc = { member: SpaceMember, position: Int -> acceptMember(member, position) }
+    private val rejectMemberFunc = { member: SpaceMember, position: Int -> rejectMember(member, position) }
+
+    private val membersAdapter = MembersAdapter(showMemberFunc)
+    private lateinit var joinRequestsAdapter: JoinRequestsAdapter
 
     @Inject
     lateinit var spaceViewModel: SpaceViewModel
@@ -45,7 +74,10 @@ class SpaceDialogFragment : DialogFragment() {
     lateinit var dataService: DataService
 
     @Inject
-    lateinit var profileStorage: ProfileStorage
+    lateinit var spaceService: SpaceService
+
+    @Inject
+    lateinit var userProfile: UserProfile
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = DialogSpaceShowBinding.inflate(inflater, container, false)
@@ -54,8 +86,10 @@ class SpaceDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val joinRequests = spaceViewModel.getJoinRequests()
+        joinRequestsAdapter = JoinRequestsAdapter(joinRequests, acceptMemberFunc, rejectMemberFunc)
 
-        profileStorage.getSpaceName().let {
+        userProfile.getSpaceName().let {
             val spaceRawText = getString(R.string.nav_menu_header_space, it)
             val spannablePositionText = SpannableString(spaceRawText)
             spannablePositionText.setSpan(
@@ -65,17 +99,32 @@ class SpaceDialogFragment : DialogFragment() {
             binding.spaceName.text = spannablePositionText
         }
 
+        setupSubHeader(binding)
         setupRecycler()
-        viewLifecycleOwner.lifecycleScope.launch {
-            spaceViewModel.members.collect { members ->
-                spaceAdapter.submitList(members)
+
+//        JOIN_REQUESTS не имеют своей viewModel
+        if (getState() == MEMBERS) {
+            viewLifecycleOwner.lifecycleScope.launch {
+                spaceViewModel.members.collect { membersAdapter.submitList(it) }
             }
+        }
+    }
+
+    private fun setupSubHeader(binding: DialogSpaceShowBinding) {
+        when (getState()) {
+            MEMBERS -> binding.subheader.text = "Выберете участника для просмотра"
+            JOIN_REQUESTS -> binding.subheader.text = "Заявки в компанию"
+            null -> {}
         }
     }
 
     private fun setupRecycler() {
         binding.membersRecyclerView.layoutManager = LinearLayoutManager(context)
-        binding.membersRecyclerView.adapter = spaceAdapter
+        binding.membersRecyclerView.adapter = when (getState()) {
+            MEMBERS -> membersAdapter
+            JOIN_REQUESTS -> joinRequestsAdapter
+            null -> null
+        }
 
         val spaceInPixels = resources.getDimensionPixelSize(R.dimen.item_spacing_horizontal)
         binding.membersRecyclerView.addItemDecoration(RecyclerItemDecoration(spaceInPixels))
@@ -129,4 +178,33 @@ class SpaceDialogFragment : DialogFragment() {
             }
         }
     }
+
+    private fun acceptMember(member: SpaceMember, position: Int) {
+        val context = context ?: return
+        viewLifecycleOwner.lifecycleScope.launch {
+            joinRequestsAdapter.removeAt(position)
+            val acceptRemoteResult = spaceService.acceptRemote(member.userUuid, member.role ?: RoleType.WORKER)
+            if (acceptRemoteResult == AcceptMemberResultType.SUCCESS) {
+                spaceViewModel.acceptMember(member)
+            } else {
+                joinRequestsAdapter.addAt(position, member)
+                ToastHelper.acceptMemberFiled(context, acceptRemoteResult)
+            }
+        }
+    }
+
+    private fun rejectMember(member: SpaceMember, position: Int) {
+        val context = context ?: return
+        viewLifecycleOwner.lifecycleScope.launch {
+            joinRequestsAdapter.removeAt(position)
+            if (spaceService.rejectRemote(member.userUuid)) {
+                spaceViewModel.removeMember(member)
+            } else {
+                ToastHelper.rejectMemberFiled(context)
+                joinRequestsAdapter.addAt(position, member)
+            }
+        }
+    }
+
+    private fun getState() = arguments?.getString(STATE_ARG)?.let { valueOf(it) }
 }

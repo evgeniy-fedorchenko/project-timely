@@ -19,17 +19,19 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
-import com.efedorchenko.timely.data.EncProfileStorage
-import com.efedorchenko.timely.data.ProfileStorage
+import com.efedorchenko.timely.data.EncUserProfile
 import com.efedorchenko.timely.data.SpaceViewModel
+import com.efedorchenko.timely.data.UserProfile
 import com.efedorchenko.timely.databinding.DialogAccessKeysBinding
 import com.efedorchenko.timely.databinding.DialogLoadingBinding
 import com.efedorchenko.timely.databinding.FragmentMainBossBinding
-import com.efedorchenko.timely.model.SpaceMember
+import com.efedorchenko.timely.model.member.SpaceMember
 import com.efedorchenko.timely.service.DataService
 import com.efedorchenko.timely.service.ToastHelper
+import com.efedorchenko.timely.ui.dialog.SpaceDialogFragment
+import com.efedorchenko.timely.ui.dialog.SpaceDialogFragment.Companion.State
+import com.efedorchenko.timely.ui.support.MembersAdapter
 import com.efedorchenko.timely.ui.support.RecyclerItemDecoration
-import com.efedorchenko.timely.ui.support.SpaceAdapter
 import com.efedorchenko.timely.ui.support.animClickListener
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
@@ -42,7 +44,7 @@ class MainBossFragment : AbstractMainFragment() {
     private var _binding: FragmentMainBossBinding? = null
     private val binding get() = _binding!!
 
-    private val spaceAdapter = SpaceAdapter(
+    private val membersAdapter = MembersAdapter(
         showMemberFunc = { member: SpaceMember -> showMember(member) },
         serviceMemberFunc = { member: SpaceMember -> serviceMember(member) }
     )
@@ -54,10 +56,10 @@ class MainBossFragment : AbstractMainFragment() {
     override lateinit var spaceViewModel: SpaceViewModel
 
     @Inject
-    override lateinit var encProfileStorage: EncProfileStorage
+    override lateinit var encUserProfile: EncUserProfile
 
     @Inject
-    override lateinit var profileStorage: ProfileStorage
+    override lateinit var userProfile: UserProfile
 
     @Inject
     lateinit var dataService: DataService
@@ -74,20 +76,16 @@ class MainBossFragment : AbstractMainFragment() {
         setupRecycler(context)   // Recycler of members list
         viewLifecycleOwner.lifecycleScope.launch {
             spaceViewModel.members.collect { members ->
-                spaceAdapter.submitList(members)
+                membersAdapter.submitList(members)
             }
         }
 
-        binding.headerSpaceName.text = profileStorage.getSpaceName()
+        binding.headerSpaceName.text = userProfile.getSpaceName()
         binding.headerLayout.centerHeader.text = getString(R.string.boss_panel_header)
         binding.keysButton.setOnClickListener { showAccessKeysDialog(context) }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            spaceViewModel.members.collect {
-
-            }
+        binding.requestButton.setOnClickListener {
+            SpaceDialogFragment.newInstance(State.JOIN_REQUESTS).show(childFragmentManager, "SPACE_DIALOG_TAG")
         }
-
     }
 
     override fun onDestroyView() {
@@ -136,9 +134,8 @@ class MainBossFragment : AbstractMainFragment() {
             }
         }
         binding.membersRecyclerView.clipToOutline = true
-
         binding.membersRecyclerView.layoutManager = LinearLayoutManager(context)
-        binding.membersRecyclerView.adapter = spaceAdapter
+        binding.membersRecyclerView.adapter = membersAdapter
         val spaceInPixels = resources.getDimensionPixelSize(R.dimen.item_spacing_horizontal)
         binding.membersRecyclerView.addItemDecoration(RecyclerItemDecoration(spaceInPixels))
     }
@@ -152,7 +149,7 @@ class MainBossFragment : AbstractMainFragment() {
         val dialog = AlertDialog.Builder(context).setView(binding.root).create()
         dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-        val keys = encProfileStorage.getSpaceKeys()
+        val keys = encUserProfile.getSpaceKeys()
         binding.workerKey.text = keys?.workerKey
         binding.bossKey.text = keys?.bossKey
 

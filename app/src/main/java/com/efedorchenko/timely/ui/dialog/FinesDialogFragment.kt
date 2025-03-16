@@ -10,15 +10,15 @@ import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
-import com.efedorchenko.timely.data.EncProfileStorageImpl
-import com.efedorchenko.timely.data.ProfileStorageImpl
+import com.efedorchenko.timely.data.EncUserProfile
 import com.efedorchenko.timely.data.SpaceViewModel
+import com.efedorchenko.timely.data.UserProfile
 import com.efedorchenko.timely.databinding.DialogFinesShowBinding
+import com.efedorchenko.timely.model.DataType
+import com.efedorchenko.timely.model.Fine
 import com.efedorchenko.timely.ui.fragment.AbstractMainFragment
 import com.efedorchenko.timely.ui.support.FinesAdapter
 import com.efedorchenko.timely.ui.support.RecyclerItemDecoration
-import com.efedorchenko.timely.model.DataType
-import com.efedorchenko.timely.model.Fine
 import dagger.hilt.android.AndroidEntryPoint
 import org.threeten.bp.LocalDate
 import javax.inject.Inject
@@ -48,10 +48,10 @@ class FinesDialogFragment : DialogFragment() {
     lateinit var spaceViewModel: SpaceViewModel
 
     @Inject
-    lateinit var encProfileStorageImpl: EncProfileStorageImpl
+    lateinit var encUserProfile: EncUserProfile
 
     @Inject
-    lateinit var profileStorageImpl: ProfileStorageImpl
+    lateinit var userProfile: UserProfile
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -67,7 +67,7 @@ class FinesDialogFragment : DialogFragment() {
         binding.finesRecyclerView.layoutManager = LinearLayoutManager(context)
         val selectedMember = spaceViewModel.selectedMember.value
 
-        binding.headerUserName.text = selectedMember?.name ?: profileStorageImpl.getName()
+        binding.headerUserName.text = selectedMember?.name ?: userProfile.getName()
 
         viewModel.monthOffset.value?.let {
             val targetDate = LocalDate.now().plusMonths(it.toLong())
@@ -81,7 +81,7 @@ class FinesDialogFragment : DialogFragment() {
             binding.emptyFinesText.visibility = View.VISIBLE
             binding.finesRecyclerView.visibility = View.GONE
         } else {
-            binding.finesRecyclerView.adapter = FinesAdapter(fines, viewModel, encProfileStorageImpl.isPrivileged())
+            binding.finesRecyclerView.adapter = FinesAdapter(fines, viewModel, encUserProfile.isPrivileged())
         }
 
         val spaceInPixels = resources.getDimensionPixelSize(R.dimen.item_spacing_horizontal)

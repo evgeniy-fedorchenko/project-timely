@@ -83,52 +83,52 @@ class AuthFragment : Fragment() {
     }
 
     private fun doLogin(context: Context, activity: FragmentActivity?) {
-        binding.loginButton.isEnabled = false
-        activity?.hideKeyboard()
-        val login = binding.loginEditText.text.toString()
-        val password = binding.passwordEditText.text.toString()
-        val loginPair = Pair(login, password)
+        with(binding) {
+            loginButton.isEnabled = false
+            activity?.hideKeyboard()
+            val credentials = Credentials(loginEditText.text.toString(), passwordEditText.text.toString())
+            if (!Model.isCredentialsValid(credentials)) {
+                ToastHelper.invalidCredentials(context)
+                loginButton.isEnabled = true
+                return
+            }
 
-        if (!Model.isLoginPairValid(loginPair)) {
-            ToastHelper.incorrectLoginData(context)
-            binding.loginButton.isEnabled = true
-            return
-        }
-
-        lifecycleScope.launch {
-            binding.loadingProgressBar.show()
-            try {
-                val credentials = Credentials(login, password)
-                when (val result = authService.tryLogin(credentials)) {
-                    is Resource.Success -> {
-                        when (result.role?.isPrivileged()) {
-                            true -> navigateTo(R.id.mainBossFragment)
-                            false -> navigateTo(R.id.mainWorkerFragment)
-                            else -> ToastHelper.message("role not accept", context) // FIXME
-                        }
-                        context.applicationScope().launch {
-                            if (result.role?.isPrivileged() == false) {
-                                if (!dataService.loadData()) {
-                                    ToastHelper.failDownloadData(context)
-                                }
-                            }
-                            if (result.spacePresent && !spaceService.initMembers()) {   // Все равно пытаемся, хотя бы чтобы показать тост
-                                ToastHelper.failDownloadMembers(context)
-                            }
-                        }
+            lifecycleScope.launch {
+                loadingProgressBar.show()
+                try {
+                    when (val result = authService.tryLogin(credentials)) {
+                        is Resource.Success -> handleSuccess(context, result)
+                        is Resource.Error -> ToastHelper.message(result.message, context)
                     }
 
-                    is Resource.Error -> ToastHelper.message(result.message, context)
+                } finally {
+                    loginButton.isEnabled = true
+                    loadingProgressBar.hide()
                 }
-
-            } finally {
-                binding.loginButton.isEnabled = true
-                binding.loadingProgressBar.hide()
             }
         }
     }
 
-//    Удаляем экраны логина и остальные, чтобы нельзя было вернуться через backPressed
+    private fun handleSuccess(context: Context, result: Resource.Success<Unit>) {
+        val isPrivileged = result.authData.role.isPrivileged()
+        if (isPrivileged) {
+            navigateTo(R.id.mainBossFragment)
+        } else {
+            navigateTo(R.id.mainWorkerFragment)
+        }
+        context.applicationScope().launch {
+            if (!isPrivileged) {
+                if (!dataService.loadData()) {
+                    ToastHelper.failDownloadData(context)
+                }
+            }
+            if (result.userData.spaceName != null && !spaceService.initMembers(isPrivileged)) {   // Все равно пытаемся, хотя бы чтобы показать тост
+                ToastHelper.failDownloadMembers(context)
+            }
+        }
+    }
+
+    //    Удаляем экраны логина и остальные, чтобы нельзя было вернуться через backPressed
     private fun navigateTo(fragmentId: Int) {
         val navOptions = NavOptions.Builder().setPopUpTo(R.id.authFragment, true).build()
         findNavController().navigate(fragmentId, null, navOptions)

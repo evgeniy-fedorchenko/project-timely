@@ -15,7 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
-import com.efedorchenko.timely.data.EncProfileStorage
+import com.efedorchenko.timely.data.EncUserProfile
 import com.efedorchenko.timely.databinding.CalendarGridLayoutBinding
 import com.efedorchenko.timely.model.Event
 import com.efedorchenko.timely.model.SaveResult
@@ -32,22 +32,23 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDate
-import org.threeten.bp.ZoneId
-import org.threeten.bp.format.DateTimeFormatter
+import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
 
+// TODO 15.03.2025 20:16: вынести листенер в отдельный класс
 @AndroidEntryPoint
 class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
 
     companion object {
-        const val SELECTED_DATE_KEY = "selected_date"
-        const val IS_WATCHER_ADMIN = "is_watcher_admin"
-        const val NEEDS_BLOCK_INPUT = "needs_block_input"
         private const val MONTH_OFFSET_ARG = "month_offset"
         private const val ADD_EVENT_DIALOG_TAG = "add_event_dialog"
 
-        private val YEAR_MONTH_FORMATTER = DateTimeFormatter.ofPattern("LLLL yyyy", Locale("ru"))
+        val YEAR_MONTH_FORMATTER = SimpleDateFormat("LLLL yyyy", Locale("ru"))
+//        private val YEAR_MONTH_FORMATTER = DateTimeFormatter.ofPattern("MMMM yyyy", Locale("ru"))
+//        private val SIMPLE_YEAR_MONTH_FORMATTER = SimpleDateFormat("LLLL yyyy", Locale("ru"))
+
 
         fun newInstance(monthOffset: Int, userUuid: String?): CalendarFragment {
             return CalendarFragment().apply {
@@ -66,7 +67,7 @@ class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
     lateinit var viewModel: DataViewModel
 
     @Inject
-    lateinit var encProfileStorage: EncProfileStorage
+    lateinit var encUserProfile: EncUserProfile
 
     @Inject
     lateinit var dataService: DataService
@@ -82,11 +83,7 @@ class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
         super.onCreate(savedInstanceState)
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = CalendarGridLayoutBinding.inflate(inflater, container, false)
         calendarGrid = binding.calendarGrid
         return binding.root
@@ -94,9 +91,10 @@ class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        updateCalendar()
 
+        updateCalendar()
         viewModel.monthOffset.observe(viewLifecycleOwner) { updateMonthTextView(it) }
+
         lifecycleScope.launch {
             viewModel.needUpdateData.collect { needsUpdate ->
                 if (needsUpdate) {
@@ -111,7 +109,6 @@ class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
         super.onDestroyView()
         _binding = null
     }
-
 
     /**
      * Установка новых смен (клик на пустую ячейку):
@@ -133,25 +130,24 @@ class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
     override fun showAddDataDialog(targetDate: LocalDate, context: Context?, existedData: Event?) {
         if (context == null) return
 
-        val isAdmin = encProfileStorage.isPrivileged()
+        val isAdmin = encUserProfile.isPrivileged()
         val isGuest = getUserUuidArgument() != null
         val isAfter = LocalDate.now().isAfter(targetDate)
         val dataPresent = existedData != null
 
-        if (isGuest && !isAdmin && !dataPresent) {
-            return
+        if (!dataPresent) {
+            if (isGuest && !isAdmin) {
+                return
+            }
+            if ((!isGuest && isAfter) || (isGuest && isAfter)) {
+                ToastHelper.datePassed(context)
+                return
+            }
         }
-        if ((!isGuest && isAfter && !dataPresent) || (isGuest && isAfter && isAdmin && !dataPresent)) {
-            ToastHelper.datePassed(context)
-            return
-        }
-        val addEventDialog = AddEventDialog.newInstance(this, existedData)
-        addEventDialog.arguments = Bundle().apply {
-            putString(SELECTED_DATE_KEY, targetDate.toString())
-            putBoolean(IS_WATCHER_ADMIN, isAdmin)
-            putBoolean(NEEDS_BLOCK_INPUT, (isGuest && !isAdmin) || (dataPresent && !isAdmin))
-        }
-        addEventDialog.show(parentFragmentManager, ADD_EVENT_DIALOG_TAG)
+
+        val readOnly = (dataPresent && !isAdmin)
+        AddEventDialog.newInstance(this, existedData, readOnly, targetDate)
+            .show(parentFragmentManager, ADD_EVENT_DIALOG_TAG)
     }
 
     /**
@@ -205,7 +201,7 @@ class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
      * Метод будет ожидать их 1 секунду, после чего начнет рисовать календарь без них
      */
     private fun updateCalendar() {
-        if (getUserUuidArgument() == null && encProfileStorage.isPrivileged()) return
+        if (getUserUuidArgument() == null && encUserProfile.isPrivileged()) return
         val context = context ?: return
         calendarGrid.removeAllViews()
         val cellBuilder = CalendarBuilder(monthOffset).clickListener(this).eventsDef(monthEventsDef)
@@ -224,8 +220,9 @@ class CalendarFragment : Fragment(), AddAbstractDataListener<Event> {
 
     private fun updateMonthTextView(monthOffset: Int) {
         activity?.findViewById<TextView>(R.id.center_header)?.let { view ->
-            val offset = LocalDate.now(ZoneId.systemDefault()).plusMonths(monthOffset.toLong())
-            view.text = offset.format(YEAR_MONTH_FORMATTER).replaceFirstChar { it.uppercase() }
+            val calendar = Calendar.getInstance(Locale("ru"))
+            calendar.add(Calendar.MONTH, monthOffset)
+            view.text = YEAR_MONTH_FORMATTER.format(calendar.time).replaceFirstChar { it.uppercase() }
         }
     }
 

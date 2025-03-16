@@ -13,10 +13,17 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
-import com.efedorchenko.timely.data.EncProfileStorage
-import com.efedorchenko.timely.data.ProfileStorage
+import com.efedorchenko.timely.data.EncUserProfile
 import com.efedorchenko.timely.data.SpaceViewModel
+import com.efedorchenko.timely.data.UserProfile
 import com.efedorchenko.timely.databinding.HeaderLayoutBinding
+import com.efedorchenko.timely.model.auth.UserData
+import com.efedorchenko.timely.model.member.SpaceStatus
+import com.efedorchenko.timely.ui.fragment.AbstractMainFragment.Companion.Button.CONNECT_TO_SPACE
+import com.efedorchenko.timely.ui.fragment.AbstractMainFragment.Companion.Button.DO_SYNC
+import com.efedorchenko.timely.ui.fragment.AbstractMainFragment.Companion.Button.FILL_PERIOD
+import com.efedorchenko.timely.ui.fragment.AbstractMainFragment.Companion.Button.LEAVE_SPACE
+import com.efedorchenko.timely.ui.fragment.AbstractMainFragment.Companion.Button.MY_SPACE
 import com.efedorchenko.timely.ui.support.NavigationMenuListener
 import com.efedorchenko.timely.ui.support.animClickListener
 import com.google.android.material.navigation.NavigationView
@@ -26,6 +33,10 @@ abstract class AbstractMainFragment : Fragment() {
 
     companion object {
         const val USER_UUID_ARG = "user_uuid"
+
+        private enum class Button {
+            FILL_PERIOD, MY_SPACE, LEAVE_SPACE, CONNECT_TO_SPACE, DO_SYNC
+        }
     }
 
     protected abstract fun getDrawerLayout(): DrawerLayout
@@ -34,8 +45,8 @@ abstract class AbstractMainFragment : Fragment() {
 
     protected abstract val viewModel: DataViewModel
     protected abstract val spaceViewModel: SpaceViewModel
-    protected abstract val encProfileStorage: EncProfileStorage
-    protected abstract val profileStorage: ProfileStorage
+    protected abstract val encUserProfile: EncUserProfile
+    protected abstract val userProfile: UserProfile
 
     fun setupSideMenu() {
         getHeaderLayout().menuButton.setOnClickListener {
@@ -47,56 +58,35 @@ abstract class AbstractMainFragment : Fragment() {
         }
         val headerView = getNavigationView().getHeaderView(0)
 
-        val userData = profileStorage.getUserData()
-        headerView.findViewById<TextView>(R.id.user_name).text = userData?.name
+        val userData = userProfile.getUserData()
+        setupSideMenuHeader(headerView, userData)
 
-        userData?.position?.let {
-            val positionRawText = getString(R.string.nav_menu_header_position, it)
-            val preparedHeaderLine = prepareHeaderLine(positionRawText, 9)
-            headerView.findViewById<TextView>(R.id.position).text = preparedHeaderLine
-        }
+        val buttons = hashMapOf(
+            FILL_PERIOD to getNavigationView().menu.findItem(R.id.fill_period),
+            MY_SPACE to getNavigationView().menu.findItem(R.id.my_space),
+            LEAVE_SPACE to getNavigationView().menu.findItem(R.id.leave_space),
+            CONNECT_TO_SPACE to getNavigationView().menu.findItem(R.id.connect_to_space),
+            DO_SYNC to getNavigationView().menu.findItem(R.id.do_sync)
+        )
 
-        val fillPeriodItem = getNavigationView().menu.findItem(R.id.fill_period)
-        val mySpaceItem = getNavigationView().menu.findItem(R.id.my_space)
-        val leaveSpaceItem = getNavigationView().menu.findItem(R.id.leave_space)
-        val connectToSpaceItem = getNavigationView().menu.findItem(R.id.connect_to_space)
-        val doSyncItem = getNavigationView().menu.findItem(R.id.do_sync)
-
-        userData?.spaceName?.let {
-            val spaceRawText = getString(R.string.nav_menu_header_space, it)
-            val preparedHeaderLine = prepareHeaderLine(spaceRawText, 8)
-            headerView.findViewById<TextView>(R.id.space).text = preparedHeaderLine
-        }
-        val onHomePage = spaceViewModel.selectedMember.value == null
-        setupButtons(onHomePage, doSyncItem, fillPeriodItem, mySpaceItem, leaveSpaceItem, connectToSpaceItem)
-
-        userData?.rate?.let {
-            val rateRawText = getString(R.string.nav_menu_header_rate, it)
-            val preparedHeaderLine = prepareHeaderLine(rateRawText, 6)
-            headerView.findViewById<TextView>(R.id.rate).text = preparedHeaderLine
-        }
+//        setupButtons(isOnHomePage(), buttons)
 
         viewLifecycleOwner.lifecycleScope.launch {
             spaceViewModel.selectedMember.collect {
                 getHeaderLayout().homeButton.visibility = if (it == null) View.GONE else View.VISIBLE
-                val onHomeUpdated = spaceViewModel.selectedMember.value == null
-                setupButtons(onHomeUpdated, doSyncItem, fillPeriodItem, mySpaceItem, leaveSpaceItem, connectToSpaceItem)
-
+                setupButtons(isOnHomePage(), buttons)
             }
         }
         lifecycleScope.launch {
-            spaceViewModel.needSwitchSpaceItemsInSideMenu.collect { needsSwitch ->
-                if (needsSwitch) {
-                    val onHomeUpdated = spaceViewModel.selectedMember.value == null
-                    setupButtons(
-                        onHomeUpdated,
-                        doSyncItem,
-                        fillPeriodItem,
-                        mySpaceItem,
-                        leaveSpaceItem,
-                        connectToSpaceItem
-                    )
-                }
+            spaceViewModel.needSwitchSideMenuItems.collect { needsSwitch ->
+                if (needsSwitch) setupButtons(isOnHomePage(), buttons)
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            spaceViewModel.statusChangedNty.collect { newStatus ->
+                setSpaceStatusOnSideMenu(newStatus, headerView, userProfile.getSpaceName())
+//                val spaceRawText = getString(R.string.nav_menu_header_space, "На рассмотрении async")
+//                headerView.findViewById<TextView>(R.id.space).text = prepareHeaderLine(spaceRawText, 8)
             }
         }
         getNavigationView().setNavigationItemSelectedListener(
@@ -104,37 +94,62 @@ abstract class AbstractMainFragment : Fragment() {
         )
     }
 
-    private fun setupButtons(
-        onHomePage: Boolean,
-        doSyncItem: MenuItem,
-        fillPeriodItem: MenuItem,
-        mySpaceItem: MenuItem,
-        leaveSpaceItem: MenuItem,
-        connectToSpaceItem: MenuItem
-    ) {
+    private fun setupSideMenuHeader(headerView: View, userData: UserData?) {
+
+        val userNameView = headerView.findViewById<TextView>(R.id.user_name)
+        userNameView.text = userData?.name
+        if (userData == null) return
+
+        val userPositionView = headerView.findViewById<TextView>(R.id.user_position)
+        val userRateView = headerView.findViewById<TextView>(R.id.rate)
+
+        val positionRawText = getString(R.string.nav_menu_header_position, userData.position)
+        val preparedHeaderLine = prepareHeaderLine(positionRawText, 9)
+        userPositionView.text = preparedHeaderLine
+
+        setSpaceStatusOnSideMenu(userData.spaceStatus, headerView, userData.spaceName)
+
+        val userRate = userData.rate?.let { "$it руб./ч." } ?: "Не указана"
+        val rateRawText = getString(R.string.nav_menu_header_rate, userRate)
+        userRateView.text = prepareHeaderLine(rateRawText, 6)
+    }
+
+    private fun setSpaceStatusOnSideMenu(spaceStatus: SpaceStatus, headerView: View, spaceName: String?) {
+        val spaceNameView = headerView.findViewById<TextView>(R.id.space)
+        if (spaceStatus == SpaceStatus.NONE) {
+            spaceNameView.visibility = View.GONE
+        } else {
+            spaceNameView.visibility = View.VISIBLE
+            val companyName = (if (spaceStatus.isPending()) "На рассмотрении" else spaceName)
+            val spaceRawText = getString(R.string.nav_menu_header_space, companyName)
+            spaceNameView.text = prepareHeaderLine(spaceRawText, 8)
+        }
+    }
+
+    private fun setupButtons(onHomePage: Boolean, buttons: Map<Button, MenuItem>) {
 //        Надо чтобы с чужого экрана нельзя было понять, что я как участник был удален
-        if (!profileStorage.spaceExists()) {
-            fillPeriodItem.isVisible = true
-            mySpaceItem.isVisible = false
-            leaveSpaceItem.isVisible = false
-            connectToSpaceItem.isVisible = true
-            doSyncItem.isVisible = true
+        if (!userProfile.spaceExists()) {
+            buttons[FILL_PERIOD]?.isVisible = true
+            buttons[MY_SPACE]?.isVisible = false
+            buttons[LEAVE_SPACE]?.isVisible = false
+            buttons[CONNECT_TO_SPACE]?.isVisible = true
+            buttons[DO_SYNC]?.isVisible = true
             return
         }
-        connectToSpaceItem.isVisible = false
-        leaveSpaceItem.isVisible = true
-        if (encProfileStorage.isPrivileged()) {
+        buttons[CONNECT_TO_SPACE]?.isVisible = false
+        buttons[LEAVE_SPACE]?.isVisible = true
+        if (encUserProfile.isPrivileged()) {
             if (onHomePage) {
-                doSyncItem.title = "Обновить участников"
+                buttons[DO_SYNC]?.title = "Обновить участников"
             } else {
-                doSyncItem.title = "Синхронизировать данные"
-                fillPeriodItem.isVisible = true
+                buttons[DO_SYNC]?.title = "Синхронизировать данные"
+                buttons[FILL_PERIOD]?.isVisible = true
             }
-            doSyncItem.isVisible = true
+            buttons[DO_SYNC]?.isVisible = true
         } else {
-            mySpaceItem.isVisible = true
-            doSyncItem.isVisible = true
-            fillPeriodItem.isVisible = onHomePage
+            buttons[MY_SPACE]?.isVisible = true
+            buttons[DO_SYNC]?.isVisible = true
+            buttons[FILL_PERIOD]?.isVisible = onHomePage
         }
     }
 
@@ -146,4 +161,6 @@ abstract class AbstractMainFragment : Fragment() {
         )
         return spannablePositionText
     }
+
+    private fun isOnHomePage() = spaceViewModel.selectedMember.value == null
 }
