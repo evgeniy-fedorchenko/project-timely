@@ -9,14 +9,11 @@ import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
-import com.efedorchenko.timely.data.EncProfileStorage
-import com.efedorchenko.timely.data.ProfileStorage
+import com.efedorchenko.timely.data.EncUserProfile
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.DialogSyncingDataBinding
-import com.efedorchenko.timely.ui.support.DoSyncButtonListener
 import com.efedorchenko.timely.model.DataType
-import com.efedorchenko.timely.service.DataService
-import com.efedorchenko.timely.service.SpaceService
+import com.efedorchenko.timely.ui.support.DataSynchronizerFactory
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -27,19 +24,13 @@ class SyncDialogFragment : DialogFragment() {
     lateinit var viewModel: DataViewModel
 
     @Inject
-    lateinit var profileStorage: ProfileStorage
-
-    @Inject
-    lateinit var encProfileStorage: EncProfileStorage
-
-    @Inject
-    lateinit var spaceService: SpaceService
-
-    @Inject
-    lateinit var dataService: DataService
-
-    @Inject
     lateinit var spaceViewModel: SpaceViewModel
+
+    @Inject
+    lateinit var encUserProfile: EncUserProfile
+
+    @Inject
+    lateinit var dataSynchronizerFactory: DataSynchronizerFactory
 
     private var _binding: DialogSyncingDataBinding? = null
     private val binding get() = _binding!!
@@ -67,8 +58,9 @@ class SyncDialogFragment : DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // TODO: Просто получать количество
-        val eventsOutOfSync = viewModel.getNotSynced(DataType.EVENT)
-        val finesOutOfSync = viewModel.getNotSynced(DataType.FINE)
+        val isAdmin = encUserProfile.isPrivileged()
+        val eventsOutOfSync = viewModel.getNotSynced(DataType.EVENT, isAdmin)
+        val finesOutOfSync = viewModel.getNotSynced(DataType.FINE, isAdmin)
 
         with(binding) {
             if ((eventsOutOfSync.size + finesOutOfSync.size) > 0) {
@@ -86,9 +78,8 @@ class SyncDialogFragment : DialogFragment() {
                 }
             }
         }
-        binding.doSyncButton.setOnClickListener(
-            DoSyncButtonListener(this, spaceService, dataService, binding, profileStorage, viewModel, spaceViewModel)
-        )
+        val listener = dataSynchronizerFactory.create(this, binding)
+        binding.doSyncButton.setOnClickListener(listener)
     }
 
     override fun onStart() {
