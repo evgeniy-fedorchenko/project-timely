@@ -22,11 +22,14 @@ data class Event(
     @Serializable(with = LocalDateSerializer::class)
     override val date: LocalDate,
 
+    // Не хранится, при получении поля - запись удаляется из местной БД
     @Serializable(with = InstantSerializer::class)
     override val deletedAt: Instant? = null,
 
     @Serializable(with = InstantSerializer::class)
     override val changedAt: Instant? = null,
+
+    override var owner: String? = null,
 
     @Serializable(with = CustomDurationSerializer::class)
     val workDuration: Duration,

@@ -2,6 +2,7 @@ package com.efedorchenko.timely.data.repository
 
 import android.app.Application
 import android.content.ContentValues
+import android.database.Cursor
 import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
@@ -20,11 +21,38 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
 
     abstract fun findByMonth(monthUID: MonthUID, withComment: Boolean, userUuid: String? = null): List<T>
 
-    abstract fun findNullableBackendId(): List<T>
-
     protected abstract fun getTableName(forMembersData: Boolean = false): String
 
     protected abstract fun extractContentValues(data: T, userUuid: String? = null): ContentValues
+
+    protected abstract fun doFindData(cursor: Cursor?, isUserEvents: Boolean): Collection<T>
+
+    fun findNullableBackendId(yourOwnToo: Boolean): List<T> {
+        val db = dbHelper.readableDatabase
+        val data = mutableListOf<T>()
+        var cursor: Cursor? = null
+        db.beginTransaction()
+
+        try {
+            if (yourOwnToo) {
+                val sql = "SELECT * FROM ${getTableName(false)} WHERE $BACKEND_ID_COLUMN_NAME IS NULL"
+                cursor = db.rawQuery(sql, null)
+                data.addAll(doFindData(cursor, isUserEvents = false))
+                cursor?.close()
+            }
+            val sql = "SELECT * FROM ${getTableName(true)} WHERE $BACKEND_ID_COLUMN_NAME IS NULL"
+            cursor = db.rawQuery(sql, null)
+            data.addAll(doFindData(cursor, isUserEvents = true))
+
+            db.setTransactionSuccessful()
+        } catch (ex: Exception) {
+            Log.e(TAG, "Error when extracting events with nullable backendId. Ex: $ex")
+        } finally {
+            cursor?.close()
+            db.endTransaction()
+        }
+        return data
+    }
 
     /**
      * Сохранить новое событие через `insert`, (без `changed_at`).
@@ -152,8 +180,11 @@ abstract class DataRepository<T : AbstractData>(application: Application) {
 
     fun clean() {
         val db = dbHelper.writableDatabase
+        db.beginTransaction()
         db.delete(getTableName(true), null, null)
         db.delete(getTableName(false), null, null)
+        db.setTransactionSuccessful()
+        db.endTransaction()
     }
 
     /**

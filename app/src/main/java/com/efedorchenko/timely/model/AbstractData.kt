@@ -24,7 +24,10 @@ sealed class AbstractData {
 
     abstract fun getType(): DataType
 
-    var toUserId: String? = null
+    /**
+     * `null` означает, что владелец данных - юзер, который авторизован в данный момент
+     */
+    abstract var owner: String?
 
     abstract fun logicEquals(other: Any): Boolean
 }

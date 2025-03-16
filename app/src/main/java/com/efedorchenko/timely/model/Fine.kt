@@ -26,6 +26,8 @@ data class Fine(
     @Serializable(with = InstantSerializer::class)
     override val changedAt: Instant? = null,
 
+    override var owner: String? = null,
+
     val description: String,
 
     val amount: Int,

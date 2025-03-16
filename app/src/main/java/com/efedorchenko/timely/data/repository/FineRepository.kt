@@ -22,15 +22,14 @@ import javax.inject.Inject
 
 class FineRepository @Inject constructor(application: Application) : DataRepository<Fine>(application) {
 
-    companion object {
-        private const val SELECT_FINES_WITH_NULL_BACKEND_ID =
-            "SELECT * FROM $FINES_TABLE_NAME WHERE $BACKEND_ID_COLUMN_NAME IS NULL"
-    }
-
     private val dbHelper = DatabaseConfigurer.getInstance(application)
 
     /**
-     * Возвращается без `changed_at`
+     * Возвращается `id`, `backendId`, `date`, `amount`, `description`.
+     *
+     * При передаче `userId` будет выполнен поиск ивентов указанного юзера в их таблице.
+     * При передаче `null` выполниться поиск собственных ивентов в своей таблице
+     *
      * @param withComment - игнорироуется, объекты всегда возвращаются с описанием
      */
     override fun findByMonth(monthUID: MonthUID, withComment: Boolean, userUuid: String?): List<Fine> {
@@ -40,7 +39,7 @@ class FineRepository @Inject constructor(application: Application) : DataReposit
         db.beginTransaction()
 
         try {
-//            SELECT FROM table_name WHERE month_uid = ?( AND user_uuid = ?)
+//            "SELECT FROM table_name WHERE month_uid = ?", optionally with "AND user_uuid = ?"
             val where = "$MONTH_UID_COLUMN_NAME = ?${userUuid?.let { " AND $USER_UUID_COLUMN_NAME = ?" } ?: ""}"
             val sql = "SELECT * FROM ${getTableName(userUuid != null)} WHERE $where"
             val argsList = mutableListOf(monthUID.value.toString())
@@ -54,6 +53,7 @@ class FineRepository @Inject constructor(application: Application) : DataReposit
                     val amount = columnAs(AMOUNT_COLUMN_NAME) { getInt(it) }
                     val description = columnAs(DESCRIPTION_COLUMN_NAME) { getString(it) }
 
+//                    Колонки not null, но columnAs обязывает
                     if (amount != null && description != null) {
                         val fine = Fine(
                             appId = id,
@@ -77,38 +77,26 @@ class FineRepository @Inject constructor(application: Application) : DataReposit
         return fines
     }
 
-    override fun findNullableBackendId(): List<Fine> {
-        val db = dbHelper.readableDatabase
+    override fun doFindData(cursor: Cursor?, isUserEvents: Boolean): List<Fine> {
         val fines = mutableListOf<Fine>()
-        var cursor: Cursor? = null
-        db.beginTransaction()
+        cursor?.run {
+            while (moveToNext()) {
+                val id = columnAs(ID_COLUMN_NAME) { getLong(it) }
+                val date = columnAs(DATE_COLUMN_NAME) { getString(it) }
+                val amount = columnAs(AMOUNT_COLUMN_NAME) { getInt(it) }
+                val description = columnAs(DESCRIPTION_COLUMN_NAME) { getString(it) }
 
-        try {
-            cursor = db.rawQuery(SELECT_FINES_WITH_NULL_BACKEND_ID, null)?.run {
-                while (moveToNext()) {
-                    val id = columnAs(ID_COLUMN_NAME) { getLong(it) }
-                    val date = columnAs(DATE_COLUMN_NAME) { getString(it) }
-                    val amount = columnAs(AMOUNT_COLUMN_NAME) { getInt(it) }
-                    val description = columnAs(DESCRIPTION_COLUMN_NAME) { getString(it) }
-
-                    if (amount != null && description != null) {
-                        val fine = Fine(
-                            appId = id,
-                            date = LocalDate.parse(date),
-                            amount = amount,
-                            description = description
-                        )
-                        fines.add(fine)
-                    }
+                if (amount != null && description != null) {
+                    val fine = Fine(
+                        appId = id,
+                        date = LocalDate.parse(date),
+                        amount = amount,
+                        description = description,
+                        owner = if (isUserEvents) columnAs(USER_UUID_COLUMN_NAME) { getString(it) } else null
+                    )
+                    fines.add(fine)
                 }
-                this
             }
-            db.setTransactionSuccessful()
-        } catch (ex: Exception) {
-            Log.e(TAG, "Error when extracting fines with nullable backendId. Ex :$ex")
-        } finally {
-            cursor?.close()
-            db.endTransaction()
         }
         return fines
     }
