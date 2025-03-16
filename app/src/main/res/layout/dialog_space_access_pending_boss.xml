@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/dialog_background_base"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="12dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Заявка отправлена"
+        android:textColor="@color/light_gray"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <View
+        android:layout_width="wrap_content"
+        android:layout_height="1dp"
+        android:layout_marginVertical="8dp"
+        android:background="@color/medium_gray" />
+
+    <TextView
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Ваша заявка на вступление в компанию '%s' успешно отправлена"
+        android:textColor="@color/light_gray"
+        android:textSize="16sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingTop="8dp"
+        android:text="Ожидайте ее одобрения со стороны действующих руководителей"
+        android:textColor="@color/light_gray"
+        android:textSize="16sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingTop="8dp"
+        android:text="В данный момент вы имеете статус работника, но после принятия заявки и одобрения вашего статуса, вы будете перенаправлены на экран руководителя"
+        android:textColor="@color/light_gray"
+        android:textSize="16sp" />
+
+    <Button
+        android:id="@+id/close_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dp"
+        android:background="@android:color/transparent"
+        android:text="Ок"
+        android:textColor="@color/orange" />
+
+</LinearLayout>

@@ -4,6 +4,8 @@ import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.view.LayoutInflater.from
+import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
@@ -18,12 +20,15 @@ import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.viewbinding.ViewBinding
 import com.efedorchenko.timely.R
+import com.efedorchenko.timely.databinding.DialogSpaceAccessPendingBossBinding
+import com.efedorchenko.timely.databinding.DialogSpaceAccessPendingWorkerBinding
 import com.efedorchenko.timely.model.api.Resource
 import com.efedorchenko.timely.model.auth.RegisterRequest
+import com.efedorchenko.timely.model.auth.RoleType
+import com.efedorchenko.timely.model.member.SpaceStatus
 import com.efedorchenko.timely.service.AuthService
 import com.efedorchenko.timely.service.SpaceService
 import com.efedorchenko.timely.service.ToastHelper
-import com.efedorchenko.timely.ui.support.applicationScope
 import com.efedorchenko.timely.ui.support.hide
 import com.efedorchenko.timely.ui.support.hideKeyboard
 import com.efedorchenko.timely.ui.support.show
@@ -103,7 +108,7 @@ abstract class AbstractRegisterFragment : Fragment() {
             progressBar.show()
             try {
                 when (val result = authService.tryRegister(registerRequest)) {
-                    is Resource.Success -> handleSuccess(context, result)
+                    is Resource.Success -> handleSuccess(result, context)
                     is Resource.Error -> ToastHelper.message(result.message, context)
                 }
 
@@ -114,16 +119,61 @@ abstract class AbstractRegisterFragment : Fragment() {
         }
     }
 
-    private fun handleSuccess(context: Context, result: Resource.Success<Unit>) {
-
-        // TODO: сначала переводить юзеров просто на экран одиночки и ждать решения по заявке от руководителей
-        val navOptions = NavOptions.Builder().setPopUpTo(R.id.nav_graph, true).build()
-        findNavController().navigate(R.id.mainWorkerFragment, null, navOptions)
-
-        context.applicationScope().launch {
-            if (result.spacePresent && !spaceService.initMembers()) {   // Все равно пытаемся, хотя бы чтобы показать тост
-                ToastHelper.failDownloadMembers(context)
-            }
+    private fun handleSuccess(result: Resource.Success<Unit>, context: Context) {
+        val doNavigate = { fragmentId: Int ->
+            findNavController().navigate(
+                fragmentId, null,
+                NavOptions.Builder().setPopUpTo(R.id.nav_graph, true).build()
+            )
         }
+
+        val spaceName = result.userData.spaceName
+        val spaceStatus = result.userData.spaceStatus
+
+        when {
+            result.authData.role.isHigherThan(RoleType.BOSS) -> {
+                doNavigate.invoke(R.id.mainBossFragment)
+            }
+            spaceStatus == SpaceStatus.PENDING_BOSS -> {
+                doNavigate(R.id.mainWorkerFragment)
+                showRequestToSpaceAccessDialog(context, true, spaceName)
+            }
+            spaceStatus == SpaceStatus.PENDING_WORKER -> {
+                doNavigate(R.id.mainWorkerFragment)
+                showRequestToSpaceAccessDialog(context, false, spaceName)
+            }
+
+            else -> {} // TODO: показать ошибку
+        }
+//        Не грузим участников и данные, так как при регистрации их еще не существует
+    }
+
+    private fun showRequestToSpaceAccessDialog(context: Context, isBoss: Boolean, spaceName: String?) {
+        spaceName?.let {
+            val dialog = if (isBoss) {
+                val inflate = DialogSpaceAccessPendingBossBinding.inflate(from(context))
+                setupDialog(context, inflate.root, inflate.header, inflate.closeButton, spaceName)
+            } else {
+                val inflate = DialogSpaceAccessPendingWorkerBinding.inflate(from(context))
+                setupDialog(context, inflate.root, inflate.header, inflate.closeButton, spaceName)
+            }
+            dialog.window?.apply {
+                setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                setLayout(
+                    (resources.displayMetrics.widthPixels * HELP_DIALOG_WIDTH_RATIO).toInt(),
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            }
+            dialog.show()
+        }
+    }
+
+    private fun setupDialog(
+        context: Context, root: View, header: TextView, closeButton: View, spaceName: String
+    ): AlertDialog {
+        header.text = String.format(header.text.toString(), spaceName)
+        val dialog = AlertDialog.Builder(context).setView(root).create()
+        closeButton.setOnClickListener { dialog.cancel() }
+        return dialog
     }
 }
