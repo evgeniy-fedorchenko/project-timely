@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
-import com.efedorchenko.timely.data.EncProfileStorage
+import com.efedorchenko.timely.data.EncUserProfile
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.databinding.FragmentSummaryCardBinding
 import com.efedorchenko.timely.model.DataType
@@ -46,7 +46,7 @@ class SummaryFragment : Fragment(), AddAbstractDataListener<Fine> {
     lateinit var dataService: DataService
 
     @Inject
-    lateinit var encProfileStorage: EncProfileStorage
+    lateinit var encUserProfile: EncUserProfile
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentSummaryCardBinding.inflate(inflater, container, false)
@@ -60,7 +60,7 @@ class SummaryFragment : Fragment(), AddAbstractDataListener<Fine> {
         binding.showFinesButton.setOnClickListener {
             FinesDialogFragment().show(childFragmentManager, SHOW_FINES_DIALOG_TAG)
         }
-        if (encProfileStorage.isPrivileged()) {
+        if (encUserProfile.isPrivileged()) {
             val addFineButton = binding.addFineButton
             addFineButton.visibility = View.VISIBLE
             addFineButton.setOnClickListener {
@@ -98,9 +98,9 @@ class SummaryFragment : Fragment(), AddAbstractDataListener<Fine> {
                 updateEvents(it)
             }
         }
-        viewModel.membersFines.observe(viewLifecycleOwner) {
+        viewModel.memberFines.observe(viewLifecycleOwner) {
             if (userUuid != null) {
-                if (encProfileStorage.isPrivileged()) {
+                if (encUserProfile.isPrivileged()) {
                 updateFines(it)
                 } else {
                     binding.finesCount.visibility = View.INVISIBLE

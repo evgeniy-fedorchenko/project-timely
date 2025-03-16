@@ -1,5 +1,7 @@
 package com.efedorchenko.timely.model
 
+import com.efedorchenko.timely.model.auth.Credentials
+
 object Model {
     private const val LOCAL = "[a-zA-Z0-9][a-zA-Z0-9._-]{0,62}[a-zA-Z0-9]"
     private const val SUBDOMAIN = "([a-zA-Z0-9][a-zA-Z0-9_-]{1,14}\\.)"
@@ -78,8 +80,8 @@ object Model {
         return login.isNotBlank() && login.matches(EMAIL_REGEX.toRegex())
     }
 
-    fun isLoginPairValid(loginPair: Pair<String, String>): Boolean {
-        return isLoginValid(loginPair.first) && isPasswordValid(loginPair.second)
+    fun isCredentialsValid(credentials: Credentials): Boolean {
+        return isLoginValid(credentials.username) && isPasswordValid(credentials.password)
     }
 
     fun isRepeatPasswordValid(repeatPassword: String, password: String): Boolean {

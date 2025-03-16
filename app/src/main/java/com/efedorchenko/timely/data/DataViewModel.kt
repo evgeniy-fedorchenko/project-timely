@@ -25,34 +25,34 @@ import org.threeten.bp.LocalDate
 import org.threeten.bp.YearMonth
 import javax.inject.Inject
 
-/*
-* Как сохраняются и отображаются данные в разных сценариях:
-*
-* 1. При создании нового инстанса фрагмента каледаря, в самой пеовой фазе (в onCreate) вызывается метод getEventsAsync,
-*    чтобы данные загружались из репозитория параллельно с построением фрагмента. Далее (как можно позде) происходит
-*    проверка готовности и ожидание, если данные еще не готовы. После получения данных они отрисовываются на каледаре
-*    Почему не используется прямое взятие из viewModel.events?
-*    - Потому что там содержаться данные текущего месяца, а не того, который требуется построить
-*    Почему не выполняется updateLiveData, чтобы загрузить во viewModel.events данные, а потом просто не взять их?
-*    - Потому что нет гарантий, что к моменту взятия данные там будут лежать уже новые готовые данные. Есть вероятность,
-*      что поле не успеет обновиться и будут взяты новые данные
-*
-* 2. При добавлении нового события руками юзера в календарь
-*    Выполнение исходит из AddEventDialog или AddFineDialog, который принимает на вход слушатель кнопки сохранения,
-*    который реализован прямо на соответствующем фрагменте. Соотвтетствеено при сохранении выполнение переходит во
-*    фрагмент, где происходит обновление ячейки (CalendarFragment.updateCell), данные смены рисуются на соответсвующей
-*    ячейке. Так же параллельно viewModel сохраняет и отправляет данные в фоне
-*
-* 3. При получении новых данных по http (через обновление данных). Сервис, занимающийся вызовом API сохраняет полученные
-*    данные в репозиторий, а так же вызывает метод updateLiveData, который перезагружает viewModel новыми, только что
-*    сохраненными данными и емитит фгал необходимости обновления данных. Фрагмент ловит этот флаг и перерисовывает весь
-*    календарь
-*    Почему бы просто не подписаться на обновления viewModel.events?
-*    - Потому что это помешает четкому полению данных при изначальном создании календаря. Когда надо иметь контроль
-*      над моментом запуска обновления и взятия новых данных. Если запустить обновление во фрагменте как можно раньше
-*      и далее просто налеяться на этого слушателя - не получиться выставить на него таймаут получения данных и
-*      отобразить ошибку загрузки.
-*/
+/**
+ * Как сохраняются и отображаются данные в разных сценариях:
+ *
+ * 1. При создании нового инстанса фрагмента каледаря, в самой пеовой фазе (в onCreate) вызывается метод getEventsAsync,
+ *    чтобы данные загружались из репозитория параллельно с построением фрагмента. Далее (как можно позде) происходит
+ *    проверка готовности и ожидание, если данные еще не готовы. После получения данных они отрисовываются на каледаре
+ *    Почему не используется прямое взятие из viewModel.events?
+ *    - Потому что там содержаться данные текущего месяца, а не того, который требуется построить
+ *    - Почему не выполняется updateLiveData, чтобы загрузить во viewModel.events данные, а потом просто не взять их?
+ *    - Потому что нет гарантий, что к моменту взятия данные там будут лежать уже новые готовые данные. Есть вероятность,
+ *      что поле не успеет обновиться и будут взяты новые данные
+ *
+ * 2. При добавлении нового события руками юзера в календарь
+ *    Выполнение исходит из AddEventDialog или AddFineDialog, который принимает на вход слушатель кнопки сохранения,
+ *    который реализован прямо на соответствующем фрагменте. Соотвтетствеено при сохранении выполнение переходит во
+ *    фрагмент, где происходит обновление ячейки (CalendarFragment.updateCell), данные смены рисуются на соответсвующей
+ *    ячейке. Так же параллельно viewModel сохраняет и отправляет данные в фоне
+ *
+ * 3. При получении новых данных по http (через обновление данных). Сервис, занимающийся вызовом API сохраняет полученные
+ *    данные в репозиторий, а так же вызывает метод updateLiveData, который перезагружает viewModel новыми, только что
+ *    сохраненными данными и емитит фгал необходимости обновления данных. Фрагмент ловит этот флаг и перерисовывает весь
+ *    календарь
+ *    Почему бы просто не подписаться на обновления viewModel.events?
+ *    - Потому что это помешает четкому полению данных при изначальном создании календаря. Когда надо иметь контроль
+ *      над моментом запуска обновления и взятия новых данных. Если запустить обновление во фрагменте как можно раньше
+ *      и далее просто налеяться на этого слушателя - не получиться выставить на него таймаут получения данных и
+ *      отобразить ошибку загрузки.
+ */
 class DataViewModel @Inject constructor(
     application: Application,
     private val repositoryFactory: RepositoryFactory,
@@ -73,11 +73,11 @@ class DataViewModel @Inject constructor(
 
 
     /* Данные команды */
-    private val _membersEvents = MutableLiveData<List<Event>>()
-    val memberEvents: LiveData<List<Event>> get() = _membersEvents
+    private val _memberEvents = MutableLiveData<List<Event>>()
+    val memberEvents: LiveData<List<Event>> get() = _memberEvents
 
-    private val _membersFines = MutableLiveData<List<Fine>>()
-    val membersFines: LiveData<List<Fine>> get() = _membersFines
+    private val _memberFines = MutableLiveData<List<Fine>>()
+    val memberFines: LiveData<List<Fine>> get() = _memberFines
 
     /* Эмит ошибки синзронизации */
     private val _alert = MutableSharedFlow<String>()
@@ -103,8 +103,21 @@ class DataViewModel @Inject constructor(
     @Suppress("unchecked_cast")
     fun <T : AbstractData> get(dataType: DataType, userUuid: String? = null): List<T>? {
         return when (dataType) {
-            EVENT -> if (userUuid == null) events.value as? List<T> else memberEvents.value as? List<T>
-            FINE -> if (userUuid == null) fines.value as? List<T> else membersFines.value as? List<T>
+            EVENT -> userUuid?.let {
+                memberEvents.value?.let { memberEvents.value as? List<T> }
+                    ?: run {
+                        _memberEvents.value = eventRepository.findByMonth(MonthUID.create(), true, userUuid)
+                        memberEvents.value as List<T>
+                    }
+            } ?: run { events.value as? List<T> }
+
+            FINE -> userUuid?.let {
+                memberFines.value?.let { memberFines.value as? List<T> }
+                    ?: run {
+                        _memberFines.value = fineRepository.findByMonth(MonthUID.create(), true, userUuid)
+                        memberFines.value as List<T>
+                    }
+            } ?: run { fines.value as? List<T> }
         }
     }
 
@@ -116,19 +129,22 @@ class DataViewModel @Inject constructor(
                         _events.value.isNullOrEmpty() -> _events.value = mutableListOf(data as Event)
                         data.appId != null -> _events.value =
                             eventRepository.findByMonth(MonthUID.create(data.date), true)
+
                         else -> _events.value = _events.value!! + data as Event
                     }
                 } else {
                     when {
-                        _membersEvents.value.isNullOrEmpty() -> _membersEvents.value = mutableListOf(data as Event)
-                        data.appId != null -> _membersEvents.value =
+                        _memberEvents.value.isNullOrEmpty() -> _memberEvents.value = mutableListOf(data as Event)
+                        data.appId != null -> _memberEvents.value =
                             eventRepository.findByMonth(MonthUID.create(data.date), true, userUuid)
-                        else -> _membersEvents.value = _membersEvents.value!! + data as Event
+
+                        else -> _memberEvents.value = _memberEvents.value!! + data as Event
                     }
                 }
             }
+
             FINE -> {
-                userUuid?.let { _membersFines.value = (_membersFines.value ?: emptyList()) + data as Fine }
+                userUuid?.let { _memberFines.value = (_memberFines.value ?: emptyList()) + data as Fine }
                     ?: run { _fines.value = (_fines.value ?: emptyList()) + data as Fine }
             }
         }
@@ -156,8 +172,18 @@ class DataViewModel @Inject constructor(
         }
     }
 
-    fun getNotSynced(dataType: DataType): List<AbstractData> {
-        return repositoryFactory.get(dataType).findNullableBackendId()
+    /**
+     * Получить все объекты типа `dataType`, которые не были отправлены на сервер.
+     * Будут возвращены ВСЕ неотправленные объекты указанного типа.
+     * Собственные + всех остальных юзеров, которые были созданы этим .зером, но не отправлены.
+     * Для понимания владельца объекта используйте `abstractData.owner`
+     *
+     * @param currentUserId - ожидается userId авторизованного пользователя,
+     * даже если он в данный момент просматривает другого юзера
+     * @return список объектов указанного типа, без фильтрации по userId.
+     */
+    fun getNotSynced(dataType: DataType, isAdmin: Boolean): List<AbstractData> {
+        return repositoryFactory.get(dataType).findNullableBackendId(isAdmin)
     }
 
     fun updateLiveData(position: Int, userUuid: String?) {
@@ -189,7 +215,7 @@ class DataViewModel @Inject constructor(
         if (userUuid == null) {
             _fines.value = fineRepository.findByMonth(monthUID, true)
         } else {
-            _membersFines.value = fineRepository.findByMonth(monthUID, false, userUuid)
+            _memberFines.value = fineRepository.findByMonth(monthUID, false, userUuid)
         }
     }
 
@@ -197,7 +223,7 @@ class DataViewModel @Inject constructor(
         if (userUuid == null) {
             _events.value = eventRepository.findByMonth(monthUID, false)
         } else {
-            _membersEvents.value = eventRepository.findByMonth(monthUID, false, userUuid)
+            _memberEvents.value = eventRepository.findByMonth(monthUID, false, userUuid)
         }
         emitNeedUpdateData.invoke()
     }
@@ -206,8 +232,8 @@ class DataViewModel @Inject constructor(
         _events.value = emptyList()
         _fines.value = emptyList()
 
-        _membersEvents.value = emptyList()
-        _membersFines.value = emptyList()
+        _memberEvents.value = emptyList()
+        _memberFines.value = emptyList()
 
         eventRepository.clean()
         fineRepository.clean()

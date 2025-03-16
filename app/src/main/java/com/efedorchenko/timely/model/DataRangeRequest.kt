@@ -8,12 +8,12 @@ import org.threeten.bp.YearMonth
 data class DataRangeRequest(
 
     @Serializable(with = YearMonthSerializer::class)
-    private val startInclusive: YearMonth,
+    val startInclusive: YearMonth,
 
     @Serializable(with = YearMonthSerializer::class)
-    private val endInclusive: YearMonth,
+    val endInclusive: YearMonth,
 
-    private val requestedUserId: String? = null
+    val requestedUserId: String? = null
 ) {
 
     companion object {
