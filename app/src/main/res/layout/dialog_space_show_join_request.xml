@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardBackgroundColor="@android:color/transparent"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp"
+    app:strokeWidth="1dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/recycler_item_background_selector"
+        android:padding="12dp">
+
+        <!-- Name -->
+        <TextView
+            android:id="@+id/name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="user_name"
+            android:textColor="@color/light_gray"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Position -->
+        <TextView
+            android:id="@+id/user_position"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Желаемая должность: %s"
+            android:textColor="@color/light_gray"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/name" />
+
+        <!-- Role -->
+        <TextView
+            android:id="@+id/role"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Предпочитаемая роль: %s"
+            android:textColor="@color/light_gray"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/user_position" />
+
+        <!-- Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@+id/role">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/acceptButton"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:backgroundTint="@color/orange"
+                android:textColor="@color/base_background"
+                android:text="Принять"
+                android:textSize="13sp"
+                app:cornerRadius="10dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/rejectButton"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:text="Отклонить"
+                android:textSize="13sp"
+                app:cornerRadius="10dp"
+                android:backgroundTint="@color/orange"
+                android:textColor="@color/base_background" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

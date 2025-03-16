@@ -7,11 +7,11 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
-import com.efedorchenko.timely.data.EncProfileStorage
-import com.efedorchenko.timely.data.EncProfileStorageImpl
-import com.efedorchenko.timely.data.ProfileStorage
-import com.efedorchenko.timely.data.ProfileStorageImpl
+import com.efedorchenko.timely.data.EncUserProfile
+import com.efedorchenko.timely.data.EncUserProfileImpl
 import com.efedorchenko.timely.data.SpaceViewModel
+import com.efedorchenko.timely.data.UserProfile
+import com.efedorchenko.timely.data.UserProfileImpl
 import com.efedorchenko.timely.ui.dialog.ConnectSpaceDialogFragment
 import com.efedorchenko.timely.ui.dialog.LeaveSpaceDialogFragment
 import com.efedorchenko.timely.ui.dialog.SpaceDialogFragment
@@ -33,27 +33,31 @@ class NavigationMenuListener(
         private const val LEAVE_SPACE_DIALOG_TAG = "leave_space_dialog"
     }
 
-    private val profileStorage: ProfileStorage = ProfileStorageImpl(parentFragment.requireContext())
-    private val encProfileStorage: EncProfileStorage = EncProfileStorageImpl(parentFragment.requireContext())
+    private val userProfile: UserProfile = UserProfileImpl(parentFragment.requireContext())
+    private val encUserProfile: EncUserProfile = EncUserProfileImpl(parentFragment.requireContext())
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.fill_period -> {}
             R.id.do_sync -> SyncDialogFragment().show(parentFragment.childFragmentManager, SYNC_DIALOG_TAG)
-            R.id.my_space -> SpaceDialogFragment().show(parentFragment.childFragmentManager, SPACE_DIALOG_TAG)
+            R.id.my_space -> SpaceDialogFragment.newInstance(SpaceDialogFragment.Companion.State.MEMBERS)
+                .show(parentFragment.childFragmentManager, SPACE_DIALOG_TAG)
+
             R.id.leave_space -> {
                 if (item.isVisible) {
                     LeaveSpaceDialogFragment().show(parentFragment.childFragmentManager, LEAVE_SPACE_DIALOG_TAG)
                 }
             }
+
             R.id.connect_to_space -> {
                 if (item.isVisible) {
                     ConnectSpaceDialogFragment().show(parentFragment.childFragmentManager, CONNECT_SPACE_DIALOG_TAG)
                 }
             }
+
             R.id.exit -> {
-                profileStorage.deleteUserData()
-                encProfileStorage.deleteAuthData()
+                userProfile.deleteUserData()
+                encUserProfile.deleteAuthData()
                 viewModel.cleanAll()
                 spaceViewModel.cleanAll()
                 parentFragment.findNavController().navigate(R.id.authFragment)

@@ -18,7 +18,7 @@
     <!-- Навигационное меню -->
     <string name="nav_menu_header_position">Должность: %1$s</string>
     <string name="nav_menu_header_space">Компания: %1$s</string>
-    <string name="nav_menu_header_rate">Ставка: %1$d руб./ч.</string>
+    <string name="nav_menu_header_rate">Ставка: %1$s</string>
     <string name="selected_user_position">Должность: %1$s</string>
     <string name="boss_panel_header">Панель руководителя</string>
 </resources>

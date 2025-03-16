@@ -1,11 +1,13 @@
-package com.efedorchenko.timely.model
+package com.efedorchenko.timely.model.member
 
+import com.efedorchenko.timely.model.auth.SpaceDto
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class MembersResult(
 
-    val youConsistInSpace: Boolean,
+    val spaceStatus: SpaceStatus = SpaceStatus.NONE,
+    val space: SpaceDto,
     val members: MutableList<SpaceMember>,
 
     /**
