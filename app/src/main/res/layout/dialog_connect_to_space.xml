@@ -29,19 +29,44 @@
             android:background="@color/medium_gray" />
 
         <TextView
+            android:id="@+id/text1connect"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="Пожалуйста, введите ключ доступа к компании, в которую вы хотите вступить"
             android:textColor="@color/light_gray"
+            android:visibility="gone"
             android:textSize="16sp" />
 
         <TextView
+            android:id="@+id/text2connect"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
             android:paddingTop="8dp"
+            android:visibility="gone"
             android:text="Для получения ключа обратитесь к руководителю компании"
+            android:textColor="@color/light_gray"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/find1Existing"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="У вас уже имеется активная заявка на вступление в компанию и она пока не одобрена. Когда решение будет принято, вы об этом узнаете"
+            android:textColor="@color/light_gray"
+            android:visibility="gone"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/find2Existing"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingTop="8dp"
+            android:visibility="gone"
+            android:text="Желаете отменить текущую заявку?"
             android:textColor="@color/light_gray"
             android:textSize="16sp" />
 
@@ -51,10 +76,9 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="8dp"
             android:layout_marginTop="16dp"
-            android:layout_marginBottom="10dp"
             android:background="@drawable/auth_form_background"
             android:hint="Ключ доступа"
-            android:inputType="textEmailAddress"
+            android:visibility="gone"
             android:padding="10dp"
             android:textColor="@color/black"
             android:textCursorDrawable="@color/black" />
@@ -65,10 +89,46 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="70dp"
             android:layout_marginEnd="70dp"
+            android:layout_marginTop="10dp"
             android:backgroundTint="@color/orange"
             android:padding="10dp"
+            android:visibility="gone"
             android:text="Присоединиться"
-            android:textColor="@color/blue" />
+            android:textColor="@color/black" />
+
+    <LinearLayout
+        android:id="@+id/cancel_buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:visibility="gone"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/doCancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="5dp"
+            android:backgroundTint="@color/orange"
+            android:padding="10dp"
+            android:text="Отменить"
+            android:textColor="@color/black" />
+
+        <Button
+            android:id="@+id/doNotCancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="5dp"
+            android:backgroundTint="@color/orange"
+            android:padding="10dp"
+            android:text="Не отменять"
+            android:textColor="@color/black" />
+    </LinearLayout>
+
     </LinearLayout>
 
     <FrameLayout

@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="Вы были удалены из компании"
+        android:text="Заявка принята"
         android:textColor="@color/light_gray"
         android:textSize="16sp"
         android:textStyle="bold" />
@@ -28,7 +28,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="К сожалению, руководитель удалил вас из компании '%s'"
+        android:text="Руководитель компании '%s' успешно одобрил вашу заявку"
         android:textColor="@color/light_gray"
         android:textSize="16sp" />
 
@@ -37,7 +37,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:paddingTop="8dp"
-        android:text="Это значит, что вы больше не сможете просматривать профили участников этой компании. А учасники (руководители в том числе) не смогут просматривать ваш профиль"
+        android:text="Теперь руководство пространства сможет отслеживать ваш график смен и вносить корректировки при необходимости."
         android:textColor="@color/light_gray"
         android:textSize="16sp" />
 
@@ -46,7 +46,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:padding="8dp"
-        android:text="Но вы все еще можете пользоваться приложением самостоятельно без участия руководителей"
+        android:text="Так же вы можете просматривать графики работ всех участников этой компании на вкладке 'Моя команда'"
         android:textColor="@color/light_gray"
         android:textSize="16sp" />
 

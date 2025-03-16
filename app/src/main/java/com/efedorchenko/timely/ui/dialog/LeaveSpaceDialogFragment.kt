@@ -8,10 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
-import com.efedorchenko.timely.data.EncProfileStorage
-import com.efedorchenko.timely.data.ProfileStorage
+import com.efedorchenko.timely.data.EncUserProfile
 import com.efedorchenko.timely.data.SpaceViewModel
-import com.efedorchenko.timely.databinding.DialogLeaveSpaceBinding
+import com.efedorchenko.timely.data.UserProfile
+import com.efedorchenko.timely.databinding.DialogLeaveSpaceWarnBinding
 import com.efedorchenko.timely.model.auth.RoleType
 import com.efedorchenko.timely.service.SpaceService
 import com.efedorchenko.timely.service.ToastHelper
@@ -26,19 +26,19 @@ class LeaveSpaceDialogFragment : DialogFragment() {
     lateinit var spaceService: SpaceService
 
     @Inject
-    lateinit var profileStorage: ProfileStorage
+    lateinit var userProfile: UserProfile
 
     @Inject
-    lateinit var encProfileStorage: EncProfileStorage
+    lateinit var encUserProfile: EncUserProfile
 
     @Inject
     lateinit var spaceViewModel: SpaceViewModel
 
-    private var _binding: DialogLeaveSpaceBinding? = null
+    private var _binding: DialogLeaveSpaceWarnBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = DialogLeaveSpaceBinding.inflate(inflater, container, false)
+        _binding = DialogLeaveSpaceWarnBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -47,8 +47,8 @@ class LeaveSpaceDialogFragment : DialogFragment() {
         val context = requireContext()
 
         with(binding) {
-            youDetachedHeader.text = youDetachedHeader.text.toString().format(profileStorage.getSpaceName())
-            configureTextAsRole(this, encProfileStorage.getRole())
+            youDetachedHeader.text = youDetachedHeader.text.toString().format(userProfile.getSpaceName())
+            configureTextAsRole(this, encUserProfile.getRole())
 
             doLeaveButton.setOnClickListener {
                 doLeaveButton.isEnabled = false
@@ -57,9 +57,11 @@ class LeaveSpaceDialogFragment : DialogFragment() {
                 lifecycleScope.launch {
                     try {
                         if (spaceService.leaveSpace()) {
-                            spaceViewModel.cleanAll()
-                            profileStorage.deleteSpace()
-                            spaceViewModel.needSwitchSpaceItemsInSideMenu()
+                            spaceViewModel.detachFromSpace()
+                            userProfile.detachFromSpace()
+//                            spaceViewModel.needsReactToNewStatus(SpaceStatus.NONE)
+//                            spaceViewModel.cleanAll()
+//                            spaceViewModel.needSwitchSpaceItemsInSideMenu()
                             dismiss()
                             ToastHelper.leaveSpaceSuccess(context)
                         } else {
@@ -79,7 +81,7 @@ class LeaveSpaceDialogFragment : DialogFragment() {
         }
     }
 
-    private fun configureTextAsRole(binding: DialogLeaveSpaceBinding, role: RoleType?) {
+    private fun configureTextAsRole(binding: DialogLeaveSpaceWarnBinding, role: RoleType?) {
         with(binding) {
             when (role) {
                 RoleType.WORKER -> {
@@ -89,6 +91,7 @@ class LeaveSpaceDialogFragment : DialogFragment() {
                     commonLowerBlock.visibility = View.VISIBLE
                     doLeaveButton.isEnabled = true
                 }
+
                 RoleType.BOSS -> {
                     bossCenterFirst.visibility = View.VISIBLE
                     secondHeader.visibility = View.VISIBLE
@@ -96,11 +99,13 @@ class LeaveSpaceDialogFragment : DialogFragment() {
                     bossLowerBlock.visibility = View.VISIBLE
                     doLeaveButton.isEnabled = true
                 }
+
                 RoleType.CREATOR -> {
                     creatorCenterFirst.visibility = View.VISIBLE
                     creatorCenterSecond.visibility = View.VISIBLE
                     doLeaveButton.isEnabled = false
                 }
+
                 null -> TODO()
             }
         }

@@ -1,4 +1,4 @@
-package com.efedorchenko.timely.model
+package com.efedorchenko.timely.model.member
 
 import com.efedorchenko.timely.model.auth.RoleType
 import com.efedorchenko.timely.model.serializer.InstantSerializer
@@ -20,7 +20,14 @@ data class SpaceMember(
 
     var rate: Int? = null,
 
+    var spaceStatus: SpaceStatus,
+
 //    store as epoch milli
     @Serializable(InstantSerializer::class)
     val changedAt: Instant? = null
-)
+) {
+
+    fun isCreator() = this.role == RoleType.CREATOR
+    fun isBoss() = this.role == RoleType.BOSS
+    fun isPendingMember() = this.spaceStatus.isPending()
+}

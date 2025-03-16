@@ -10,7 +10,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import okio.IOException
 import javax.inject.Inject
 
-class EncProfileStorageImpl @Inject constructor(@ApplicationContext context: Context) : EncProfileStorage {
+class EncUserProfileImpl @Inject constructor(@ApplicationContext context: Context) : EncUserProfile {
 
     companion object {
         private const val ESP_NAME = "encrypted_profile_storage"
@@ -43,7 +43,7 @@ class EncProfileStorageImpl @Inject constructor(@ApplicationContext context: Con
 
     override fun isPrivileged(): Boolean = getRole()?.isPrivileged() == true
 
-    override fun saveAuthData(authData: AuthData) {
+    override fun setAuthData(authData: AuthData) {
         with(encSharedPref.edit()) {
             putString(API_TOKEN_KEY, authData.jwtToken)
             putString(ROLE_KEY, authData.role.name)
@@ -68,13 +68,6 @@ class EncProfileStorageImpl @Inject constructor(@ApplicationContext context: Con
     }
 
     override fun getApiToken(): String? = encSharedPref.getString(API_TOKEN_KEY, null)
-
-    override fun saveRole(role: RoleType) {
-        with(encSharedPref.edit()) {
-            putString(ROLE_KEY, role.toString())
-            apply()
-        }
-    }
 
     override fun getRole(): RoleType? {
         val userRoleStr = encSharedPref.getString(ROLE_KEY, null)

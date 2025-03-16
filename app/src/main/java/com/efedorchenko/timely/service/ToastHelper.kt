@@ -5,7 +5,8 @@ import android.view.Gravity
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import android.widget.Toast.LENGTH_SHORT
-import com.efedorchenko.timely.model.SyncProcess
+import com.efedorchenko.timely.model.SyncOperator
+import com.efedorchenko.timely.model.member.AcceptMemberResultType
 import org.threeten.bp.Duration
 
 object ToastHelper {
@@ -20,11 +21,15 @@ object ToastHelper {
     const val INCORRECT_LOGIN_DATA =                    "Неверный логин или пароль"
 
     /* Space operations */
-    private const val CONNECT_TO_SPACE_SUCCESS =        "Вы успешно присоединились к компании"
-    const val CONNECT_TO_SPACE_FILED_UNKNOWN =          "Не удалось присоединиться к компании, проверьте работу сети Интернет"
+    private const val CONNECT_TO_SPACE_SUCCESS =        "Заявка на вступление в компанию отправлена"
+    private const val CONNECT_TO_SPACE_FILED_UNKNOWN =  "Не удалось присоединиться к компании, проверьте работу сети Интернет"
     const val CONNECT_TO_SPACE_FILED_KEY_INVALID =      "Неверный ключ доступа"
     private const val LEAVE_SPACE_SUCCESS =             "Вы успешно покинули компанию"
     private const val LEAVE_SPACE_FILED =               "Не удалось покинуть компанию, проверьте работу сети Интернет"
+    private const val ACCEPT_MEMBER_FILED =             "Не удалось принять участника, проверьте работу сети Интернет"
+    private const val REJECT_MEMBER_FILED =             "Не удалось отклонить участника, проверьте работу сети Интернет"
+    private const val JOIN_REQUEST_CANCEL_SUCCESS =     "Заявка успешно отменена"
+    private const val JOIN_REQUEST_CANCEL_FAILED =      "Не удалось отменить заявка, проверьте работу сети Интернет"
 
     /* Synchronizing data */
     const val NOT_SYNCED =                              "Проблемы с интернетом, синхронизируйте данные позже"
@@ -46,54 +51,66 @@ object ToastHelper {
     private const val DIFFERENT_PASSWORDS_ON_REG = "Пароли не совпадают"
     private const val INVALID_SPACE_KEY =          "Недействительный ключ пространства. Обратитесь к руководителю для его получения"
     private const val INVALID_SPACE_NAME_ON_REG =  "Неподходящее имя пространства"
-    private const val INVALID_POSITION_ON_REG =    "Неподходящая должность. Смотри подсказку справа "
+    private const val INVALID_POSITION_ON_REG =    "Неподходящая должность. Смотри подсказку справа"
     const val INVALID_DATA_ON_REG =                "Упс! Некорректные данные, смотри подсказки справа"
 
 
-    fun message(message: String, c: Context?) =   doShow(message, c, LENGTH_SHORT)
-    fun keyCopied(c: Context) =                   doShow(KEY_COPIED, c, LENGTH_SHORT)
-    fun datePassed(c: Context) =                  doShow(DATE_PASSED, c, LENGTH_SHORT)
-    fun networkError(c: Context) =                doShow(NETWORK_ERROR, c, LENGTH_SHORT)
-    fun cannotEditPlaned(c: Context) =            doShow(CANNOT_EDIT_PLANED, c, LENGTH_SHORT)
-    fun fineAmountTooSmall(c: Context?) =         doShow(FINE_AMOUNT_TOO_SMALL, c, LENGTH_SHORT)
-    fun needsFineDesc(c: Context?) =              doShow(NEEDS_FINE_DESC, c, LENGTH_SHORT)
-    fun incorrectLoginData(c: Context) =          doShow(INCORRECT_LOGIN_DATA, c, LENGTH_LONG)
+    fun message(message: String, c: Context?) =     doShow(message, c, LENGTH_SHORT)
+    fun keyCopied(c: Context) =                     doShow(KEY_COPIED, c, LENGTH_SHORT)
+    fun datePassed(c: Context) =                    doShow(DATE_PASSED, c, LENGTH_SHORT)
+    fun networkError(c: Context) =                  doShow(NETWORK_ERROR, c, LENGTH_SHORT)
+    fun cannotEditPlaned(c: Context) =              doShow(CANNOT_EDIT_PLANED, c, LENGTH_SHORT)
+    fun fineAmountTooSmall(c: Context?) =           doShow(FINE_AMOUNT_TOO_SMALL, c, LENGTH_SHORT)
+    fun needsFineDesc(c: Context?) =                doShow(NEEDS_FINE_DESC, c, LENGTH_SHORT)
+    fun invalidCredentials(c: Context) =            doShow(INCORRECT_LOGIN_DATA, c, LENGTH_LONG)
 
     /* Space operations */
-    fun connectToSpaceSuccess(c: Context) =       doShow(CONNECT_TO_SPACE_SUCCESS, c, LENGTH_SHORT)
-    fun leaveSpaceSuccess(c: Context) =           doShow(LEAVE_SPACE_SUCCESS, c, LENGTH_LONG)
+    fun connectToSpaceSuccess(c: Context) =         doShow(CONNECT_TO_SPACE_SUCCESS, c, LENGTH_LONG)
+    fun connectToSpaceFiledUnknown(c: Context) =    doShow(CONNECT_TO_SPACE_FILED_UNKNOWN, c, LENGTH_LONG)
+    fun connectToSpaceFiledKeyInvalid(c: Context) = doShow(CONNECT_TO_SPACE_FILED_KEY_INVALID, c, LENGTH_LONG)
+    fun leaveSpaceSuccess(c: Context) =             doShow(LEAVE_SPACE_SUCCESS, c, LENGTH_LONG)
+    fun rejectMemberFiled(c: Context) =             doShow(REJECT_MEMBER_FILED, c, LENGTH_LONG)
+    fun leaveSpaceFiled(c: Context) =               doShow(LEAVE_SPACE_FILED, c, LENGTH_LONG)
 
-    fun leaveSpaceFiled(c: Context) =             doShow(LEAVE_SPACE_FILED, c, LENGTH_LONG)
     /* Download data */
-    fun failDownloadData(c: Context) =            doShow(ERROR_DOWNLOAD_DATA, c, LENGTH_LONG)
-    fun failDownloadMembers(c: Context) =         doShow(ERROR_DOWNLOAD_MEMBERS, c, LENGTH_SHORT)
+    fun failDownloadData(c: Context) =              doShow(ERROR_DOWNLOAD_DATA, c, LENGTH_LONG)
+    fun failDownloadMembers(c: Context) =           doShow(ERROR_DOWNLOAD_MEMBERS, c, LENGTH_SHORT)
+    fun errorGetMember(c: Context) =                doShow(ERROR_GET_MEMBER, c, LENGTH_SHORT)
 
-    fun errorGetMember(c: Context) =              doShow(ERROR_GET_MEMBER, c, LENGTH_SHORT)
     /* Registration */
-    fun invalidNameOnReg(c: Context) =            doShow(INVALID_NAME_ON_REG, c, LENGTH_LONG)
-    fun invalidEmailOnReg(c: Context) =           doShow(INVALID_EMAIL_ON_REG, c, LENGTH_LONG)
-    fun invalidPasswordOnReg(c: Context) =        doShow(INVALID_PASSWORD_ON_REG, c, LENGTH_LONG)
-    fun passwordsAreDifferentOnReg(c: Context) =  doShow(DIFFERENT_PASSWORDS_ON_REG, c, LENGTH_LONG)
-    fun invalidSpaceKey(c: Context) =             doShow(INVALID_SPACE_KEY, c, LENGTH_LONG)
-    fun invalidSpaceNameOnReg(c: Context) =       doShow(INVALID_SPACE_NAME_ON_REG, c, LENGTH_LONG)
+    fun invalidNameOnReg(c: Context) =              doShow(INVALID_NAME_ON_REG, c, LENGTH_LONG)
+    fun invalidEmailOnReg(c: Context) =             doShow(INVALID_EMAIL_ON_REG, c, LENGTH_LONG)
+    fun invalidPasswordOnReg(c: Context) =          doShow(INVALID_PASSWORD_ON_REG, c, LENGTH_LONG)
+    fun passwordsAreDifferentOnReg(c: Context) =    doShow(DIFFERENT_PASSWORDS_ON_REG, c, LENGTH_LONG)
+    fun invalidSpaceKey(c: Context?) =              doShow(INVALID_SPACE_KEY, c, LENGTH_LONG)
+    fun invalidSpaceNameOnReg(c: Context) =         doShow(INVALID_SPACE_NAME_ON_REG, c, LENGTH_LONG)
 
-    fun invalidPositionOnReg(c: Context) =        doShow(INVALID_POSITION_ON_REG, c, LENGTH_LONG)
+    fun invalidPositionOnReg(c: Context) =          doShow(INVALID_POSITION_ON_REG, c, LENGTH_LONG)
 
     fun workDurationTooShort(c: Context, minWorkDuration: Duration) {
         return doShow(WORK_DURATION_TOO_SHORT_PATTERN.format(minWorkDuration.toHours()), c, LENGTH_SHORT)
     }
 
-    fun syncFiled(syncResult: SyncProcess.Result, context: Context) {
+    fun syncFiled(syncResult: SyncOperator.Result, context: Context) {
         val message = when {
             syncResult.eventsNotSyncCount > 0 -> FILED_EVENTS_PATTERN.format(syncResult.eventsNotSyncCount)
             syncResult.finesNotSyncCount > 0 -> FILED_FINES_PATTERN.format(syncResult.finesNotSyncCount)
             !syncResult.isRemoteDataAccepted -> FILED_DOWNLOAD_NEW
-            syncResult.isRemoteMembersAccepted == SyncProcess.UpdateResult.FAIL -> FILED_DOWNLOAD_MEMBERS
+            syncResult.getRemoteMembersResult == SyncOperator.UpdateResult.FAIL -> FILED_DOWNLOAD_MEMBERS
 //            SyncProcess.UpdateResult.SUCCESS должен быть обработан выше,
 //            тк для успеха нужен анализ всего объекта SyncProcess.Result
             else -> null
         }
         doShow(message, context, LENGTH_LONG)
+    }
+
+    fun acceptMemberFiled(c: Context, result: AcceptMemberResultType) {
+        doShow(ACCEPT_MEMBER_FILED, c, LENGTH_LONG) // TODO
+    }
+
+    fun joinRequestCancel(c: Context, leftResult: Boolean) {
+        if (leftResult) doShow(JOIN_REQUEST_CANCEL_SUCCESS, c, LENGTH_SHORT)
+        else doShow(JOIN_REQUEST_CANCEL_FAILED, c, LENGTH_LONG)
     }
 
     private fun doShow(toastText: String?, c: Context?, toastLength: Int) {

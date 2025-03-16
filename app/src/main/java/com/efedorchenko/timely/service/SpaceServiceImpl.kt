@@ -1,63 +1,92 @@
 package com.efedorchenko.timely.service
 
-import android.util.Log
-import com.efedorchenko.timely.data.EncProfileStorage
+import com.efedorchenko.timely.data.EncUserProfile
 import com.efedorchenko.timely.data.SpaceViewModel
+import com.efedorchenko.timely.data.UserProfile
 import com.efedorchenko.timely.data.repository.MemberRepository
-import com.efedorchenko.timely.model.MembersResult
-import com.efedorchenko.timely.model.SyncProcess.UpdateResult
+import com.efedorchenko.timely.model.SyncOperator.UpdateResult
 import com.efedorchenko.timely.model.api.ApiResponse
 import com.efedorchenko.timely.model.auth.RoleType
+import com.efedorchenko.timely.model.member.AcceptMember
+import com.efedorchenko.timely.model.member.AcceptMemberResultType
+import com.efedorchenko.timely.model.member.MembersResult
+import com.efedorchenko.timely.model.member.SpaceMember
+import com.efedorchenko.timely.model.member.SpaceStatus
 import javax.inject.Inject
 
 class SpaceServiceImpl @Inject constructor(
     private val apiService: ApiService,
     private val memberRepository: MemberRepository,
-    private val encProfileStorage: EncProfileStorage,
+    private val encUserProfile: EncUserProfile,
+    private val userProfile: UserProfile,
     private val spaceViewModel: SpaceViewModel
 ) : SpaceService {
 
-    override suspend fun initMembers() =
-        doUpdateMembers { apiService.getMembers() } == UpdateResult.SUCCESS
+    companion object {
+        private const val NE_TAG = "SSI Network error"
+    }
 
-    override suspend fun updateMembers() =
-        doUpdateMembers { apiService.getMembers(memberRepository.getMaxChangedAt()) }
+    override suspend fun initMembers(withJoinRequests: Boolean): Boolean {
+        return doUpdateMembers { apiService.getMembers(withJoinRequests) } == UpdateResult.SUCCESS
+    }
 
+    override suspend fun updateMembers(withJoinRequests: Boolean): UpdateResult {
+        val since = memberRepository.getMaxChangedAt()
+        return doUpdateMembers { apiService.getMembers(withJoinRequests, since) }
+    }
 
-    // TODO: принимать параметр userUuid: String? - при отсутствии - кикать currentUser, при наличии - кикать переданного
-    override suspend fun leaveSpace(): Boolean {
-        when (val response = apiService.leaveSpace()) {
-            is ApiResponse.Success -> return response.data ?: false
+    override suspend fun acceptRemote(userId: String, role: RoleType): AcceptMemberResultType {
+        return when (val response =  apiService.acceptMember(AcceptMember(userId, role))) {
+            is ApiResponse.Success -> response.data?.result ?: AcceptMemberResultType.FAIL
             is ApiResponse.Error -> {
-                Log.e("Network error",
-                    "Cannot request for leave space for user: ${encProfileStorage.getUserUuid()}." +
-                        "ApiErrorCode: ${response.apiErrorCode}, " +
-                        "error message: ${response.errorMessage}, " +
-                        "error data: ${response.errorData}"
-                )
+                val errMess = "Request to accept user [$userId], role [$role] was filed, current user: [${getAuthId()}]"
+                response.logErr(NE_TAG, errMess)
+                AcceptMemberResultType.FAIL
+            }
+        }
+    }
+
+    override suspend fun rejectRemote(userId: String): Boolean {
+        return detachFromSpace({ apiService.detachFromSpace(userId) })
+    }
+
+    override suspend fun leaveSpace(): Boolean {
+        return detachFromSpace({ apiService.detachFromSpace() })
+    }
+
+    private suspend fun detachFromSpace(
+        requestFunc: suspend () -> ApiResponse<Boolean>, userId: String? = null
+    ): Boolean {
+        return when (val response = requestFunc.invoke()) {
+            /*
+            * Информация о статусе, которая хранится в хранилище обновляется кодом, который
+            * вызывает этот метод, так как только там есть информация об обрабатываемом юзере.
+            * Если обновляется текущий юзер - должен обновиться profileStorage()
+            * Если это админ обновляет какого-то юзера - обновляется БД + spaceViewModel
+            */
+            is ApiResponse.Success -> {
+                response.data ?: false
+            }
+            is ApiResponse.Error -> {
+                val errMess = "Request for disconnect user was filed: userId: [$userId]. current user: [${getAuthId()}]"
+                response.logErr(NE_TAG, errMess)
                 return false
             }
         }
     }
 
     private suspend fun doUpdateMembers(requestFunc: suspend () -> ApiResponse<MembersResult>): UpdateResult {
-        when (val response = requestFunc.invoke()) {
+            when (val response = requestFunc.invoke()) {
             is ApiResponse.Success -> {
                 response.data?.let {
-                    if (!it.youConsistInSpace) {
+                    if (it.spaceStatus != SpaceStatus.MEMBER) {
                         return UpdateResult.NOT_CONSIST_IN_SPACE
                     }
+                    userProfile.setSpace(it.space)
+                    userProfile.setSpaceStatus(it.spaceStatus)
+                    memberRepository.deleteIfNotContains(it.actualIds)
                     if (it.members.isNotEmpty()) {
-
-                        /* Работники отображаются у всех (в тч друг у друга). Руководители только у создателя,
-                         * а создатель ни у кого. При этом сам работник у себя не отображается */
-                        val userUuid = encProfileStorage.getUserUuid()
-                        it.members.removeIf { member -> member.userUuid == userUuid || member.role == RoleType.CREATOR }
-                        if (encProfileStorage.getRole() != RoleType.CREATOR) {
-                            it.members.removeIf { member -> member.role == RoleType.BOSS }
-                        }
-                        memberRepository.save(it.members)
-                        memberRepository.deleteIfNotContains(it.actualIds)
+                        memberRepository.save(filterMembers(it.members))
                         spaceViewModel.updateMembers()
                     }
                     return UpdateResult.SUCCESS
@@ -65,53 +94,29 @@ class SpaceServiceImpl @Inject constructor(
                 return UpdateResult.FAIL
             }
             is ApiResponse.Error -> {
-                Log.e("Network error", "Cannot get members from server." +
-                        "ApiErrorCode: ${response.apiErrorCode}, " +
-                        "error message: ${response.errorMessage}, " +
-                        "error data: ${response.errorData}"
-                )
+                response.logErr(NE_TAG, " members from server, userId: [${getAuthId()}]")
                 return UpdateResult.FAIL
             }
         }
     }
+
+    private fun filterMembers(members: MutableList<SpaceMember>): MutableList<SpaceMember> {
+        if (members.isEmpty()) return mutableListOf()
+       /*
+       * Работник видит только работников, кроме себя
+       * Руководители видят всех работников
+       * Создатель пространства видит всех юзеров, кроме себя
+       */
+        members.removeIf { it.userUuid == getAuthId() || it.isCreator() }
+
+        if (encUserProfile.getRole() != RoleType.CREATOR) {
+            members.removeIf { it.isBoss() }
+        }
+        if (!encUserProfile.isPrivileged()) {
+            members.removeIf { it.isPendingMember() }
+        }
+        return members
+    }
+
+    private fun getAuthId() = encUserProfile.getUserUuid()
 }
-
-/*
-1. Разделение хранилищ
-- Вместо очистки всей БД и перезаписи данных, можно создать отдельные таблицы
-- Одна таблица для личных смен пользователя (они всегда там)
-- Вторая таблица для временного хранения просматриваемых смен других сотрудников
-- При переключении между сотрудниками работаем только со второй таблицей
-- Это избавит от необходимости постоянно перезагружать личные смены
-
-3. Пагинация данных
-- Не обязательно сразу загружать все смены за большой период
-- Можно подгружать данные постепенно при прокрутке календаря
-- Например, сначала загрузить текущий месяц
-- При прокрутке подгружать следующие месяцы
-- Это ускорит первоначальную загрузку
-
-4. Предварительная загрузка
-- Когда пользователь открывает список сотрудников, можно начать загрузку их смен заранее
-- Пока пользователь выбирает сотрудника, данные уже будут загружаться
-- К моменту выбора часть данных может быть уже готова
-- Это сократит время ожидания
-
-5. Улучшение UX при загрузке
-- Показывать промежуточное состояние загрузки
-- Можно отображать календарь сразу, просто без данных
-- Постепенно заполнять его по мере загрузки смен
-- Показывать прогресс загрузки
-- Это создаст ощущение более быстрой работы приложения
-
-7. Умное обновление данных
-- Не обновлять данные, если они не изменились
-- Использовать временные метки последнего обновления
-- Синхронизировать только изменившиеся данные
-- Это уменьшит количество необходимых загрузок
-
-8. Фоновая синхронизация
-- Периодически обновлять данные в фоне
-- Загружать данные заранее для часто просматриваемых сотрудников
-- Это обеспечит актуальность данных без задержек при просмотре
-*/

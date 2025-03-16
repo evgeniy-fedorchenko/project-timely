@@ -1,7 +1,8 @@
 package com.efedorchenko.timely.di
 
-import com.efedorchenko.timely.data.EncProfileStorage
+import com.efedorchenko.timely.data.EncUserProfile
 import com.efedorchenko.timely.data.SpaceViewModel
+import com.efedorchenko.timely.data.UserProfile
 import com.efedorchenko.timely.data.repository.MemberRepository
 import com.efedorchenko.timely.service.ApiService
 import com.efedorchenko.timely.service.SpaceService
@@ -21,10 +22,11 @@ object SpaceServiceModule {
     fun provideSpaceService(
         apiService: ApiService,
         memberRepository: MemberRepository,
-        encProfileStorage: EncProfileStorage,
+        encUserProfile: EncUserProfile,
+        userProfile: UserProfile,
         spaceViewModel: SpaceViewModel
     ): SpaceService {
 
-        return SpaceServiceImpl(apiService, memberRepository, encProfileStorage, spaceViewModel)
+        return SpaceServiceImpl(apiService, memberRepository, encUserProfile, userProfile, spaceViewModel)
     }
 }
