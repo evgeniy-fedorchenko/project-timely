@@ -1,6 +1,6 @@
 package com.efedorchenko.timely.di
 
-import com.efedorchenko.timely.data.EncProfileStorage
+import com.efedorchenko.timely.data.EncUserProfile
 import com.efedorchenko.timely.service.ApiService
 import com.efedorchenko.timely.service.ApiServiceImpl
 import dagger.Module
@@ -15,7 +15,7 @@ object ApiServiceModule {
 
     @Provides
     @Singleton
-    fun provideApiService(encProfileStorage: EncProfileStorage): ApiService {
-        return ApiServiceImpl(encProfileStorage);
+    fun provideApiService(encUserProfile: EncUserProfile): ApiService {
+        return ApiServiceImpl(encUserProfile);
     }
 }
