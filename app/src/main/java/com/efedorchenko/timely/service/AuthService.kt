@@ -3,6 +3,7 @@ package com.efedorchenko.timely.service
 import com.efedorchenko.timely.model.api.Resource
 import com.efedorchenko.timely.model.auth.Credentials
 import com.efedorchenko.timely.model.auth.RegisterRequest
+import com.efedorchenko.timely.model.member.SpaceConnectResultType
 
 interface AuthService {
 
@@ -10,5 +11,5 @@ interface AuthService {
 
     suspend fun tryRegister(registerRequest: RegisterRequest): Resource<Unit>
 
-    suspend fun connectToSpace(key: String): Resource<Unit>
+    suspend fun requestConnectToSpace(key: String): SpaceConnectResultType
 }

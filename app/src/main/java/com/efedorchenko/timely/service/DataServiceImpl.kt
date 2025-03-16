@@ -1,8 +1,7 @@
 package com.efedorchenko.timely.service
 
-import android.util.Log
 import com.efedorchenko.timely.data.DataViewModel
-import com.efedorchenko.timely.data.EncProfileStorage
+import com.efedorchenko.timely.data.EncUserProfile
 import com.efedorchenko.timely.data.repository.RepositoryFactory
 import com.efedorchenko.timely.model.AbstractData
 import com.efedorchenko.timely.model.DataRangeRequest
@@ -21,11 +20,11 @@ class DataServiceImpl @Inject constructor(
     private val apiService: ApiService,
     private val repositoryFactory: RepositoryFactory,
     private val viewModel: DataViewModel,
-    private val encProfileStorage: EncProfileStorage,
+    private val encUserProfile: EncUserProfile,
 ) : DataService {
 
     companion object {
-        private const val NETWORK_ERROR_TAG = "Network error"
+        private const val NE_TAG = "DSI Network error"
     }
 
     /**
@@ -67,7 +66,7 @@ class DataServiceImpl @Inject constructor(
         if (!downloadData(userUuid, DataType.EVENT) { apiService.getUpdates(userUuid, DataType.EVENT, eventsSince) }) {
             return false
         }
-        if (!encProfileStorage.isPrivileged() && userUuid != null) {
+        if (!encUserProfile.isPrivileged() && userUuid != null) {
             return true
         }
         val finesSince = repositoryFactory.get(DataType.FINE).getMaxChangedAt()
@@ -82,7 +81,7 @@ class DataServiceImpl @Inject constructor(
 
     override suspend fun sendData(data: AbstractData, userUuid: String?): SaveResult {
         val reqFunc = if (data.backendId == null) {
-            data.toUserId = userUuid
+            data.owner = userUuid
             suspend { apiService.save(data) }
         } else {
             val modifyingData = UserDataModifyDto(userUuid, data)
@@ -94,6 +93,7 @@ class DataServiceImpl @Inject constructor(
                 return when (it) {
                     is AbstractData -> {
                         it.appId = data.appId
+//                        полный upsert, потому что данные могли быть изменены на сервере
                         val upsertedData = repositoryFactory.getRepository(data).upsert(it)
                             ?: return SaveResult.SyncFiled
                         if (data.logicEquals(upsertedData)) SaveResult.Success
@@ -107,7 +107,7 @@ class DataServiceImpl @Inject constructor(
             } ?: run { return SaveResult.SyncFiled }
 
             is ApiResponse.Error -> {
-                logNetworkError("Cannot send new data. Rquid: ${response.rqUid}, data: $data", response)
+                response.logErr(NE_TAG, "Cannot send new data. Rquid: ${response.rqUid}, data: $data")
                 return SaveResult.SyncFiled
             }
         }
@@ -118,7 +118,7 @@ class DataServiceImpl @Inject constructor(
         if (!downloadData(userUuid, DataType.EVENT, ) { apiService.getRange(requestBody, DataType.EVENT) }) {
             return false
         }
-        if (!encProfileStorage.isPrivileged() && userUuid != null) {
+        if (!encUserProfile.isPrivileged() && userUuid != null) {
             return true
         }
         return downloadData(userUuid, DataType.FINE) { apiService.getRange(requestBody, DataType.FINE) }
@@ -128,21 +128,20 @@ class DataServiceImpl @Inject constructor(
         userUuid: String?, dataType: DataType, requestFunc: suspend () -> ApiResponse<List<AbstractData>>
     ): Boolean {
 
-        when (val response = requestFunc.invoke()) {
+        return when (val response = requestFunc.invoke()) {
             is ApiResponse.Success -> {
                 response.data?.let {
                     if (it.isNotEmpty()) {
                         repositoryFactory.getRepository(it[0]).upsertBatch(it, userUuid)
                     }
                     viewModel.updateLiveData(dataType, userUuid)
-                    return true
                 }
-                return false
+                response.data != null
             }
 
             is ApiResponse.Error -> {
-                logNetworkError("Cannot request data of member: [$userUuid]", response)
-                return false
+                response.logErr(NE_TAG, "Cannot request data of member: [$userUuid]")
+                false
             }
         }
     }
@@ -154,16 +153,5 @@ class DataServiceImpl @Inject constructor(
             }
         }
         return false
-    }
-
-    private fun <T> logNetworkError(uniquePrefix: String, response: ApiResponse.Error<T>) {
-        val message = buildString {
-            append("$uniquePrefix, ")
-            append("requestUid: [${response.rqUid}], ")
-            append("apiErrorCode: [${response.apiErrorCode}], ")
-            append("errorMessage: [${response.errorMessage}], ")
-            append("errorData: [${response.errorData}]")
-        }
-        Log.e(NETWORK_ERROR_TAG, message)
     }
 }

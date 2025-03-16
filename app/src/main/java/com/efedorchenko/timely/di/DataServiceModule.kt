@@ -1,7 +1,7 @@
 package com.efedorchenko.timely.di
 
 import com.efedorchenko.timely.data.DataViewModel
-import com.efedorchenko.timely.data.EncProfileStorage
+import com.efedorchenko.timely.data.EncUserProfile
 import com.efedorchenko.timely.data.repository.RepositoryFactory
 import com.efedorchenko.timely.service.ApiService
 import com.efedorchenko.timely.service.DataService
@@ -21,10 +21,10 @@ object DataServiceModule {
     fun provideDataService(
         apiService: ApiService,
         repositoryFactory: RepositoryFactory,
-        encProfileStorage: EncProfileStorage,
+        encUserProfile: EncUserProfile,
         viewModel: DataViewModel,
     ): DataService {
 
-        return DataServiceImpl(apiService, repositoryFactory, viewModel, encProfileStorage)
+        return DataServiceImpl(apiService, repositoryFactory, viewModel, encUserProfile)
     }
 }

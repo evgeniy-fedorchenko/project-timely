@@ -1,8 +1,8 @@
 package com.efedorchenko.timely.service
 
-import android.util.Log
-import com.efedorchenko.timely.data.EncProfileStorage
-import com.efedorchenko.timely.data.ProfileStorage
+import com.efedorchenko.timely.data.EncUserProfile
+import com.efedorchenko.timely.data.SpaceViewModel
+import com.efedorchenko.timely.data.UserProfile
 import com.efedorchenko.timely.model.api.ApiErrorCode.AUTH
 import com.efedorchenko.timely.model.api.ApiErrorCode.CLIENT
 import com.efedorchenko.timely.model.api.ApiErrorCode.SERVER
@@ -11,13 +11,19 @@ import com.efedorchenko.timely.model.api.ApiResponse
 import com.efedorchenko.timely.model.api.Resource
 import com.efedorchenko.timely.model.auth.Credentials
 import com.efedorchenko.timely.model.auth.RegisterRequest
+import com.efedorchenko.timely.model.member.SpaceConnectResultType
 import javax.inject.Inject
 
 class AuthServiceImpl @Inject constructor(
-    private val encProfileStorage: EncProfileStorage,
-    private val profileStorage: ProfileStorage,
-    private val apiService: ApiService
+    private val encUserProfile: EncUserProfile,
+    private val userProfile: UserProfile,
+    private val apiService: ApiService,
+    private val spaceViewModel: SpaceViewModel
 ) : AuthService {
+
+    companion object {
+        private const val NE_TAG = "ASI Network error"
+    }
 
     override suspend fun tryLogin(credentials: Credentials): Resource<Unit> {
         return when (val response = apiService.login(credentials)) {
@@ -26,9 +32,9 @@ class AuthServiceImpl @Inject constructor(
                     if (it.authData == null || it.userData == null) {
                         Resource.Error("Network error")
                     } else {
-                        profileStorage.saveUserData(it.userData)
-                        encProfileStorage.saveAuthData(it.authData)
-                        Resource.Success(it.userData.spaceName != null, it.authData.role)
+                        userProfile.setUserData(it.userData)
+                        encUserProfile.setAuthData(it.authData)
+                        Resource.Success(it.authData, it.userData)
                     }
                 } ?: Resource.Error("Network error")
             }
@@ -52,12 +58,13 @@ class AuthServiceImpl @Inject constructor(
                     if (it.authData == null || it.userData == null) {
                         Resource.Error("Network error")
                     } else {
-                        profileStorage.saveUserData(it.userData)
-                        encProfileStorage.saveAuthData(it.authData)
-                        Resource.Success(it.userData.spaceName != null, it.authData.role)
+                        userProfile.setUserData(it.userData)
+                        encUserProfile.setAuthData(it.authData)
+                        Resource.Success(it.authData, it.userData)
                     }
                 } ?: Resource.Error("Network error")
             }
+
             is ApiResponse.Error -> {
                 val message = when (response.apiErrorCode) {
                     VALIDATION -> ToastHelper.INVALID_DATA_ON_REG
@@ -70,27 +77,19 @@ class AuthServiceImpl @Inject constructor(
         }
     }
 
-    override suspend fun connectToSpace(key: String): Resource<Unit> {
-        return when (val response = apiService.connectToSpace(key)) {
+    override suspend fun requestConnectToSpace(key: String): SpaceConnectResultType =
+        when (val response = apiService.requestConnectToSpace(key)) {
             is ApiResponse.Success -> {
                 response.data?.let {
-                    if (!it.success) {
-                        Resource.Error(ToastHelper.CONNECT_TO_SPACE_FILED_KEY_INVALID)
-                    } else {
-                        it.space?.let { space -> profileStorage.saveSpace(space) }
-                        it.newRole?.let { role -> encProfileStorage.saveRole(role) }
-                        Resource.Success(true, it.newRole)
-                    }
-                } ?: Resource.Error(ToastHelper.CONNECT_TO_SPACE_FILED_UNKNOWN)
+                    userProfile.setSpaceStatus(it.newSpaceStatus)
+                    spaceViewModel.emitStatusChanged(it.newSpaceStatus)
+                    it.result
+                } ?: run { SpaceConnectResultType.UNKNOWN_ERROR }
             }
+
             is ApiResponse.Error -> {
-                Log.e("Network error", "Cannot connected user to space [$key]" +
-                        "ApiErrorCode: ${response.apiErrorCode}, " +
-                        "error message: ${response.errorMessage}, " +
-                        "error data: ${response.errorData}"
-                )
-                Resource.Error(ToastHelper.CONNECT_TO_SPACE_FILED_UNKNOWN)
+                response.logErr(NE_TAG, "Cannot connected user to space [$key]")
+                SpaceConnectResultType.UNKNOWN_ERROR
             }
         }
-    }
 }
