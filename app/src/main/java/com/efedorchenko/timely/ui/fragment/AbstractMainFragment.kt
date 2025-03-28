@@ -1,12 +1,14 @@
 package com.efedorchenko.timely.ui.fragment
 
 import android.graphics.Typeface
+import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.StyleSpan
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
@@ -47,6 +49,19 @@ abstract class AbstractMainFragment : Fragment() {
     protected abstract val spaceViewModel: SpaceViewModel
     protected abstract val encUserProfile: EncUserProfile
     protected abstract val userProfile: UserProfile
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        /* Эта функция просто для верности, так как при успешных login() и logout() бэкстек все равно
+           очищается c помощью navController.popBackStack(navController.graph.startDestinationId, true) */
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                requireActivity().moveTaskToBack(true)
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
+    }
 
     fun setupSideMenu() {
         getHeaderLayout().menuButton.setOnClickListener {

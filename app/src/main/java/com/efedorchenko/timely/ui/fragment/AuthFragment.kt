@@ -11,7 +11,6 @@ import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.databinding.FragmentLoginBinding
@@ -130,8 +129,9 @@ class AuthFragment : Fragment() {
 
     //    Удаляем экраны логина и остальные, чтобы нельзя было вернуться через backPressed
     private fun navigateTo(fragmentId: Int) {
-        val navOptions = NavOptions.Builder().setPopUpTo(R.id.authFragment, true).build()
-        findNavController().navigate(fragmentId, null, navOptions)
+        val navController = findNavController()
+        navController.popBackStack(navController.graph.startDestinationId, true)
+        navController.navigate(fragmentId)
     }
 
     private fun setupImeInsets() {

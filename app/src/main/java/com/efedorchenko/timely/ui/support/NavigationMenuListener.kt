@@ -4,6 +4,7 @@ import android.view.MenuItem
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.DataViewModel
@@ -60,7 +61,11 @@ class NavigationMenuListener(
                 encUserProfile.deleteAuthData()
                 viewModel.cleanAll()
                 spaceViewModel.cleanAll()
-                parentFragment.findNavController().navigate(R.id.authFragment)
+                val navController = parentFragment.findNavController()
+                val navOptions = NavOptions.Builder()
+                    .setPopUpTo(navController.graph.id, true)
+                    .build()
+                navController.navigate(R.id.authFragment, null, navOptions)
             }
         }
         drawerLayout.closeDrawer(GravityCompat.START)
