@@ -13,7 +13,7 @@ object ToastHelper {
 
     private const val KEY_COPIED =                      "Ключ скопирован"
     private const val DATE_PASSED =                     "Эта дата уже прошла"
-    const val NETWORK_ERROR =                           "Проблемы с подключением, проверте работу сети Интернет"
+    const val NETWORK_ERROR =                           "Ошибка - нет интернета"
     private const val CANNOT_EDIT_PLANED =              "Запланированную смену нельзя редактировать!"
     private const val FINE_AMOUNT_TOO_SMALL =           "Слишком маленькая сумма"
     private const val NEEDS_FINE_DESC =                 "Необходимо ввести комментарий"
@@ -22,14 +22,14 @@ object ToastHelper {
 
     /* Space operations */
     private const val CONNECT_TO_SPACE_SUCCESS =        "Заявка на вступление в компанию отправлена"
-    private const val CONNECT_TO_SPACE_FILED_UNKNOWN =  "Не удалось присоединиться к компании, проверьте работу сети Интернет"
+    private const val CONNECT_TO_SPACE_FILED_UNKNOWN =  "Не удалось отправить заявку - нет интернета"
     const val CONNECT_TO_SPACE_FILED_KEY_INVALID =      "Неверный ключ доступа"
     private const val LEAVE_SPACE_SUCCESS =             "Вы успешно покинули компанию"
-    private const val LEAVE_SPACE_FILED =               "Не удалось покинуть компанию, проверьте работу сети Интернет"
-    private const val ACCEPT_MEMBER_FILED =             "Не удалось принять участника, проверьте работу сети Интернет"
-    private const val REJECT_MEMBER_FILED =             "Не удалось отклонить участника, проверьте работу сети Интернет"
+    private const val LEAVE_SPACE_FILED =               "Не удалось покинуть компанию - нет интернета"
+    private const val ACCEPT_MEMBER_FILED =             "Не удалось принять участника - нет интернета"
+    private const val REJECT_MEMBER_FILED =             "Не удалось отклонить участника - нет интернета"
     private const val JOIN_REQUEST_CANCEL_SUCCESS =     "Заявка успешно отменена"
-    private const val JOIN_REQUEST_CANCEL_FAILED =      "Не удалось отменить заявка, проверьте работу сети Интернет"
+    private const val JOIN_REQUEST_CANCEL_FAILED =      "Не удалось отменить заявка - нет интернета"
 
     /* Synchronizing data */
     const val NOT_SYNCED =                              "Проблемы с интернетом, синхронизируйте данные позже"
@@ -42,7 +42,7 @@ object ToastHelper {
     /* Download data */
     private const val ERROR_DOWNLOAD_DATA =        "Не удалось некоторые данные, обновите данные при подключении к сети Интернет"
     private const val ERROR_DOWNLOAD_MEMBERS =     "Не удалось загрузить участников компании, обновите данные при подключении к сети Интернет"
-    private const val ERROR_GET_MEMBER =           "Не удалось загрузить участника, проверьте интернет-соединение"
+    private const val ERROR_GET_MEMBER =           "Не удалось загрузить участника - нет интернета"
 
     /* Registration */
     private const val INVALID_NAME_ON_REG =        "Неподходящее имя. Смотри подсказку справа"

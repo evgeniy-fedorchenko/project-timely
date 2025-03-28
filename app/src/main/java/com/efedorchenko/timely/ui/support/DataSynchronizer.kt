@@ -212,8 +212,6 @@ class DataSynchronizer(
     }
 
     private enum class SpaceStatusChangingType {
-        DETACHED,
-        REJECTED,
-        ACCEPTED
+       DETACHED, REJECTED, ACCEPTED
     }
 }
