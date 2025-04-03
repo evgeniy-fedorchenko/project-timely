@@ -41,7 +41,16 @@ class EncUserProfileImpl @Inject constructor(@ApplicationContext context: Contex
 
     override fun isAuthenticated(): Boolean = encSharedPref.contains(ROLE_KEY)
 
-    override fun isPrivileged(): Boolean = getRole()?.isPrivileged() == true
+    override fun isPrivileged(): Boolean = getRole().isPrivileged()
+
+    override fun detachFromSpace() {
+        with(encSharedPref.edit()) {
+            putString(ROLE_KEY, RoleType.WORKER.toString())
+            remove(SPACE_BOSS_KEY_KEY)
+            remove(SPACE_WORKER_KEY_KEY)
+            apply()
+        }
+    }
 
     override fun setAuthData(authData: AuthData) {
         with(encSharedPref.edit()) {
@@ -69,9 +78,13 @@ class EncUserProfileImpl @Inject constructor(@ApplicationContext context: Contex
 
     override fun getApiToken(): String? = encSharedPref.getString(API_TOKEN_KEY, null)
 
-    override fun getRole(): RoleType? {
+    override fun getRole(): RoleType {
         val userRoleStr = encSharedPref.getString(ROLE_KEY, null)
-        return userRoleStr?.let { RoleType.valueOf(it) }
+        return userRoleStr?.let { RoleType.valueOf(it) } ?: run { RoleType.WORKER }
+    }
+
+    override fun setRole(roleType: RoleType) {
+        encSharedPref.edit().putString(ROLE_KEY, roleType.toString()).apply()
     }
 
     override fun getSpaceKeys(): SpaceKeys? {

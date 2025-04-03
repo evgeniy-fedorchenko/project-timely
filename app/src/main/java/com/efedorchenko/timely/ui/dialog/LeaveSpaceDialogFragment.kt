@@ -8,6 +8,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import com.efedorchenko.timely.R
 import com.efedorchenko.timely.data.EncUserProfile
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.data.UserProfile
@@ -45,10 +47,11 @@ class LeaveSpaceDialogFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val context = requireContext()
+        val srcRole = encUserProfile.getRole()
 
         with(binding) {
             youDetachedHeader.text = youDetachedHeader.text.toString().format(userProfile.getSpaceName())
-            configureTextAsRole(this, encUserProfile.getRole())
+            configureTextAsRole(this, srcRole)
 
             doLeaveButton.setOnClickListener {
                 doLeaveButton.isEnabled = false
@@ -57,6 +60,8 @@ class LeaveSpaceDialogFragment : DialogFragment() {
                 lifecycleScope.launch {
                     try {
                         if (spaceService.leaveSpace()) {
+                            encUserProfile.detachFromSpace()
+                            userProfile.detachFromSpace()
                             spaceViewModel.detachFromSpace()
                             if (srcRole.isPrivileged()) {
                                 findNavController().navigate(R.id.mainWorkerFragment)

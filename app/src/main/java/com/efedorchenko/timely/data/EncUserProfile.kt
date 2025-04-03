@@ -16,9 +16,13 @@ interface EncUserProfile {
 
     fun getApiToken(): String?
 
-    fun getRole(): RoleType?
+    fun getRole(): RoleType
+
+    fun setRole(roleType: RoleType)
 
     fun getSpaceKeys(): SpaceKeys?
 
     fun getUserUuid(): String?
+
+    fun detachFromSpace()
 }
