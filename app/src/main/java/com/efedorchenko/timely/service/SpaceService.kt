@@ -7,7 +7,7 @@ import com.efedorchenko.timely.model.member.SpaceStatus
 
 interface SpaceService {
 
-    suspend fun updateMembers(withJoinRequests: Boolean): SyncOperator.UpdateResult
+    suspend fun updateMembers(srcRole: RoleType, srcSpaceStatus: SpaceStatus): SyncOperator.UpdateResult
 
     suspend fun acceptRemote(userId: String, role: RoleType): AcceptMemberResultType
     

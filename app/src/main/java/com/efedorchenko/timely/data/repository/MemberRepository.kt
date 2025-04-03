@@ -19,6 +19,7 @@ import com.efedorchenko.timely.model.member.SpaceMember
 import com.efedorchenko.timely.model.member.SpaceStatus
 import org.threeten.bp.Instant
 import java.sql.SQLException
+import java.util.EnumSet
 import javax.inject.Inject
 
 class MemberRepository @Inject constructor(application: Application) {
@@ -54,7 +55,9 @@ class MemberRepository @Inject constructor(application: Application) {
         }
     }
 
-    fun getMembersList(vararg statuses: SpaceStatus): List<SpaceMember> {
+    fun getMembersList(status: SpaceStatus) = getMembersList(EnumSet.of(status))
+
+    fun getMembersList(statuses: EnumSet<SpaceStatus>): List<SpaceMember> {
         val db = dbHelper.readableDatabase
         val members = mutableListOf<SpaceMember>()
         var cursor: Cursor? = null

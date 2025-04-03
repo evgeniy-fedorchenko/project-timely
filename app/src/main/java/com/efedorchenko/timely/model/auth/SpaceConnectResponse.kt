@@ -8,5 +8,6 @@ import kotlinx.serialization.Serializable
 data class SpaceConnectResponse(
 
     val result: SpaceConnectResultType? = null,
-    val newSpaceStatus: SpaceStatus = SpaceStatus.NONE
+    val newSpaceStatus: SpaceStatus = SpaceStatus.NONE,
+    val spaceDto: SpaceDto? = null
 )

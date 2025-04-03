@@ -28,14 +28,14 @@ class SpaceServiceImpl @Inject constructor(
 
     override suspend fun updateMembers(srcRole: RoleType, srcSpaceStatus: SpaceStatus): UpdateResult {
         val since = memberRepository.getMaxChangedAt()
-        return doUpdateMembers { apiService.getMembers(withJoinRequests, since) }
+        return doUpdateMembers(srcRole, srcSpaceStatus) { apiService.getMembers(srcRole.isPrivileged(), since) }
     }
 
     override suspend fun acceptRemote(userId: String, role: RoleType): AcceptMemberResultType {
         return when (val response =  apiService.acceptMember(AcceptMember(userId, role))) {
             is ApiResponse.Success -> response.data?.result ?: AcceptMemberResultType.FAIL
             is ApiResponse.Error -> {
-                val errMess = "Request to accept user [$userId], role [$role] was filed, current user: [${getAuthId()}]"
+                val errMess = "Request to accept user [$userId], role [$role] was filed, current user: [${getMyId()}]"
                 response.logErr(NE_TAG, errMess)
                 AcceptMemberResultType.FAIL
             }
@@ -64,55 +64,78 @@ class SpaceServiceImpl @Inject constructor(
                 response.data ?: false
             }
             is ApiResponse.Error -> {
-                val errMess = "Request for disconnect user was filed: userId: [$userId]. current user: [${getAuthId()}]"
+                val errMess = "Request for disconnect user was filed: userId: [$userId]. current user: [${getMyId()}]"
                 response.logErr(NE_TAG, errMess)
                 return false
             }
         }
     }
 
-    private suspend fun doUpdateMembers(requestFunc: suspend () -> ApiResponse<MembersResult>): UpdateResult {
-            when (val response = requestFunc.invoke()) {
+    /**
+     * Если есть изменения в профилях юзера - новые свойства сохраняются тут, так же репозиторию юзеров
+     * корректируется тут. Если юзер был исключен из пространства - информация просто передается выше
+     */
+    private suspend fun doUpdateMembers(
+        srcRole: RoleType, srcSpaceStatus: SpaceStatus, requestFunc: suspend () -> ApiResponse<MembersResult>
+    ): UpdateResult {
+
+            return when (val response = requestFunc.invoke()) {
             is ApiResponse.Success -> {
                 response.data?.let {
+
+                      /* Если юзер раньше был в пространстве, а сейчас не входит в него - говорим об этом,
+                      *  если юзер и раньше и сейчас не сходит в пространство - ничего нового, просто SUCCESS */
                     if (it.spaceStatus != SpaceStatus.MEMBER) {
-                        return UpdateResult.NOT_CONSIST_IN_SPACE
+                        userProfile.setSpaceStatus(it.spaceStatus)
+                        return if (userProfile.spaceExists()) UpdateResult.NOT_CONSIST_IN_SPACE
+                        else UpdateResult.SUCCESS
                     }
-                    userProfile.setSpace(it.space)
-                    userProfile.setSpaceStatus(it.spaceStatus)
-                    memberRepository.deleteIfNotContains(it.actualIds)
-                    if (it.members.isNotEmpty()) {
-                        memberRepository.save(filterMembers(it.members))
-                        spaceViewModel.updateMembers()
-                    }
-                    return UpdateResult.SUCCESS
-                }
-                return UpdateResult.FAIL
+
+                    processMembers(srcSpaceStatus, it, srcRole)
+                    UpdateResult.SUCCESS
+                } ?: run { UpdateResult.FAIL }
             }
             is ApiResponse.Error -> {
-                response.logErr(NE_TAG, " members from server, userId: [${getAuthId()}]")
+                response.logErr(NE_TAG, "Cannot download members from server, current user: [${getMyId()}]")
                 return UpdateResult.FAIL
             }
         }
     }
 
-    private fun filterMembers(members: MutableList<SpaceMember>): MutableList<SpaceMember> {
-        if (members.isEmpty()) return mutableListOf()
-       /*
-       * Работник видит только работников, кроме себя
-       * Руководители видят всех работников
-       * Создатель пространства видит всех юзеров, кроме себя
-       */
-        members.removeIf { it.userUuid == getAuthId() || it.isCreator() }
-
-        if (encUserProfile.getRole() != RoleType.CREATOR) {
-            members.removeIf { it.isBoss() }
+    private fun processMembers(srcSpaceStatus: SpaceStatus, membersResult: MembersResult, srcRole: RoleType) {
+        val currentRole = when (srcSpaceStatus) {
+            membersResult.spaceStatus -> srcRole
+            SpaceStatus.PENDING_BOSS -> RoleType.BOSS
+            else -> RoleType.WORKER
         }
-        if (!encUserProfile.isPrivileged()) {
-            members.removeIf { it.isPendingMember() }
+        if (srcSpaceStatus != membersResult.spaceStatus) userProfile.setSpaceStatus(membersResult.spaceStatus)
+        if (srcRole != currentRole) encUserProfile.setRole(currentRole)
+
+        membersResult.space?.let { space -> userProfile.setSpace(space) }
+        memberRepository.deleteIfNotContains(membersResult.actualIds)
+        if (membersResult.members.isNotEmpty()) {
+            memberRepository.save(filterMembers(membersResult.members, currentRole))
+            spaceViewModel.updateMembers()
+        }
+    }
+
+    /**
+     * Работник видит только других работников, кроме себя и не видит никакие заявки.
+     * Руководители видят всех работников (не видят других руководителей, в тч себя), в тч заявки работников.
+     * Создатель пространства видит всех юзеров, кроме себя. В тч люббые заявки // TODO 31.03.2025 20:30: добавить указание роли при показе креатору
+     */
+    private fun filterMembers(members: MutableList<SpaceMember>, currentRole: RoleType): MutableList<SpaceMember> {
+        if (members.isEmpty()) return mutableListOf()
+
+        val iam = getMyId()
+
+        when (currentRole) {
+            RoleType.CREATOR -> members.removeAt(members.indexOfFirst { it.isCreator() })
+            RoleType.BOSS -> members.removeIf { it.userUuid == iam || it.isPrivileged() || it.isPendingBoss() }
+            RoleType.WORKER -> members.removeIf { it.userUuid == iam || it.isPrivileged() || it.isPendingMember() }
         }
         return members
     }
 
-    private fun getAuthId() = encUserProfile.getUserUuid()
+    private fun getMyId() = encUserProfile.getUserUuid()
 }

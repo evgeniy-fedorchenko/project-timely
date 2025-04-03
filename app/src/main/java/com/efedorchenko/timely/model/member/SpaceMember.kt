@@ -27,7 +27,8 @@ data class SpaceMember(
     val changedAt: Instant? = null
 ) {
 
-    fun isCreator() = this.role == RoleType.CREATOR
-    fun isBoss() = this.role == RoleType.BOSS
+    fun isPrivileged() = this.role?.isPrivileged() == true
+    fun isCreator()  = this.role == RoleType.CREATOR
     fun isPendingMember() = this.spaceStatus.isPending()
+    fun isPendingBoss() = this.spaceStatus == SpaceStatus.PENDING_BOSS
 }

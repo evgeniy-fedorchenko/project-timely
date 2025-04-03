@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.efedorchenko.timely.data.repository.MemberRepository
+import com.efedorchenko.timely.model.auth.RoleType
 import com.efedorchenko.timely.model.member.SpaceMember
 import com.efedorchenko.timely.model.member.SpaceStatus
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import java.util.EnumSet
 import javax.inject.Inject
 
 /*
@@ -108,8 +110,14 @@ class SpaceViewModel @Inject constructor(
         _members.value = memberRepository.getMembersList(SpaceStatus.MEMBER)
     }
 
-    fun getJoinRequests(): List<SpaceMember> {
-        return memberRepository.getMembersList(SpaceStatus.PENDING_WORKER, SpaceStatus.PENDING_BOSS)
+    /**
+     * @param role роль, для которой требуется получить заявки. Привилегированная роль получает заявки со статусом
+     * [SpaceStatus.PENDING_BOSS] в том числе. Иначе - только [SpaceStatus.PENDING_WORKER]
+     */
+    fun getJoinRequests(role: RoleType): List<SpaceMember> {
+        val statuses = EnumSet.of(SpaceStatus.PENDING_WORKER)
+        if (role.isPrivileged()) statuses.add(SpaceStatus.PENDING_BOSS)
+        return memberRepository.getMembersList(statuses)
     }
 
     /**
