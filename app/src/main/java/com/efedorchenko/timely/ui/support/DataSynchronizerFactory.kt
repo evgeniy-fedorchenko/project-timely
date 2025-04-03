@@ -18,6 +18,10 @@ class DataSynchronizerFactory @Inject constructor(
     private val viewModel: DataViewModel,
     private val spaceViewModel: SpaceViewModel
 ) {
+
+    /**
+     * Используется при синхронной синхронизации, когда надо отображать прогресс на UI
+     */
     fun create(parent: DialogFragment, binding: DialogSyncingDataBinding): DataSynchronizer {
         return DataSynchronizer(
             parent = parent,
@@ -31,6 +35,9 @@ class DataSynchronizerFactory @Inject constructor(
         )
     }
 
+    /**
+     * Используется при фоновой синхронизации, когда ничего не надо отображать на UI
+     */
     fun create(): DataSynchronizer {
         return DataSynchronizer(
             spaceService = spaceService,

@@ -13,18 +13,23 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.efedorchenko.timely.R
+import com.efedorchenko.timely.data.EncUserProfile
+import com.efedorchenko.timely.data.UserProfile
 import com.efedorchenko.timely.databinding.FragmentLoginBinding
 import com.efedorchenko.timely.input.AuthInputWatcher
 import com.efedorchenko.timely.model.Model
 import com.efedorchenko.timely.model.api.Resource
 import com.efedorchenko.timely.model.auth.Credentials
+import com.efedorchenko.timely.model.member.SpaceStatus
 import com.efedorchenko.timely.service.AuthService
 import com.efedorchenko.timely.service.DataService
 import com.efedorchenko.timely.service.SpaceService
 import com.efedorchenko.timely.service.ToastHelper
+import com.efedorchenko.timely.ui.support.DataSynchronizerFactory
 import com.efedorchenko.timely.ui.support.applicationScope
 import com.efedorchenko.timely.ui.support.hide
 import com.efedorchenko.timely.ui.support.hideKeyboard
+import com.efedorchenko.timely.ui.support.navigateForgetting
 import com.efedorchenko.timely.ui.support.show
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -41,6 +46,15 @@ class AuthFragment : Fragment() {
 
     @Inject
     lateinit var dataService: DataService
+
+    @Inject
+    lateinit var userProfile: UserProfile
+
+    @Inject
+    lateinit var encUserProfile: EncUserProfile
+
+    @Inject
+    lateinit var dataSynchronizerFactory: DataSynchronizerFactory
 
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
@@ -113,10 +127,16 @@ class AuthFragment : Fragment() {
         else navigateForgetting(R.id.mainWorkerFragment)
 
         context.applicationScope().launch {
-            if (!isPrivileged) {
-                if (!dataService.loadData()) {
-                    ToastHelper.failDownloadData(context)
-                }
+
+            val oldStatus = userProfile.getSpaceStatus()
+            val wasPrivileged = encUserProfile.isPrivileged()
+
+            dataSynchronizerFactory.create().syncBackground(this, context)
+
+            val newStatus = userProfile.getSpaceStatus()
+            if (oldStatus == newStatus) return@launch
+            if (oldStatus == SpaceStatus.PENDING_BOSS && newStatus == SpaceStatus.MEMBER) {
+                navigateForgetting(R.id.mainBossFragment)
             }
             if (oldStatus == SpaceStatus.MEMBER && newStatus == SpaceStatus.NONE && wasPrivileged) {
                 navigateForgetting(R.id.mainWorkerFragment)

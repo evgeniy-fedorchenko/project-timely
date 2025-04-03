@@ -10,7 +10,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.efedorchenko.timely.data.EncUserProfile
+import com.efedorchenko.timely.data.SpaceViewModel
+import com.efedorchenko.timely.data.UserProfile
 import com.efedorchenko.timely.model.auth.RoleType
+import com.efedorchenko.timely.model.member.SpaceStatus
 import com.efedorchenko.timely.ui.support.DataSynchronizerFactory
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -23,6 +26,12 @@ class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var encUserProfile: EncUserProfile
+
+    @Inject
+    lateinit var userProfile: UserProfile
+
+    @Inject
+    lateinit var spaceViewModel: SpaceViewModel
 
     @Inject
     lateinit var dataSynchronizerFactory: DataSynchronizerFactory
@@ -42,11 +51,10 @@ class MainActivity : AppCompatActivity() {
     private fun navigateToMain() {
         val userRole = encUserProfile.getRole()
 
-        userRole?.let { syncStart() }
+        syncStart()
         when (userRole) {
             RoleType.WORKER -> navController.navigate(R.id.mainWorkerFragment)
             RoleType.BOSS, RoleType.CREATOR -> navController.navigate(R.id.mainBossFragment)
-            null -> navController.navigate(R.id.authFragment)
         }
     }
 
@@ -63,7 +71,22 @@ class MainActivity : AppCompatActivity() {
     private fun syncStart() {
         lifecycleScope.launch {
             try {
-//                dataSynchronizerFactory.create().syncBackground(this, this@MainActivity)
+                val oldStatus = userProfile.getSpaceStatus()
+                val wasPrivileged = encUserProfile.isPrivileged()
+
+                dataSynchronizerFactory.create().syncBackground(this, this@MainActivity)
+
+                val newStatus = userProfile.getSpaceStatus()
+                if (oldStatus == newStatus) return@launch
+                if (oldStatus == SpaceStatus.PENDING_BOSS && newStatus == SpaceStatus.MEMBER) {
+                    navController.navigate(R.id.mainBossFragment)
+                }
+                if (oldStatus == SpaceStatus.PENDING_WORKER && newStatus == SpaceStatus.MEMBER) {
+                    spaceViewModel.needSwitchSideMenuItems()
+                }
+                if (oldStatus == SpaceStatus.MEMBER && newStatus == SpaceStatus.NONE && wasPrivileged) {
+                    navController.navigate(R.id.mainWorkerFragment)
+                }
             } catch (ex: Exception) {
                 Log.e("MainActivity", "Sync failed", ex)
             }

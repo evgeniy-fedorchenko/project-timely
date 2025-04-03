@@ -1,6 +1,5 @@
 package com.efedorchenko.timely.ui.support
 
-import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
@@ -22,11 +21,16 @@ import com.efedorchenko.timely.databinding.DialogDetachedFromSpaceBinding
 import com.efedorchenko.timely.databinding.DialogJoinRequestAcceptedBinding
 import com.efedorchenko.timely.databinding.DialogJoinRequestRejectedBinding
 import com.efedorchenko.timely.databinding.DialogSyncingDataBinding
+import com.efedorchenko.timely.model.AbstractData
 import com.efedorchenko.timely.model.DataType
 import com.efedorchenko.timely.model.SaveResult
 import com.efedorchenko.timely.model.SyncOperator
 import com.efedorchenko.timely.model.SyncOperator.UpdateResult
 import com.efedorchenko.timely.model.member.SpaceStatus
+import com.efedorchenko.timely.model.member.SpaceStatus.MEMBER
+import com.efedorchenko.timely.model.member.SpaceStatus.NONE
+import com.efedorchenko.timely.model.member.SpaceStatus.PENDING_BOSS
+import com.efedorchenko.timely.model.member.SpaceStatus.PENDING_WORKER
 import com.efedorchenko.timely.service.DataService
 import com.efedorchenko.timely.service.SpaceService
 import com.efedorchenko.timely.service.ToastHelper
@@ -35,6 +39,17 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
+/**
+ * Класс для выполнения синхронизации данных с сервером. Шаги синхронизаци:
+ * - Отправка локально сохраненных смен и штрафов, если такие есть
+ * - Обновление профиля юзера: данные профиля, факт нахождения в команде
+ * - Обновление участников команды (если юзер в команде)
+ * - Загрузка новых смен и штрафов, если такие есть на удаленном севере (применимо только к работникам)
+ *
+ * Работа выполняется в предоставленной корутине (при фоновой синхронизации) или запускается собственная.
+ * Все изменения фиксируются в своих хранилищах
+ *
+ */
 class DataSynchronizer(
     private val parent: DialogFragment? = null,
     private val spaceService: SpaceService,
@@ -48,14 +63,24 @@ class DataSynchronizer(
 
     private var syncJob: Job? = null
 
-//    Синхронизация в фоне
+    /**
+     * Фоновая синхронизация в запущенной корутине. НЕ включает движения по фрагментам, так как нет
+     * переданного фрагмента. Клиенты сами заботятся об этом движении, если у них есть живой фрагмент
+     */
     suspend fun syncBackground(scope: CoroutineScope, context: Context) {
         performSync(context, scope, isUiMode = false)
     }
 
-//    Синхронизация на UI
+    /**
+     * Синхронизация на UI, запускается в коруте от `parent: DialogFragment`, которая может быть отменена
+     * повторным вызовом (нажатием `onClick()`); включает движения по фрагментам на основе этого же парента.
+     * Изменения на UI отображают статус прогресса синхронизации - отправки/загрузки данных
+     */
     override fun onClick(v: View?) {
         if (cancelIfActive()) return
+        val oldStatus = userProfile.getSpaceStatus()
+        val wasPrivileged = encUserProfile.isPrivileged()
+
         parentBinding?.apply {
             doSyncButton.text = parent?.getString(R.string.sync_button_stop)
             loadingProgressBar.visibility = View.VISIBLE
@@ -63,6 +88,19 @@ class DataSynchronizer(
         val context = parent?.context ?: return
         syncJob = parent.lifecycleScope.launch {
             performSync(context, this, isUiMode = true)
+
+            val newStatus = userProfile.getSpaceStatus()
+            if (oldStatus == newStatus) return@launch
+            if (oldStatus == PENDING_BOSS && newStatus == MEMBER) {
+                parent.navigateForgetting(R.id.mainBossFragment)
+            }
+            if (oldStatus == PENDING_WORKER && newStatus == MEMBER) {
+                spaceViewModel.needSwitchSideMenuItems()
+            }
+//                Если oldStatus == PENDING_WORKER && newStatus == NONE, то надо убрать "Компания: на рассмотрении"
+            if (oldStatus == MEMBER && newStatus == NONE && wasPrivileged) {
+                parent.navigateForgetting(R.id.mainWorkerFragment)
+            }
         }
     }
 
@@ -73,7 +111,7 @@ class DataSynchronizer(
         val syncOperator = SyncOperator(
             eventsOutOfSync = viewModel.getNotSynced(DataType.EVENT, isAdmin),
             finesOutOfSync = viewModel.getNotSynced(DataType.FINE, isAdmin),
-            executor = { process, currentScope -> doSync(process, currentScope, isUiMode) },
+            executor = { process, currentScope -> doSync(srcSpaceStatus, process, currentScope, isUiMode) },
             failureHandler = { result: SyncOperator.Result -> processFailure(result, context, isUiMode) },
             successHandler = { processSuccess(srcSpaceStatus, context, isUiMode) }
         )
@@ -97,31 +135,60 @@ class DataSynchronizer(
         }
     }
 
-    private fun processFailure(result: SyncOperator.Result, context: Context, isUiMode: Boolean) {
-        ToastHelper.syncFiled(result, context)
-        if (result.getRemoteMembersResult == UpdateResult.NOT_CONSIST_IN_SPACE) {
-            if (isUiMode) parent?.dismiss()
-            showDialogSpaceStatusChanged(context, SpaceStatusChangingType.DETACHED)
-            userProfile.detachFromSpace()
-            spaceViewModel.detachFromSpace()
-            // Удалить всех участников из таблиц events и fines для участников
+    private suspend fun doSync(
+        srcSpaceStatus: SpaceStatus,
+        syncOperator: SyncOperator,
+        coroutineScope: CoroutineScope,
+        isUiMode: Boolean
+    ) {
+        val notSyncedEventsPattern = if (isUiMode) parent?.getString(R.string.found_not_synced_events) else null
+        syncOperator.eventsOutOfSync?.forEach {
+            if (!coroutineScope.isActive) return@doSync
+            dec(it, isUiMode, notSyncedEventsPattern) { syncOperator.eventsDec() }
+        }
+        val notSyncedFinesPattern = if (isUiMode) parent?.getString(R.string.found_not_synced_fines) else null
+        syncOperator.finesOutOfSync?.forEach {
+            if (!coroutineScope.isActive) return@doSync
+            dec(it, isUiMode, notSyncedFinesPattern) { syncOperator.finesDec() }
+        }
+
+//        Обновлять мемберов надо всегда, так как если статус сменился с isPending() на другой - там это будет отражено и изменено
+        val srcRole = encUserProfile.getRole()
+        syncOperator.getRemoteMembersResult = spaceService.updateMembers(srcRole, srcSpaceStatus)
+        if (!srcRole.isPrivileged()) {
+            syncOperator.isRemoteDataAccepted = dataService.updateData(null)
+        }
+    }
+
+    private suspend fun dec(data: AbstractData, isUiMode: Boolean, notSyncedPattern: String?, decFunc: () -> Unit) {
+        if (dataService.sendData(data) == SaveResult.Success) {
+            if (!isUiMode) {
+                decFunc.invoke()
+                return
+            }
+            notSyncedPattern?.let { pattern ->
+                when (data.getType()) {
+                    DataType.EVENT -> parentBinding?.eventsCount?.text = String.format(pattern, decFunc.invoke())
+                    DataType.FINE -> parentBinding?.finesCount?.text = String.format(pattern, decFunc.invoke())
+                }
+            }
         }
     }
 
     private fun processSuccess(srcSpaceStatus: SpaceStatus, context: Context, isUiMode: Boolean) {
-        ToastHelper.message(ToastHelper.ALL_SYNCED, context)
+        ToastHelper.message(ToastHelper.ALL_SYNCED, context) // TODO 29.03.2025 19:20: if (!isUiMode) не показывать тост
         if (isUiMode) parent?.dismiss()
 
         if (srcSpaceStatus.isPending()) {
             when (userProfile.getSpaceStatus()) {
-                SpaceStatus.NONE -> {
-                    showDialogSpaceStatusChanged(context, SpaceStatusChangingType.REJECTED)
-                    spaceViewModel.emitStatusChanged(SpaceStatus.NONE)
+                NONE -> {
+                    showDialogSpaceStatusChanged(context, SpaceStatusChangingType.REJECTED, srcSpaceStatus)
+                    spaceViewModel.emitStatusChanged(NONE)
                 }
 
-                SpaceStatus.MEMBER -> {
-                    showDialogSpaceStatusChanged(context, SpaceStatusChangingType.ACCEPTED)
-                    spaceViewModel.emitStatusChanged(SpaceStatus.MEMBER)
+                MEMBER -> {
+                    showDialogSpaceStatusChanged(context, SpaceStatusChangingType.ACCEPTED, srcSpaceStatus)
+                    spaceViewModel.emitStatusChanged(MEMBER)
                 }
 
                 else -> {}
@@ -129,36 +196,61 @@ class DataSynchronizer(
         }
     }
 
-    private suspend fun doSync(syncOperator: SyncOperator, coroutineScope: CoroutineScope, isUiMode: Boolean) {
-        val notSyncedEventsPattern = if (isUiMode) parent?.getString(R.string.found_not_synced_events) else null
-        syncOperator.eventsOutOfSync?.forEach {
-            if (!coroutineScope.isActive) return@doSync
-            if (dataService.sendData(it) == SaveResult.Success) {
-                if (isUiMode) {
-                    notSyncedEventsPattern?.let { pattern ->
-                        parentBinding?.eventsCount?.text = String.format(pattern, syncOperator.eventsDec())
-                    }
-                } else {
-                    syncOperator.eventsDec()
+    private fun processFailure(result: SyncOperator.Result, context: Context, isUiMode: Boolean) {
+        ToastHelper.syncFiled(result, context)
+        if (result.getRemoteMembersResult == UpdateResult.NOT_CONSIST_IN_SPACE) {
+            if (isUiMode) parent?.dismiss()
+
+            showDialogSpaceStatusChanged(context, SpaceStatusChangingType.DETACHED)
+            userProfile.detachFromSpace()
+            encUserProfile.detachFromSpace()
+            spaceViewModel.detachFromSpace()
+            // TODO 30.03.2025 20:19: Удалить всех участников из таблиц events и fines для участников
+        }
+    }
+
+    private fun showDialogSpaceStatusChanged(
+        context: Context,
+        newStatus: SpaceStatusChangingType,
+        srcSpaceStatus: SpaceStatus? = null
+    ) {
+
+        val (companyNameView, rootView) = when (newStatus) {
+            SpaceStatusChangingType.DETACHED -> {
+                val binding = DialogDetachedFromSpaceBinding.inflate(LayoutInflater.from(context))
+                Pair(binding.companyName, binding.root)
+            }
+
+            SpaceStatusChangingType.REJECTED -> {
+                val binding = DialogJoinRequestRejectedBinding.inflate(LayoutInflater.from(context))
+                Pair(binding.companyName, binding.root)
+            }
+
+            SpaceStatusChangingType.ACCEPTED -> {
+                val binding = DialogJoinRequestAcceptedBinding.inflate(LayoutInflater.from(context))
+                when (srcSpaceStatus) {
+                    PENDING_WORKER -> binding.workerPart.visibility = View.VISIBLE
+                    PENDING_BOSS -> binding.bossPart.visibility = View.VISIBLE
+                    else -> {}
                 }
+                Pair(binding.companyName, binding.root)
             }
         }
-        val notSyncedFinesPattern = if (isUiMode) parent?.getString(R.string.found_not_synced_fines) else null
-        syncOperator.finesOutOfSync?.forEach {
-            if (!coroutineScope.isActive) return@doSync
-            if (dataService.sendData(it) == SaveResult.Success) {
-                if (isUiMode) {
-                    notSyncedFinesPattern?.let { pattern ->
-                        parentBinding?.finesCount?.text = String.format(pattern, syncOperator.finesDec())
-                    }
-                } else {
-                    syncOperator.finesDec()
-                }
+
+        companyNameView.text = String.format(companyNameView.text.toString(), userProfile.getSpaceName())
+
+        Handler(Looper.getMainLooper()).post {
+            val dialog = AlertDialog.Builder(context).setView(rootView).create()
+            dialog.window?.apply {
+                setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                val resources = parent?.resources ?: context.resources
+                setLayout(
+                    (resources.displayMetrics.widthPixels * 0.85).toInt(),
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
             }
+            dialog.show()
         }
-        syncOperator.isRemoteDataAccepted = dataService.updateData(null)
-        val withJoinRequests = encUserProfile.isPrivileged()
-        syncOperator.getRemoteMembersResult = spaceService.updateMembers(withJoinRequests)
     }
 
     private fun cancelIfActive(): Boolean {
@@ -173,45 +265,7 @@ class DataSynchronizer(
         return false
     }
 
-    private fun showDialogSpaceStatusChanged(context: Context, newStatus: SpaceStatusChangingType) {
-        val (companyNameView, rootView) = when (newStatus) {
-            SpaceStatusChangingType.DETACHED -> {
-                val binding = DialogDetachedFromSpaceBinding.inflate(LayoutInflater.from(context))
-                Pair(binding.companyName, binding.root)
-            }
-            SpaceStatusChangingType.REJECTED -> {
-                val binding = DialogJoinRequestRejectedBinding.inflate(LayoutInflater.from(context))
-                Pair(binding.companyName, binding.root)
-            }
-            SpaceStatusChangingType.ACCEPTED -> {
-                val binding = DialogJoinRequestAcceptedBinding.inflate(LayoutInflater.from(context))
-                Pair(binding.companyName, binding.root)
-            }
-        }
-
-        companyNameView.text = String.format(companyNameView.text.toString(), userProfile.getSpaceName())
-
-        Handler(Looper.getMainLooper()).post {
-            if (context is Activity && !context.isFinishing && !context.isDestroyed) {
-                val dialog = AlertDialog.Builder(context).setView(rootView).create()
-                dialog.window?.apply {
-                    setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                    val resources = parent?.resources ?: context.resources
-                    setLayout(
-                        (resources.displayMetrics.widthPixels * 0.85).toInt(),
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    )
-                }
-                dialog.show()
-            } else {
-                Log.d("DataSynchronizer",
-                    "Cannot show dialog of new status [$newStatus] for user [${encUserProfile.getUserUuid()}]:" +
-                            " invalid context state")
-            }
-        }
-    }
-
     private enum class SpaceStatusChangingType {
-       DETACHED, REJECTED, ACCEPTED
+        DETACHED, REJECTED, ACCEPTED
     }
 }
