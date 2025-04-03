@@ -73,6 +73,7 @@ class ConnectSpaceDialogFragment : DialogFragment() {
                 context?.applicationScope()?.launch {
                     val leftResult = spaceService.leaveSpace()
                     if (leftResult) {
+//                    Не сбрасываем spaceName и encProfile, тк это просто отмена отправленной (еще не принятой) заявки
                         userProfile.setSpaceStatus(SpaceStatus.NONE)
                         spaceViewModel.emitStatusChanged(SpaceStatus.NONE)
                     }

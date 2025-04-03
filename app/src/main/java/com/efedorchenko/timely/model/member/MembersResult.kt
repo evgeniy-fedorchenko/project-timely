@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 data class MembersResult(
 
     val spaceStatus: SpaceStatus = SpaceStatus.NONE,
-    val space: SpaceDto,
+    val space: SpaceDto? = null,
     val members: MutableList<SpaceMember>,
 
     /**

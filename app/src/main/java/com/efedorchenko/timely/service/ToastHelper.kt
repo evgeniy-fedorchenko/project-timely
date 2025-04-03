@@ -40,8 +40,8 @@ object ToastHelper {
     private const val FILED_DOWNLOAD_MEMBERS =          "Не удалось обновить участников компании"
 
     /* Download data */
-    private const val ERROR_DOWNLOAD_DATA =        "Не удалось некоторые данные, обновите данные при подключении к сети Интернет"
-    private const val ERROR_DOWNLOAD_MEMBERS =     "Не удалось загрузить участников компании, обновите данные при подключении к сети Интернет"
+    private const val ERROR_DOWNLOAD_DATA =        "Не удалось некоторые данные, обновите данные при подключении к интернету"
+    private const val ERROR_DOWNLOAD_MEMBERS =     "Не удалось загрузить участников компании, обновите данные при подключении к интернету"
     private const val ERROR_GET_MEMBER =           "Не удалось загрузить участника - нет интернета"
 
     /* Registration */

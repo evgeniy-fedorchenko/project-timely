@@ -115,7 +115,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="start"
-            android:text="Чтобы присоединиться к компании занового, вам потребуется ввести ключ доступа, а также дождаться одобрения руководителя"
+            android:text="Чтобы присоединиться к компании заново, вам потребуется ввести ключ доступа, а также дождаться одобрения руководителя"
             android:textColor="@color/light_gray"
             android:visibility="gone"
             android:textSize="16sp" />

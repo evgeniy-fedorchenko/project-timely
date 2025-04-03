@@ -63,7 +63,7 @@ abstract class AbstractMainFragment : Fragment() {
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
     }
 
-    fun setupSideMenu() {
+    protected fun setupSideMenu() {
         getHeaderLayout().menuButton.setOnClickListener {
             getDrawerLayout().openDrawer(GravityCompat.START)
         }
@@ -84,8 +84,6 @@ abstract class AbstractMainFragment : Fragment() {
             DO_SYNC to getNavigationView().menu.findItem(R.id.do_sync)
         )
 
-//        setupButtons(isOnHomePage(), buttons)
-
         viewLifecycleOwner.lifecycleScope.launch {
             spaceViewModel.selectedMember.collect {
                 getHeaderLayout().homeButton.visibility = if (it == null) View.GONE else View.VISIBLE
@@ -100,8 +98,6 @@ abstract class AbstractMainFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             spaceViewModel.statusChangedNty.collect { newStatus ->
                 setSpaceStatusOnSideMenu(newStatus, headerView, userProfile.getSpaceName())
-//                val spaceRawText = getString(R.string.nav_menu_header_space, "На рассмотрении async")
-//                headerView.findViewById<TextView>(R.id.space).text = prepareHeaderLine(spaceRawText, 8)
             }
         }
         getNavigationView().setNavigationItemSelectedListener(

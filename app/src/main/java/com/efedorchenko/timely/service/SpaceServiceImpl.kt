@@ -26,11 +26,7 @@ class SpaceServiceImpl @Inject constructor(
         private const val NE_TAG = "SSI Network error"
     }
 
-    override suspend fun initMembers(withJoinRequests: Boolean): Boolean {
-        return doUpdateMembers { apiService.getMembers(withJoinRequests) } == UpdateResult.SUCCESS
-    }
-
-    override suspend fun updateMembers(withJoinRequests: Boolean): UpdateResult {
+    override suspend fun updateMembers(srcRole: RoleType, srcSpaceStatus: SpaceStatus): UpdateResult {
         val since = memberRepository.getMaxChangedAt()
         return doUpdateMembers { apiService.getMembers(withJoinRequests, since) }
     }

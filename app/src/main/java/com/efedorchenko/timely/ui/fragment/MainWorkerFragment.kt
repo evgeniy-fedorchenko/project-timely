@@ -85,7 +85,7 @@ class MainWorkerFragment : AbstractMainFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        viewPager.adapter = null
+        if (::viewPager.isInitialized) viewPager.adapter = null
         pageChangeCallback?.let { viewPager.unregisterOnPageChangeCallback(it) }
         pageChangeCallback = null
     }

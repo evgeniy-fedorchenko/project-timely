@@ -3,10 +3,9 @@ package com.efedorchenko.timely.service
 import com.efedorchenko.timely.model.SyncOperator
 import com.efedorchenko.timely.model.auth.RoleType
 import com.efedorchenko.timely.model.member.AcceptMemberResultType
+import com.efedorchenko.timely.model.member.SpaceStatus
 
 interface SpaceService {
-
-    suspend fun initMembers(withJoinRequests: Boolean): Boolean
 
     suspend fun updateMembers(withJoinRequests: Boolean): SyncOperator.UpdateResult
 
