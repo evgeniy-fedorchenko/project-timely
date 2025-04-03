@@ -11,7 +11,8 @@ import com.efedorchenko.timely.model.member.SpaceMember
 
 class MembersAdapter(
     private val showMemberFunc: (member: SpaceMember) -> Unit,
-    private val serviceMemberFunc: ((member: SpaceMember) -> Unit)? = null
+    private val serviceMemberFunc: ((member: SpaceMember) -> Unit)? = null,
+    private val withRoles: Boolean = false
 ) : ListAdapter<SpaceMember, MembersAdapter.MemberViewHolder>(MemberDiffCallback()) {
 
     inner class MemberViewHolder(val binding: DialogSpaceShowMemberBinding) : RecyclerView.ViewHolder(binding.root)
@@ -36,9 +37,9 @@ class MembersAdapter(
 
         with(holder.binding) {
             name.text = member.name
-            val positionFormatted = "Должность: ${member.position}"
-            userPosition.text = positionFormatted
-
+            userPosition.text = "Должность: ${member.position}"
+            if (withRoles) userRole.text = "Роль в компании: ${member.role}"
+            
             holder.itemView.setOnLongClickListener {
                 showMemberFunc.invoke(member)
                 true

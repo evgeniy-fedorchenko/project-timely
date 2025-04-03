@@ -46,7 +46,8 @@ class MainBossFragment : AbstractMainFragment() {
 
     private val membersAdapter = MembersAdapter(
         showMemberFunc = { member: SpaceMember -> showMember(member) },
-        serviceMemberFunc = { member: SpaceMember -> serviceMember(member) }
+        serviceMemberFunc = { member: SpaceMember -> serviceMember(member) },
+        true
     )
 
     @Inject
