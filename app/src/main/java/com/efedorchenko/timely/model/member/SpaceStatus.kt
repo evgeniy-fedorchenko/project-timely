@@ -3,32 +3,32 @@ package com.efedorchenko.timely.model.member
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class SpaceStatus {
+enum class SpaceStatus(val title: String) {
 
 
     /**
      * Отправлена заявка на вступление в пространство в должности работника.
      * Ожидает реакции руководителей пространства
      */
-    PENDING_WORKER,
+    PENDING_WORKER("Работник"),
 
     /**
      * Отправлена заявка на вступление в пространство в должности руководителя.
      * Ожидает реакции руководителей пространства
      */
-    PENDING_BOSS,
+    PENDING_BOSS("Руководитель"),
 
     /**
      * Юзер без пространства, и без активных заявок
      * Статус используется для юзеров, работающих без привязки к пространству.
      * А так же после того, как поданная заявка была отклонена
      */
-    NONE,
+    NONE("None"),
 
     /**
      * Заявка на вступление была принята руководителями и состоит в пространстве
      */
-    MEMBER;
+    MEMBER("Участник");
 
     fun isPending(): Boolean {
         return this == PENDING_WORKER || this == PENDING_BOSS;

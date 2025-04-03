@@ -33,7 +33,7 @@ class JoinRequestsAdapter(
             val positionFormatted = "Желаемая должность: ${member.position}"
             userPosition.text = positionFormatted
 
-            val roleFormatted = "Предпочитаемая роль: ${member.role?.title ?: "Unknown"}"
+            val roleFormatted = "Предпочитаемая роль: ${member.spaceStatus.title }"
             role.text = roleFormatted
 
             acceptButton.setOnClickListener { onMemberAccepted.invoke(member, position) }
