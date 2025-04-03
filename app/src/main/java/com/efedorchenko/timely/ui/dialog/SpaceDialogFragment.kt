@@ -15,6 +15,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.efedorchenko.timely.R
+import com.efedorchenko.timely.data.EncUserProfile
 import com.efedorchenko.timely.data.SpaceViewModel
 import com.efedorchenko.timely.data.UserProfile
 import com.efedorchenko.timely.databinding.DialogLoadingBinding
@@ -22,6 +23,7 @@ import com.efedorchenko.timely.databinding.DialogSpaceShowBinding
 import com.efedorchenko.timely.model.auth.RoleType
 import com.efedorchenko.timely.model.member.AcceptMemberResultType
 import com.efedorchenko.timely.model.member.SpaceMember
+import com.efedorchenko.timely.model.member.SpaceStatus
 import com.efedorchenko.timely.service.DataService
 import com.efedorchenko.timely.service.SpaceService
 import com.efedorchenko.timely.service.ToastHelper
@@ -79,6 +81,9 @@ class SpaceDialogFragment : DialogFragment() {
     @Inject
     lateinit var userProfile: UserProfile
 
+    @Inject
+    lateinit var encUserProfile: EncUserProfile
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = DialogSpaceShowBinding.inflate(inflater, container, false)
         return binding.root
@@ -86,8 +91,9 @@ class SpaceDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val joinRequests = spaceViewModel.getJoinRequests()
+        val joinRequests = spaceViewModel.getJoinRequests(encUserProfile.getRole())
         joinRequestsAdapter = JoinRequestsAdapter(joinRequests, acceptMemberFunc, rejectMemberFunc)
+// TODO 31.03.2025 21:08: сделать фоновую автодозагрузку новых данных с бека
 
         userProfile.getSpaceName().let {
             val spaceRawText = getString(R.string.nav_menu_header_space, it)
@@ -183,7 +189,16 @@ class SpaceDialogFragment : DialogFragment() {
         val context = context ?: return
         viewLifecycleOwner.lifecycleScope.launch {
             joinRequestsAdapter.removeAt(position)
-            val acceptRemoteResult = spaceService.acceptRemote(member.userUuid, member.role ?: RoleType.WORKER)
+            if (!member.spaceStatus.isPending()) {
+                // TODO 03.04.2025 21:37: какого черта он тогда тут делает
+                return@launch
+            }
+            val newRole = when (member.spaceStatus) {
+                SpaceStatus.PENDING_WORKER -> RoleType.WORKER
+                SpaceStatus.PENDING_BOSS -> RoleType.BOSS
+                else -> null
+            }
+            val acceptRemoteResult = spaceService.acceptRemote(member.userUuid, newRole ?: RoleType.WORKER)
             if (acceptRemoteResult == AcceptMemberResultType.SUCCESS) {
                 spaceViewModel.acceptMember(member)
             } else {
