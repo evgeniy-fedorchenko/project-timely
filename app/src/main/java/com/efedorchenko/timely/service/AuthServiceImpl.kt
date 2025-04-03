@@ -81,6 +81,7 @@ class AuthServiceImpl @Inject constructor(
         when (val response = apiService.requestConnectToSpace(key)) {
             is ApiResponse.Success -> {
                 response.data?.let {
+                    it.spaceDto?.let { space -> userProfile.setSpace(space) }
                     userProfile.setSpaceStatus(it.newSpaceStatus)
                     spaceViewModel.emitStatusChanged(it.newSpaceStatus)
                     it.result
