@@ -12,7 +12,9 @@ import android.widget.ImageButton
 import android.widget.ProgressBar
 import androidx.core.animation.doOnStart
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.navigation.fragment.findNavController
 import com.efedorchenko.timely.R
 import com.efedorchenko.timely.TimelyApplication
 import com.google.android.material.R.id.design_bottom_sheet
@@ -73,4 +75,10 @@ fun ImageButton.animClickListener(onClick: () -> Unit) {
             start()
         }
     }
+}
+
+fun Fragment.navigateForgetting(fragmentId: Int) {
+    val navController = findNavController()
+    navController.popBackStack(navController.graph.startDestinationId, true)
+    navController.navigate(fragmentId)
 }

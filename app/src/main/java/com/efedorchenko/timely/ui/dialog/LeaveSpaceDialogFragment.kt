@@ -58,10 +58,9 @@ class LeaveSpaceDialogFragment : DialogFragment() {
                     try {
                         if (spaceService.leaveSpace()) {
                             spaceViewModel.detachFromSpace()
-                            userProfile.detachFromSpace()
-//                            spaceViewModel.needsReactToNewStatus(SpaceStatus.NONE)
-//                            spaceViewModel.cleanAll()
-//                            spaceViewModel.needSwitchSpaceItemsInSideMenu()
+                            if (srcRole.isPrivileged()) {
+                                findNavController().navigate(R.id.mainWorkerFragment)
+                            }
                             dismiss()
                             ToastHelper.leaveSpaceSuccess(context)
                         } else {

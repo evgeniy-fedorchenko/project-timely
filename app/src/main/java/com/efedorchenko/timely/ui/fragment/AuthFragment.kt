@@ -109,29 +109,19 @@ class AuthFragment : Fragment() {
     }
 
     private fun handleSuccess(context: Context, result: Resource.Success<Unit>) {
-        val isPrivileged = result.authData.role.isPrivileged()
-        if (isPrivileged) {
-            navigateTo(R.id.mainBossFragment)
-        } else {
-            navigateTo(R.id.mainWorkerFragment)
-        }
+        if (result.authData.role.isPrivileged()) navigateForgetting(R.id.mainBossFragment)
+        else navigateForgetting(R.id.mainWorkerFragment)
+
         context.applicationScope().launch {
             if (!isPrivileged) {
                 if (!dataService.loadData()) {
                     ToastHelper.failDownloadData(context)
                 }
             }
-            if (result.userData.spaceName != null && !spaceService.initMembers(isPrivileged)) {   // Все равно пытаемся, хотя бы чтобы показать тост
-                ToastHelper.failDownloadMembers(context)
+            if (oldStatus == SpaceStatus.MEMBER && newStatus == SpaceStatus.NONE && wasPrivileged) {
+                navigateForgetting(R.id.mainWorkerFragment)
             }
         }
-    }
-
-    //    Удаляем экраны логина и остальные, чтобы нельзя было вернуться через backPressed
-    private fun navigateTo(fragmentId: Int) {
-        val navController = findNavController()
-        navController.popBackStack(navController.graph.startDestinationId, true)
-        navController.navigate(fragmentId)
     }
 
     private fun setupImeInsets() {

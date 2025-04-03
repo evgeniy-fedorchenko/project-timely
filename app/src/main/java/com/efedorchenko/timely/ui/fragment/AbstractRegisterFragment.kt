@@ -16,7 +16,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.viewbinding.ViewBinding
 import com.efedorchenko.timely.R
@@ -31,6 +30,7 @@ import com.efedorchenko.timely.service.SpaceService
 import com.efedorchenko.timely.service.ToastHelper
 import com.efedorchenko.timely.ui.support.hide
 import com.efedorchenko.timely.ui.support.hideKeyboard
+import com.efedorchenko.timely.ui.support.navigateForgetting
 import com.efedorchenko.timely.ui.support.show
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -120,30 +120,22 @@ abstract class AbstractRegisterFragment : Fragment() {
     }
 
     private fun handleSuccess(result: Resource.Success<Unit>, context: Context) {
-        val doNavigate = { fragmentId: Int ->
-            findNavController().navigate(
-                fragmentId, null,
-                NavOptions.Builder().setPopUpTo(R.id.nav_graph, true).build()
-            )
-        }
-
         val spaceName = result.userData.spaceName
         val spaceStatus = result.userData.spaceStatus
 
         when {
             result.authData.role.isHigherThan(RoleType.BOSS) -> {
-                doNavigate.invoke(R.id.mainBossFragment)
+                navigateForgetting(R.id.mainBossFragment)
             }
             spaceStatus == SpaceStatus.PENDING_BOSS -> {
-                doNavigate(R.id.mainWorkerFragment)
+                navigateForgetting(R.id.mainWorkerFragment)
                 showRequestToSpaceAccessDialog(context, true, spaceName)
             }
             spaceStatus == SpaceStatus.PENDING_WORKER -> {
-                doNavigate(R.id.mainWorkerFragment)
+                navigateForgetting(R.id.mainWorkerFragment)
                 showRequestToSpaceAccessDialog(context, false, spaceName)
             }
-
-            else -> {} // TODO: показать ошибку
+            else -> navigateForgetting(R.id.mainWorkerFragment)
         }
 //        Не грузим участников и данные, так как при регистрации их еще не существует
     }
