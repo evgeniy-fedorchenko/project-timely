@@ -6,48 +6,91 @@
     android:gravity="center"
     android:orientation="vertical"
     android:paddingHorizontal="16dp"
-    android:paddingVertical="12dp">
+    android:paddingVertical="16dp">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="Вы были удалены из компании"
+        android:text="Участие в компании завершено"
         android:textColor="@color/light_gray"
-        android:textSize="16sp"
+        android:textSize="18sp"
         android:textStyle="bold" />
 
     <View
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginVertical="8dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp"
         android:background="@color/medium_gray" />
 
     <TextView
         android:id="@+id/company_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="К сожалению, руководитель удалил вас из компании '%s'"
+        android:layout_marginBottom="16dp"
+        android:text="Руководитель исключил вас из компании «%s»"
         android:textColor="@color/light_gray"
         android:textSize="16sp" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:paddingTop="8dp"
-        android:text="Это значит, что вы больше не сможете просматривать профили участников этой компании. А учасники (руководители в том числе) не смогут просматривать ваш профиль"
+        android:layout_marginBottom="4dp"
+        android:text="Ваш текущий статус"
+        android:textColor="@color/light_gray"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="Пользователь без привязки к компании"
         android:textColor="@color/light_gray"
         android:textSize="16sp" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:padding="8dp"
-        android:text="Но вы все еще можете пользоваться приложением самостоятельно без участия руководителей"
+        android:layout_marginBottom="8dp"
+        android:text="Что это означает"
         android:textColor="@color/light_gray"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="• Вы не видите профили других участников\n• Другие участники не видят ваш профиль\n• Вы можете использовать приложение самостоятельно"
+        android:textColor="@color/light_gray"
+        android:textSize="16sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Что можно сделать"
+        android:textColor="@color/light_gray"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Чтобы восстановить доступ, отправьте новую заявку на вступление в компанию и дождитесь ее одобрения"
+        android:textColor="@color/light_gray"
+        android:textSize="16sp" />
+
+    <Button
+        android:id="@+id/btn_understand"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@android:color/transparent"
+        android:text="Понятно"
+        android:textColor="@color/orange"
         android:textSize="16sp" />
 
 </LinearLayout>

@@ -6,21 +6,21 @@
     android:gravity="center"
     android:orientation="vertical"
     android:paddingHorizontal="16dp"
-    android:paddingVertical="12dp">
+    android:paddingVertical="16dp">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="Заявка принята"
+        android:text="Заявка одобрена"
         android:textColor="@color/light_gray"
-        android:textSize="16sp"
+        android:textSize="18sp"
         android:textStyle="bold" />
 
     <View
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginVertical="8dp"
+        android:layout_marginVertical="12dp"
         android:background="@color/medium_gray" />
 
     <TextView
@@ -28,26 +28,103 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="Руководитель компании '%s' успешно одобрил вашу заявку"
+        android:layout_marginBottom="16dp"
+        android:text="Вы приняты в компанию «%s»"
         android:textColor="@color/light_gray"
         android:textSize="16sp" />
 
-    <TextView
+    <!-- Блок для работников -->
+    <LinearLayout
+        android:id="@+id/worker_part"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:paddingTop="8dp"
-        android:text="Теперь руководство пространства сможет отслеживать ваш график смен и вносить корректировки при необходимости."
-        android:textColor="@color/light_gray"
-        android:textSize="16sp" />
+        android:orientation="vertical"
+        android:visibility="gone">
 
-    <TextView
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ваши новые возможности:"
+            android:textColor="@color/light_gray"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"
+            android:text="• Планирование собственных смен\n• Просмотр графиков других сотрудников\n• Обновление смен по решению руководства"
+            android:textColor="@color/light_gray"
+            android:textSize="16sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Важно знать:"
+            android:textColor="@color/light_gray"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Руководители могут изменять ваш график. Регулярно проверяйте календарь, чтобы видеть актуальные смены. Для загрузки последних изменений необходим доступ к интернету"
+            android:textColor="@color/light_gray"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+    <!-- Блок для руководителей -->
+    <LinearLayout
+        android:id="@+id/boss_part"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:padding="8dp"
-        android:text="Так же вы можете просматривать графики работ всех участников этой компании на вкладке 'Моя команда'"
-        android:textColor="@color/light_gray"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ваши новые возможности:"
+            android:textColor="@color/light_gray"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"
+            android:text="• Управление календарями всех сотрудников\n• Добавление и изменение любых смен\n• Отметка прогулов и назначение штрафов"
+            android:textColor="@color/light_gray"
+            android:textSize="16sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Управление составом команды:"
+            android:textColor="@color/light_gray"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Работники могут отправить заявку только со специальным ключом доступа. При необходимости вы можете обновить этот ключ. Все заявки на вступление требуют рассмотрения и одобрения"
+            android:textColor="@color/light_gray"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btn_understand"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@android:color/transparent"
+        android:text="Продолжить"
+        android:textColor="@color/orange"
         android:textSize="16sp" />
 
 </LinearLayout>

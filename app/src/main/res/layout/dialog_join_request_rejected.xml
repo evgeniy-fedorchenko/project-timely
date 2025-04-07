@@ -6,48 +6,65 @@
     android:gravity="center"
     android:orientation="vertical"
     android:paddingHorizontal="16dp"
-    android:paddingVertical="12dp">
+    android:paddingVertical="16dp">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="Заяка отклонена"
+        android:text="Заявка отклонена"
         android:textColor="@color/light_gray"
-        android:textSize="16sp"
+        android:textSize="18sp"
         android:textStyle="bold" />
 
     <View
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginVertical="8dp"
+        android:layout_marginVertical="12dp"
         android:background="@color/medium_gray" />
 
     <TextView
         android:id="@+id/company_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="К сожалению, руководитель не принял вашу заявку в компанию '%s'"
+        android:layout_marginBottom="16dp"
+        android:text="Руководитель не одобрил вашу заявку на вступление в компанию «%s»"
         android:textColor="@color/light_gray"
         android:textSize="16sp" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:paddingTop="8dp"
-        android:text="Но вы все еще можете пользоваться приложением самостоятельно"
+        android:text="Рекомендации:"
+        android:textColor="@color/light_gray"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp"
+        android:text="• Свяжитесь с руководителем лично\n• Отправьте новую заявку позже"
         android:textColor="@color/light_gray"
         android:textSize="16sp" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:padding="8dp"
-        android:text="Совет: обсудите ваше вступление в пространство с руководителем лично, перед подачей новой заявку"
+        android:layout_marginBottom="16dp"
+        android:text="Обсудите ситуацию с руководителем при личной встрече и подайте заявку повторно. Возможно, руководителю требуется дополнительная информация перед принятием положительного решения"
         android:textColor="@color/light_gray"
+        android:textSize="16sp" />
+
+    <Button
+        android:id="@+id/btn_understand"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@android:color/transparent"
+        android:text="Понятно"
+        android:textColor="@color/orange"
         android:textSize="16sp" />
 
 </LinearLayout>
